@@ -1,6 +1,6 @@
 export default function Tooltip({ tip: [title, sub] }: { tip: [string, string] }) {
   return (
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 hidden group-hover:flex z-50 pointer-events-none w-64 md:w-72 flex-col items-center filter drop-shadow-[0_12px_30px_rgba(15,10,5,0.65)]">
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 hidden md:group-hover:flex z-50 pointer-events-none w-64 md:w-72 flex-col items-center filter drop-shadow-[0_12px_30px_rgba(15,10,5,0.65)]">
       <div className="w-full bg-[#fdf8f0] text-[#1f1b12] border-2 border-[#7e5617] p-3.5 rounded-sm relative">
         <div className="w-full h-full border border-[#d4af37]/60 p-2 flex flex-col items-center text-center bg-[#fffdf9]/70 relative">
           <span className="absolute -top-1.5 -left-1.5 text-[8px] text-[#7e5617] leading-none">❖</span>

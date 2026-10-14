@@ -48,7 +48,7 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
                 </div>
                 <span className="text-[10px] tracking-widest text-[#8d755b] uppercase font-mono">{s.sec}</span>
               </div>
-              <div className="flex items-end justify-center md:justify-start gap-1 md:gap-2.5 h-[280px] md:h-[320px] px-2 overflow-visible pt-6">
+              <div className="flex items-end justify-start gap-1 md:gap-2.5 h-[280px] md:h-[320px] px-2 pt-6 overflow-x-auto overflow-y-hidden md:overflow-visible overscroll-x-contain [-webkit-overflow-scrolling:touch]">
                 <Bookend kind={s.bookend} side="left" />
                 {s.books.map((b) => <SpineBookView key={b.tip[0]} book={b} onOpen={() => show(b)} />)}
                 {s.stack && (
