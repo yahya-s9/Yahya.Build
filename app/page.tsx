@@ -33,9 +33,6 @@ export default async function Home() {
 <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
 <span className="text-label-sm font-label-sm tracking-[0.2em] text-on-surface-variant">recto • lxxiv</span>
 </div>
-<div className="absolute bottom-6 right-8 flex items-center gap-2 opacity-50 text-secondary pointer-events-none">
-<span className="material-symbols-outlined text-sm">auto_stories</span>
-</div>
 <div className="relative z-10 w-full max-w-[820px] mx-auto px-6 md:px-12 flex flex-col items-center justify-center">
 <div className="relative w-full p-2 md:p-3 bg-surface-container-low shadow-[0_12px_45px_-10px_rgba(31,27,18,0.08)]">
 <div className="relative w-full p-2 md:p-2 bg-surface-container-high/60">
