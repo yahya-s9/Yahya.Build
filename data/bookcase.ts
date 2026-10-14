@@ -7,7 +7,7 @@
 
 export type BookInfo = {
   ar?: string; title?: string; subtitle?: string; author?: string; authorAr?: string;
-  subject?: string; school?: string; date?: string; edition?: string; binding?: string;
+  subject?: string; school?: string; date?: string; edition?: string; binding?: string; link?: string;
 };
 
 export type CoverKey = "cinnabar" | "lapis" | "malachite" | "saffron" | "onyx" | "plum" | "terracotta" | "teal" | "umber" | "dual";

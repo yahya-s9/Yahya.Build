@@ -21,7 +21,7 @@ type Fields = Record<string, string>;
 
 const ALIASES: Record<string, string> = {
   arabic: "ar", arabictitle: "ar", authorarabic: "authorAr", authorar: "authorAr",
-  color: "cover", colour: "cover", theme: "cover", spinetext: "spine", shortname: "spine",
+  color: "cover", colour: "cover", theme: "cover", url: "link", notes: "link", href: "link", spinetext: "spine", shortname: "spine",
 };
 const normKey = (k: string) => {
   const n = k.toLowerCase().replace(/[^a-z]/g, "");
@@ -65,6 +65,7 @@ function infoFor(title: string, f: Fields, text: string): BookInfo {
     ar: f.ar, subtitle: f.subtitle, author: f.author, authorAr: f.authorAr,
     subject: f.subject ?? (text || undefined),
     school: f.school, date: f.date, edition: f.edition, binding: f.binding,
+    link: /^https?:\/\//i.test(f.link ?? "") ? f.link : undefined,
   };
 }
 

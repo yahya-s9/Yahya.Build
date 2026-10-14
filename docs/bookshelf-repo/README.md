@@ -34,6 +34,7 @@ Each `## Heading` is one book. **Only the heading is required**; everything else
 | `authorArabic` | Arabic/Persian author name |
 | `subject` | Subject line (or just write a paragraph) |
 | `school`, `date`, `edition` | Small details row |
+| `link` | `https://…` URL. Clicking the cover in the popup opens it in a new tab (e.g. your notes) |
 | `binding` | "Bound in …" footer |
 | `cover` | Colour: `cinnabar` `lapis` `malachite` `saffron` `onyx` `plum` `terracotta` `teal` `umber` `dual` |
 | `spine` | Text printed on the spine (default: the title, shortened) |

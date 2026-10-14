@@ -21,6 +21,15 @@ const Corner = ({ className = "" }: { className?: string }) => (
   </svg>
 );
 
+function MaybeLink({ href, children }: { href?: string; children: React.ReactNode }) {
+  if (!href) return <>{children}</>;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label="Open notes for this book (opens in a new tab)" className="block w-full cursor-pointer transition-transform duration-300 hover:scale-[1.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4" style={{ outlineColor: "var(--hi)" }}>
+      {children}
+    </a>
+  );
+}
+
 const Rule = () => <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg,transparent,var(--gold),transparent)" }} />;
 const Bar = () => <div className="w-0.5 h-28" style={{ background: "linear-gradient(transparent,var(--gold),transparent)" }} />;
 
@@ -53,6 +62,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
       className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 backdrop-blur-sm bg-[#0a0705]/65 overflow-y-auto py-8 sm:py-12"
     >
       <div className="relative z-10 w-full max-w-2xl lg:max-w-3xl my-auto flex flex-col items-center" style={vars}>
+        <MaybeLink href={i.link}>
         <div
           className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex min-h-[720px] md:min-h-[780px]"
           style={{ background: t.spine[0], border: `4px solid ${t.spine[1]}`, boxShadow: "inset 0 0 50px rgba(0,0,0,.95),0 0 0 2px var(--gold)" }}
@@ -150,6 +160,8 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
             </div>
           </div>
         </div>
+        </MaybeLink>
+        {i.link && <p className="mt-4 text-[11px] tracking-[0.3em] uppercase font-serif" style={{ color: "var(--hi)" }}>Click the cover to open my notes ↗</p>}
         <button ref={closeRef} type="button" onClick={onClose} className="mt-6 px-6 py-2 text-[11px] tracking-[0.3em] uppercase font-serif rounded-xs transition-colors" style={{ background: "#0a0705", color: "var(--gold)", border: "1px solid var(--gold)" }}>
           Return to Shelf
         </button>
