@@ -122,7 +122,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
 
                 {/* Author */}
                 <div className="relative w-full my-3 py-3.5 px-6 rounded-sm flex flex-col items-center text-center" style={{ border: "2px solid var(--gold)", background: `linear-gradient(90deg,var(--deep),${mix(60)},var(--deep))`, boxShadow: "inset 0 0 20px rgba(0,0,0,.85)" }}>
-                  <span className="text-xs tracking-[0.35em] uppercase opacity-95 mb-1" style={{ color: "var(--hi)" }}>Musannif • Author</span>
                   <p className="font-headline-md text-base sm:text-lg md:text-xl text-white font-medium tracking-[0.06em] leading-snug">{author}</p>
                   {i.authorAr && <span className="text-sm md:text-base italic mt-1 text-[#fed7aa]" style={NASTALIQ}>{i.authorAr}</span>}
                 </div>
@@ -130,11 +129,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                 {/* Subject + meta */}
                 {i.subject && (
                   <div className="relative w-full my-2 rounded-sm p-4 sm:p-5 shadow-inner flex flex-col items-center text-center" style={{ border: "1px solid var(--gold)", background: mix(85) }}>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="w-2 h-2 rotate-45" style={{ background: "var(--gold)" }} />
-                      <span className="text-xs tracking-[0.3em] uppercase" style={{ color: "var(--hi)" }}>Mawdu&apos; • Subject</span>
-                      <span className="w-2 h-2 rotate-45" style={{ background: "var(--gold)" }} />
-                    </div>
                     <p className="text-sm sm:text-base text-[#fdf2e9] leading-relaxed italic max-w-md font-serif">“{i.subject}”</p>
                     {metas.length > 0 && (
                       <div className="flex items-center justify-between w-full mt-3 pt-2 text-xs tracking-[0.22em] uppercase" style={{ borderTop: "1px solid color-mix(in srgb,var(--gold) 30%,transparent)", color: "var(--gold)" }}>
