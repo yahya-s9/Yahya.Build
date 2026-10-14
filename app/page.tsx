@@ -43,8 +43,8 @@ export default async function Home() {
 <div className="w-12 h-px bg-secondary-fixed-dim"></div>
 </div>
 <div className="max-w-[620px] mx-auto">
-<p className="font-headline-lg text-headline-lg md:font-headline-xl md:text-headline-xl text-primary font-normal leading-[1.4] md:leading-[1.45] tracking-[0.015em] antialiased">
-              Lorem Ipsum</p>
+<p dir="rtl" lang="ar" className="text-primary font-normal text-6xl md:text-8xl leading-[1.9] antialiased" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>
+              اقرأ!</p>
 </div>
 <div className="flex items-center justify-center gap-4 mt-10 opacity-75">
 <div className="w-12 h-px bg-secondary-fixed-dim"></div>
