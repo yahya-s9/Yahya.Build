@@ -1,6 +1,10 @@
 import Bookcase from "@/components/Bookcase";
+import { getBookcase } from "@/lib/library";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const shelves = await getBookcase();
   return (
     <main className="w-full flex flex-col bg-background">
 {/* SECTION 1: Folio Hero (Kept exact with scroll hint) */}
@@ -99,7 +103,7 @@ export default function Home() {
 <div className="w-full relative rounded-t-sm shadow-[0_25px_60px_-15px_rgba(21,14,7,0.35),0_0_0_1px_rgba(126,86,23,0.3)] bg-[#2a1b10] p-3 md:p-6 pb-4">
 {/* Outer Top Carved Arch & Crown Molding */}
 
-<Bookcase />
+<Bookcase shelves={shelves} />
 {/* Base Cabinet Pedestal / Bottom Molding */}
 <div className="w-full bg-gradient-to-b from-[#24170d] via-[#1a1009] to-[#120a05] border-t border-[#3a2515] p-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#a89680] gap-3">
 <div className="flex items-center gap-2">

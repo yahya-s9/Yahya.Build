@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BOOKCASE, type FlatBook, type SpineBook } from "@/data/bookcase";
+import type { FlatBook, Shelf, SpineBook } from "@/data/bookcase";
 import { FlatBookView, SpineBookView } from "./Books";
 import BookModal, { type OpenBook } from "./BookModal";
 
@@ -22,9 +22,9 @@ function Bookend({ kind = "wood", side }: { kind?: "brass" | "wood"; side: "left
   );
 }
 
-export default function Bookcase() {
+export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }) {
   const [open, setOpen] = useState<OpenBook | null>(null);
-  const entries = Object.entries(BOOKCASE);
+  const entries = Object.entries(shelves);
   const allBooks: (SpineBook | FlatBook)[] = entries.flatMap(([, s]) => [...s.books, ...(s.stack ?? [])]);
 
   const show = (b: SpineBook | FlatBook) => setOpen({ book: b, index: allBooks.indexOf(b) });
@@ -61,7 +61,7 @@ export default function Bookcase() {
             </div>
             <div className="w-full h-7 bg-gradient-to-b from-[#47301c] via-[#332112] to-[#1c120a] border-t border-[#6d4c2e] border-b border-[#0d0704] shadow-[0_12px_16px_rgba(0,0,0,0.6)] flex items-center justify-between px-6">
               <div className="w-24 h-0.5 bg-[#69482b]" />
-              <div className="px-4 py-0.5 bg-[#24160d] border border-[#7e5617]/40 rounded-xs text-[9px] uppercase tracking-[0.25em] text-[#d4af37]">{s.plinth}</div>
+              {s.plinth ? <div className="px-4 py-0.5 bg-[#24160d] border border-[#7e5617]/40 rounded-xs text-[9px] uppercase tracking-[0.25em] text-[#d4af37]">{s.plinth}</div> : <div className="text-[#7e5617] text-xs">❖</div>}
               <div className="w-24 h-0.5 bg-[#69482b]" />
             </div>
           </div>
