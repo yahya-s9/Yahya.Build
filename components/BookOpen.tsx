@@ -244,9 +244,18 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     setLeft(0);
   };
 
+  // jump to the spread whose right-hand page is `r` (0 = the title page)
+  const goTo = (r: number) => {
+    if (flipping.current || r === right) return;
+    setRight(r);
+    setLeft(r <= 1 ? 0 : r - 1);
+  };
+  const spreads = doc ? Array.from({ length: Math.ceil(doc.pages / 2) + 1 }, (_, k) => 2 * k + 1).filter((r) => r - 1 <= doc.pages) : [];
+
   useEffect(() => {
     if (!reading) return;
     const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement | null)?.tagName === "SELECT") return;
       if (e.key === "ArrowRight") { e.preventDefault(); flip("fwd"); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); flip("back"); }
     };
@@ -402,7 +411,24 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
         <div className="ob-bar">
           <button type="button" onClick={toFront} disabled={right === 0}>Contents</button>
           <button type="button" onClick={() => flip("back")} disabled={right === 0} aria-label="Previous page">‹</button>
-          <span>{right === 0 ? "Title" : doc ? `${right > 1 ? `${right - 1}–${right}` : right} / ${doc.pages}` : reading.failed ? "—" : "…"}</span>
+<select
+            className="ob-sel"
+            aria-label="Jump to a page"
+            value={right}
+            disabled={!doc}
+            onChange={(e) => goTo(Number(e.target.value))}
+          >
+            <option value={0}>Title page</option>
+            {doc ? (
+              spreads.map((r) => (
+                <option key={r} value={r}>
+                  {r === 1 ? `Page 1 / ${doc.pages}` : `Pages ${r - 1}–${Math.min(r, doc.pages)} / ${doc.pages}`}
+                </option>
+              ))
+            ) : (
+              <option value={right}>…</option>
+            )}
+          </select>
           <button type="button" onClick={() => flip("fwd")} aria-label="Next page">›</button>
         </div>
       )}
