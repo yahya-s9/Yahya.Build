@@ -58,15 +58,6 @@ export default async function Home() {
 </div>
 </div>
 </div>
-{/* Refined Scroll Indicator */}
-<a className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 text-secondary hover:text-primary transition-all duration-300 group cursor-pointer focus:outline-none" href="#makhzan-al-kutub">
-<div className="flex items-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
-<span className="w-1.5 h-1.5 rotate-45 bg-secondary-fixed-dim"></span>
-<span className="text-label-sm font-label-sm tracking-[0.3em] uppercase text-xs text-secondary font-medium">Scroll to archive</span>
-<span className="w-1.5 h-1.5 rotate-45 bg-secondary-fixed-dim"></span>
-</div>
-<span className="material-symbols-outlined text-base animate-bounce text-secondary/70 group-hover:text-secondary group-hover:translate-y-0.5 transition-transform">keyboard_arrow_down</span>
-</a>
 <div className="sr-only">
 <img alt="Historical manuscript reference with fine classical gold and iron-gall ruled lines" className="hidden" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGGsPo7PyCWYUeO9fUamtnRNMuah9CFZeW3GvFFYL0U4oBNJyLB03n_EDlPI_nyZDSlybCtFBQGLo7U4uGF4mp8XaqTa1D1oZpqXWUVZWez5-G9om0Kxc9vNGPC1d0FPqTMUUmEkFBLrnFXxvOVPfFHSENaxdxiuBVU2W6-3ja4xRzxhHZR2CjT956JVAU67BacqMaa36AEkU4W1zR0ZNiVnwDNk0OSUoNK2n31w2zbYp3wa1S2C6XoWw6vk2SRbKpbg" />
 </div>
