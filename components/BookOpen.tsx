@@ -55,7 +55,9 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   const { book: b, index } = open;
   const look = lookOf(b.tip[0], "big" in b ? !!b.big : false);
   const [g] = useState(() => measure(look.w, look.h));
-  const [phase, setPhase] = useState<"in" | "open" | "out">("in");
+  const [phase, setPhase] = useState<"in" | "closed" | "open" | "out">("in");
+  const phaseRef = useRef<"in" | "closed" | "open" | "out">("in");
+  const go = (p: "in" | "closed" | "open" | "out") => { phaseRef.current = p; setPhase(p); };
   const bookRef = useRef<HTMLDivElement>(null);
   const shiftRef = useRef<HTMLDivElement>(null);
   const coverRef = useRef<HTMLDivElement>(null);
@@ -76,46 +78,57 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   }, [origin]);
 
   useLayoutEffect(() => {
-    const book = bookRef.current!, cover = coverRef.current!, sh = shiftRef.current!;
+    const book = bookRef.current!;
     if (reduce) {
       book.style.transform = T(0, 0, 1, -g.D / 2, 0);
-      cover.style.transform = `${frontZ} rotateY(-180deg)`;
-      sh.style.transform = `translateX(${shift}px)`;
-      setPhase("open");
+      go("closed");
       return;
     }
     const spine = origin.classList.contains("sp");
-    flyRef.current = book.animate(flight(g, origin), { duration: spine ? 860 : 680, fill: "forwards" });
-    // the cover starts to swing just before the book lands
-    const delay = spine ? 720 : 520;
-    const opts: KeyframeAnimationOptions = { duration: 760, delay, easing: EASE_IN_OUT, fill: "forwards" };
-    cover.animate([{ transform: `${frontZ} rotateY(0deg)` }, { transform: `${frontZ} rotateY(-180deg)` }], opts);
-    sh.animate([{ transform: "translateX(0px)" }, { transform: `translateX(${shift}px)` }], opts);
-    const t = setTimeout(() => setPhase("open"), delay + 300);
-    return () => clearTimeout(t);
+    const fly = book.animate(flight(g, origin), { duration: spine ? 860 : 680, fill: "forwards" });
+    flyRef.current = fly;
+    fly.finished.then(() => go("closed")).catch(() => {});
     // once, on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // the book waits, closed, until you click it
+  const openCover = useCallback(() => {
+    if (phaseRef.current !== "closed") return;
+    const cover = coverRef.current!, sh = shiftRef.current!;
+    go("open");
+    if (reduce) {
+      cover.style.transform = `${frontZ} rotateY(-180deg)`;
+      sh.style.transform = `translateX(${shift}px)`;
+      return;
+    }
+    const opts: KeyframeAnimationOptions = { duration: 760, easing: EASE_IN_OUT, fill: "forwards" };
+    cover.animate([{ transform: `${frontZ} rotateY(0deg)` }, { transform: `${frontZ} rotateY(-180deg)` }], opts);
+    sh.animate([{ transform: "translateX(0px)" }, { transform: `translateX(${shift}px)` }], opts);
+  }, [frontZ, reduce, shift]);
+
   const close = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
-    setPhase("out");
+    const wasOpen = phaseRef.current === "open";
+    go("out");
     const book = bookRef.current!, cover = coverRef.current!, sh = shiftRef.current!;
     if (reduce) return onClose();
-    const opts: KeyframeAnimationOptions = { duration: 520, easing: EASE_IN_OUT, fill: "forwards" };
-    cover.animate([{ transform: `${frontZ} rotateY(-180deg)` }, { transform: `${frontZ} rotateY(0deg)` }], opts);
-    sh.animate([{ transform: `translateX(${shift}px)` }, { transform: "translateX(0px)" }], opts);
+    if (wasOpen) {
+      const opts: KeyframeAnimationOptions = { duration: 520, easing: EASE_IN_OUT, fill: "forwards" };
+      cover.animate([{ transform: `${frontZ} rotateY(-180deg)` }, { transform: `${frontZ} rotateY(0deg)` }], opts);
+      sh.animate([{ transform: `translateX(${shift}px)` }, { transform: "translateX(0px)" }], opts);
+    }
     // fly back to wherever it came from, once the cover is shut
     const fly = book.animate(
       flight(measure(look.w, look.h), origin).map((k) => ({ ...k, offset: 1 - k.offset })).reverse(),
-      { duration: origin.classList.contains("sp") ? 740 : 580, delay: 380, fill: "forwards" },
+      { duration: origin.classList.contains("sp") ? 740 : 580, delay: wasOpen ? 380 : 0, fill: "forwards" },
     );
     fly.finished.then(onClose).catch(onClose);
   }, [frontZ, look.h, look.w, onClose, origin, reduce, shift]);
 
   useEffect(() => {
-    if (phase === "open") closeRef.current?.focus({ preventScroll: true });
+    if (phase === "closed") bookRef.current?.focus({ preventScroll: true });
   }, [phase]);
 
   useEffect(() => {
@@ -137,6 +150,12 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
           <div
             ref={bookRef}
             className="ob-book"
+            data-phase={phase}
+            role="button"
+            tabIndex={0}
+            aria-label={phase === "open" ? undefined : `Open ${i.title ?? b.tip[0]}`}
+            onClick={openCover}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCover(); } }}
             style={{ width: W, height: H, marginLeft: -W / 2, marginTop: -H / 2, transform: flight(g, origin)[0].transform }}
           >
             {/* back board, spine, and the edges of the pages */}

@@ -154,3 +154,5 @@
 .ob-edge-h { background: repeating-linear-gradient(0deg, #efe4cb 0 1px, #d8c9a6 1px 2px); }
 .ob-x { position: fixed; top: 16px; right: 16px; z-index: 5; width: 36px; height: 36px; border-radius: 999px; background: #0a0705; color: #d4af37; border: 1px solid #d4af37; font-size: 16px; line-height: 1; cursor: pointer; animation: ob-fade .5s .6s ease both; }
 .ob-stage[data-phase="out"] .ob-x { opacity: 0; transition: opacity .2s; }
+.ob-book[data-phase="closed"] { cursor: pointer; outline: none; }
+.ob-book[data-phase="closed"]:hover { filter: drop-shadow(0 30px 40px rgba(0,0,0,.5)) brightness(1.06); }
