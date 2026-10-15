@@ -9,7 +9,7 @@ const FAMILIES = [
   ["#b5532f", "#d17247", "#823721", "#ecb99f"],
   ["#4e5a66", "#6b7886", "#34404b", "#bcc5cf"],
 ];
-const STYLES = ["bands", "label", "foil", "bands", "label", "foil"] as const;
+const STYLES = ["plain", "label", "foil", "plain", "label", "foil"] as const;
 export type SpineStyle = (typeof STYLES)[number];
 
 export function hash(s: string) {
@@ -49,12 +49,12 @@ export function lookOf(key: string, big = false, override?: string): Look {
   return { color, fg: light ? "#2a2520" : "#f6efe2", light, style, w, h };
 }
 
-/** Title font size that fits the spine. */
-export function titleSize(text: string, w: number, h: number, style: SpineStyle, arabic = true) {
-  const room = h - (style === "label" ? 150 : 112);
+/** Title font size that fits the spine, leaving room for the author's name at the foot. */
+export function titleSize(text: string, w: number, h: number, style: SpineStyle, arabic = true, authorLen = 0) {
+  const room = h - (style === "label" ? 60 : 50) - (authorLen ? authorLen * 7 + 14 : 0);
   const n = Math.max(text.length, 1);
   return arabic
-    ? Math.max(10, Math.min(19, w * 0.34, room / (n * 0.56)))
+    ? Math.max(9, Math.min(18, w * 0.3, room / (n * 0.58)))
     : Math.max(9, Math.min(14, w * 0.26, room / (n * 0.8)));
 }
 

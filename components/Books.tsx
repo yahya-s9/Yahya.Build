@@ -15,7 +15,7 @@ type Props<T> = { book: T; onOpen: (el: HTMLElement) => void };
 /** A book seen end-on. Also used as the spine of the 3D book when it is taken off the shelf. */
 export function Spine({ book: b, look }: { book: SpineBook; look: Look }) {
   const arabic = ARABIC.test(b.title);
-  const size = titleSize(b.title, look.w, look.h, look.style, arabic);
+  const size = titleSize(b.title, look.w, look.h, look.style, arabic, b.author?.length ?? 0);
   return (
     <div
       className="sp"
@@ -23,7 +23,6 @@ export function Spine({ book: b, look }: { book: SpineBook; look: Look }) {
       data-light={look.light ? "" : undefined}
       style={{ width: look.w, height: look.h, background: look.color, color: look.fg, ["--fg" as string]: look.fg }}
     >
-      {look.style === "bands" && (<><span className="sp-bands t" /><span className="sp-bands b" /></>)}
       {look.style === "foil" && <span className="sp-orn">◆</span>}
       <span className="sp-tw">
         <span className={`sp-title ${arabic ? "" : "latin"}`} style={{ fontSize: size }}>{b.title}</span>
