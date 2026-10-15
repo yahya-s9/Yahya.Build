@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import type { FlatBook, SpineBook } from "@/data/bookcase";
 import { lookOf } from "@/lib/look";
-import { Spine } from "./Books";
+import { Spine, coverBase } from "./Books";
 import CoverArt from "./CoverArt";
 
 export type OpenBook = { book: SpineBook | FlatBook; index: number };
@@ -53,7 +53,7 @@ function flight(g: Geo, el: HTMLElement) {
 
 export default function BookOpen({ open, origin, onClose }: { open: OpenBook; origin: HTMLElement; onClose: () => void }) {
   const { book: b, index } = open;
-  const look = lookOf(b.tip[0], "big" in b ? !!b.big : false);
+  const look = lookOf(b.tip[0], "big" in b ? !!b.big : false, coverBase(b.cover));
   const [g] = useState(() => measure(look.w, look.h));
   const [phase, setPhase] = useState<"in" | "closed" | "open" | "out">("in");
   const phaseRef = useRef<"in" | "closed" | "open" | "out">("in");
@@ -196,7 +196,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
 
             {/* front board: the cover outside, a bookplate inside */}
             <div ref={coverRef} className="ob-cover" style={{ transform: `${frontZ} rotateY(0deg)` }}>
-              <div className="ob-face"><CoverArt book={b} index={index} /></div>
+              <div className="ob-face"><CoverArt book={b} look={look} /></div>
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
                 {i.toc?.length ? (
                   <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: look.fg }}>

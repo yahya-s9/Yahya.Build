@@ -1,5 +1,8 @@
 import type { FlatBook, SpineBook } from "@/data/bookcase";
 import { lookOf, titleSize, type Look } from "@/lib/look";
+import { COVERS, type CoverKey } from "@/data/bookcase";
+
+export const coverBase = (k?: CoverKey) => (k ? COVERS[k]?.base : undefined);
 import Tooltip from "./Tooltip";
 
 // Colours come from data at runtime, so they are applied as inline styles
@@ -31,7 +34,7 @@ export function Spine({ book: b, look }: { book: SpineBook; look: Look }) {
 }
 
 export function SpineBookView({ book: b, onOpen }: Props<SpineBook>) {
-  const look = lookOf(b.tip[0], !!b.big);
+  const look = lookOf(b.tip[0], !!b.big, coverBase(b.cover));
   return (
     <button type="button" onClick={(e) => onOpen(e.currentTarget.querySelector<HTMLElement>(".sp") ?? e.currentTarget)} aria-label={`Open ${b.tip[0]}`} className="sp-bk group">
       <Spine book={b} look={look} />

@@ -70,8 +70,8 @@ function infoFor(title: string, f: Fields, text: string): BookInfo {
 }
 
 function spineBook(title: string, f: Fields, text: string): SpineBook {
-  const cover = (COVER_KEYS.includes(f.cover as CoverKey) ? f.cover : pick(COVER_KEYS, title)) as CoverKey;
-  const t = COVERS[cover];
+  const cover = COVER_KEYS.includes(f.cover as CoverKey) ? (f.cover as CoverKey) : undefined;
+  const t = COVERS[cover ?? pick(COVER_KEYS, title)];
   const big = f.size?.toLowerCase() === "big";
   const spineText = f.spine ?? f.ar ?? (title.length > 16 ? title.split(/\s+/).filter((w) => !/^(of|the|and|a|an|to|al-)$/i.test(w)).slice(0, 2).join(" ") : title);
   const author = (f.author?.match(/\(([^)]+)\)/)?.[1] ?? f.author?.replace(/\s*\(.*\)/, "").split(/\s+/).slice(-1)[0])?.toUpperCase();
@@ -83,20 +83,20 @@ function spineBook(title: string, f: Fields, text: string): SpineBook {
     ...(author && { author, authorColor: t.gold }),
     ...(big && { big: true }),
     tip: [escapeHtml(title), escapeHtml(f.subtitle ?? f.author ?? "")],
-    cover, info: infoFor(title, f, text),
+    ...(cover && { cover }), info: infoFor(title, f, text),
   };
 }
 
 function flatBook(title: string, f: Fields, text: string, i: number): FlatBook {
-  const cover = (COVER_KEYS.includes(f.cover as CoverKey) ? f.cover : pick(COVER_KEYS, title)) as CoverKey;
-  const t = COVERS[cover];
+  const cover = COVER_KEYS.includes(f.cover as CoverKey) ? (f.cover as CoverKey) : undefined;
+  const t = COVERS[cover ?? pick(COVER_KEYS, title)];
   return {
     size: pick(FLAT_SIZES, title, i),
     grad: [t.spine[1], t.base, t.spine[2]], edge: t.gold,
     label: f.spine ?? f.ar ?? (f.author ? `${title} • ${f.author.split(/\s+/).slice(-1)[0]}` : title),
     labelColor: t.hi, glyph: "❖", glyphColor: t.gold, overlap: i > 0,
     tip: [escapeHtml(title), escapeHtml(f.subtitle ?? f.author ?? "")],
-    cover, info: infoFor(title, f, text),
+    ...(cover && { cover }), info: infoFor(title, f, text),
   };
 }
 

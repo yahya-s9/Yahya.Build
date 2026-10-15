@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
-import { COVERS, type CoverKey, type FlatBook, type SpineBook } from "@/data/bookcase";
-
-export const COVER_KEYS = Object.keys(COVERS) as CoverKey[];
+import type { FlatBook, SpineBook } from "@/data/bookcase";
+import { coverTheme, type Look } from "@/lib/look";
 const NASTALIQ = { fontFamily: "'Noto Nastaliq Urdu', serif" };
 const SHAPES: Record<string, CSSProperties> = {
   arch: { borderRadius: "50px 50px 8px 8px" },
@@ -22,13 +21,14 @@ const Bar = () => <div className="w-0.5 h-28" style={{ background: "linear-gradi
 
 
 /** The book's front cover, filling its container (the parent sets the size). */
-export default function CoverArt({ book: b, index }: { book: SpineBook | FlatBook; index: number }) {
-  const t = COVERS[b.cover ?? COVER_KEYS[index % COVER_KEYS.length]];
+export default function CoverArt({ book: b, look }: { book: SpineBook | FlatBook; look: Look }) {
+  const t = coverTheme(look);
   const i = b.info ?? {};
   const title = i.title ?? b.tip[0];
   const author = i.author ?? ("author" in b ? b.author : "") ?? "";
   const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, width: "100%", height: "100%" } as CSSProperties;
-  const mix = (a: number) => `color-mix(in srgb,var(--deep) ${a}%,var(--base))`;
+  // on pale cloth the panels stay dark so the lettering reads
+  const mix = (a: number) => (t.light ? "var(--deep)" : `color-mix(in srgb,var(--deep) ${a}%,var(--base))`);
 
   return (
     <div style={vars}>

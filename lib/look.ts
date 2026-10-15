@@ -37,11 +37,11 @@ const luminance = (hex: string) => {
 
 export type Look = { color: string; fg: string; light: boolean; style: SpineStyle; w: number; h: number };
 
-export function lookOf(key: string, big = false): Look {
+export function lookOf(key: string, big = false, override?: string): Look {
   const r = rng(hash(key));
   const fam = FAMILIES[Math.floor(r() * FAMILIES.length)];
   const p = r();
-  const color = fam[p < 0.38 ? 0 : p < 0.7 ? 2 : p < 0.88 ? 1 : 3];
+  const color = override ?? fam[p < 0.38 ? 0 : p < 0.7 ? 2 : p < 0.88 ? 1 : 3];
   const light = luminance(color) > 0.3;
   const style = STYLES[Math.floor(r() * STYLES.length)];
   const w = big ? 72 : Math.round(38 + r() * 28);
@@ -56,4 +56,26 @@ export function titleSize(text: string, w: number, h: number, style: SpineStyle,
   return arabic
     ? Math.max(10, Math.min(19, w * 0.34, room / (n * 0.56)))
     : Math.max(9, Math.min(14, w * 0.26, room / (n * 0.8)));
+}
+
+// ---- the cover is derived from the spine's cloth, so the book is the same book on the shelf and in your hands ----
+const mixHex = (hex: string, to: string, t: number) => {
+  const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
+  const ch = (sh: number) => Math.round(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t);
+  return `#${((ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).padStart(6, "0")}`;
+};
+
+export type CoverTheme = { base: string; deep: string; spine: [string, string, string]; gold: string; hi: string; shape: "arch" | "stepped" | "oval"; light: boolean };
+
+export function coverTheme(look: Look): CoverTheme {
+  const c = look.color;
+  return {
+    base: c,
+    deep: mixHex(c, "#000000", 0.66),
+    spine: [mixHex(c, "#000000", 0.72), mixHex(c, "#000000", 0.28), mixHex(c, "#000000", 0.78)],
+    gold: "#e0bd62",
+    hi: "#fff0c4",
+    shape: look.style === "label" ? "stepped" : look.style === "foil" ? "oval" : "arch",
+    light: look.light,
+  };
 }
