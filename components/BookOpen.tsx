@@ -401,7 +401,8 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             <div ref={coverRef} className="ob-cover" style={{ transform: `${frontZ} rotateY(0deg)` }}>
               <div className="ob-face"><CoverArt book={b} look={look} /></div>
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
-                <div className="parchment gutter-r absolute" style={{ inset: 7, cursor: reading && left > 0 ? "pointer" : undefined }} onClick={reading && left > 0 ? () => flip("back") : undefined}>
+                <div className="parchment gutter-r absolute" style={{ inset: 7, cursor: reading && right > 0 ? "pointer" : undefined }}
+                  onClick={reading && right > 0 ? (e) => { if (!(e.target as HTMLElement).closest("a, button")) flip("back"); } : undefined}>
                   {left > 0 ? notesPage(left) : frontLeft}
                 </div>
               </div>
