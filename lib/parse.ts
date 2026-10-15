@@ -74,7 +74,7 @@ function spineBook(title: string, f: Fields, text: string): SpineBook {
   const t = COVERS[cover];
   const big = f.size?.toLowerCase() === "big";
   const spineText = f.spine ?? f.ar ?? (title.length > 16 ? title.split(/\s+/).filter((w) => !/^(of|the|and|a|an|to|al-)$/i.test(w)).slice(0, 2).join(" ") : title);
-  const author = f.author?.split(/\s+/).slice(-1)[0]?.toUpperCase();
+  const author = (f.author?.match(/\(([^)]+)\)/)?.[1] ?? f.author?.replace(/\s*\(.*\)/, "").split(/\s+/).slice(-1)[0])?.toUpperCase();
   return {
     size: big ? BIG_SIZE : pick(SPINE_SIZES, title, 1),
     grad: [t.spine[0], t.base, t.spine[2]],

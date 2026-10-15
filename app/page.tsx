@@ -72,7 +72,7 @@ export default async function Home() {
 </div>
 </div>
 {/* SECTION 2: Makhzan al-Kutub (The Antique Bookshelf Archive) */}
-<section className="relative w-full py-20 md:py-28 px-4 md:px-12 bg-[#fcf5eb] text-on-surface overflow-hidden" id="makhzan-al-kutub">
+<section className="relative w-full py-20 md:py-28 px-4 md:px-12 bg-[var(--section)] text-on-surface overflow-hidden" id="makhzan-al-kutub">
 {/* Subtle Parchment Backing and Lighting */}
 <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(circle_at_50%_0%,_#fffdfa_0%,_#ebdcc8_100%)]"></div>
 <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-color-burn bg-[radial-gradient(circle_at_80%_30%,_#ffddb3_0%,_transparent_50%),radial-gradient(circle_at_20%_80%,_#f2bd74_0%,_transparent_60%)]"></div>
@@ -91,23 +91,11 @@ export default async function Home() {
 
 </div>
 {/* BOOKCASE STRUCTURE */}
-<div className="w-full relative rounded-t-sm shadow-[0_25px_60px_-15px_rgba(21,14,7,0.35),0_0_0_1px_rgba(126,86,23,0.3)] bg-[#2a1b10] p-3 md:p-6 pb-4">
-{/* Outer Top Carved Arch & Crown Molding */}
-
+<div className="w-full relative">
 <Bookcase shelves={shelves} />
-{/* Base Cabinet Pedestal / Bottom Molding */}
-<div className="w-full bg-gradient-to-b from-[#24170d] via-[#1a1009] to-[#120a05] border-t border-[#3a2515] p-4 flex flex-col sm:flex-row items-center justify-between text-xs text-[#a89680] gap-3">
-<div className="flex items-center gap-2">
-
-
-</div>
-<div className="flex items-center gap-6 text-[11px] tracking-wider font-serif">
-
-
-
-</div>
-<a className="px-3 py-1 bg-[#321f11] hover:bg-[#472d19] border border-[#7e5617]/50 rounded-sm text-secondary-fixed text-[11px] font-label-sm uppercase tracking-[0.2em] transition-colors flex items-center gap-1.5" href="#">
-<span className="">Return</span>
+<div className="flex justify-end pt-2">
+<a className="px-3 py-1 border border-secondary/40 hover:bg-secondary/10 rounded-sm text-secondary text-[11px] font-label-sm uppercase tracking-[0.2em] transition-colors flex items-center gap-1.5" href="#">
+<span>Return</span>
 <span className="material-symbols-outlined text-xs">arrow_upward</span>
 </a>
 </div>

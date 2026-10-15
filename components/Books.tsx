@@ -1,4 +1,5 @@
 import type { FlatBook, SpineBook } from "@/data/bookcase";
+import { lookOf, titleSize } from "@/lib/look";
 import Tooltip from "./Tooltip";
 
 // Colours come from data at runtime, so they are applied as inline styles
@@ -9,40 +10,24 @@ const NASTALIQ = { fontFamily: "'Noto Nastaliq Urdu', serif" };
 type Props<T> = { book: T; onOpen: () => void };
 
 export function SpineBookView({ book: b, onOpen }: Props<SpineBook>) {
-  const big = !!b.big;
-  const band = { background: b.band };
+  const look = lookOf(b.tip[0], !!b.big);
+  const arabic = ARABIC.test(b.title);
+  const size = titleSize(b.title, look.w, look.h, look.style, arabic);
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`Open ${b.tip[0]}`}
-      style={{ backgroundImage: `linear-gradient(to right, ${b.grad.join(", ")})`, borderColor: b.edge }}
-      className={`book group relative flex flex-col justify-between ${b.size} text-[#f7edde] rounded-t-sm shadow-[-4px_2px_10px_rgba(0,0,0,0.5)] border-t border-r cursor-pointer hover:-translate-y-3.5 transition-all duration-300 flex-shrink-0`}
-    >
-      <div className={`band w-full ${b.bandH} opacity-85 mt-3`} style={band} />
-      <div className="mx-auto my-auto flex flex-col items-center">
-        <span
-          style={ARABIC.test(b.title) ? { color: b.titleColor, ...NASTALIQ } : { color: b.titleColor }}
-          className={`${ARABIC.test(b.title) ? `${big ? "text-base md:text-lg" : "text-sm md:text-base"} leading-[1.9] py-2` : `${big ? "text-xs md:text-sm tracking-[0.28em] py-3 font-semibold" : "text-[10px] md:text-xs tracking-[0.22em] py-2"} font-headline-sm uppercase`} [writing-mode:vertical-rl] rotate-180`}
-        >
-          {b.title}
+    <button type="button" onClick={onOpen} aria-label={`Open ${b.tip[0]}`} className="sp-bk group">
+      <div
+        className="sp"
+        data-s={look.style}
+        data-light={look.light ? "" : undefined}
+        style={{ width: look.w, height: look.h, background: look.color, color: look.fg, ["--fg" as string]: look.fg }}
+      >
+        {look.style === "bands" && (<><span className="sp-bands t" /><span className="sp-bands b" /></>)}
+        {look.style === "foil" && <span className="sp-orn">◆</span>}
+        <span className="sp-tw">
+          <span className={`sp-title ${arabic ? "" : "latin"}`} style={{ fontSize: size }}>{b.title}</span>
         </span>
-        {b.author && (
-          <span
-            style={{ color: b.authorColor }}
-            className={`${big ? "text-[9px] tracking-widest font-mono" : "text-[8px] opacity-70"} [writing-mode:vertical-rl] rotate-180 mt-1`}
-          >
-            {b.author}
-          </span>
-        )}
+        {b.author && <span className="sp-author">{b.author}</span>}
       </div>
-      <div className={`band w-full ${b.bandH} opacity-85 mb-3`} style={band} />
-      {b.ribbon && (
-        <div
-          style={{ background: b.ribbon }}
-          className={`absolute ${big ? "-bottom-5 w-2 h-7" : "-bottom-4 w-1.5 h-6"} left-1/2 -translate-x-1/2 shadow-sm rounded-b-xs pointer-events-none`}
-        />
-      )}
       <Tooltip tip={b.tip} />
     </button>
   );
@@ -55,7 +40,7 @@ export function FlatBookView({ book: b, onOpen }: Props<FlatBook>) {
       onClick={onOpen}
       aria-label={`Open ${b.tip[0]}`}
       style={{ backgroundImage: `linear-gradient(to bottom, ${b.grad.join(", ")})`, borderColor: b.edge }}
-      className={`group relative ${b.size} border-t border-l rounded-sm shadow-md flex items-center justify-between px-3 cursor-pointer hover:translate-x-1 transition-transform ${b.overlap ? "-mt-0.5" : ""}`}
+      className={`sp-flat group relative ${b.size} border-t border-l rounded-sm flex items-center justify-between px-3 cursor-pointer hover:translate-x-1 transition-transform ${b.overlap ? "-mt-0.5" : ""}`}
     >
       <span style={ARABIC.test(b.label) ? { color: b.labelColor, ...NASTALIQ } : { color: b.labelColor }} className={ARABIC.test(b.label) ? "text-sm leading-[1.9]" : "text-[9px] font-headline-sm tracking-widest uppercase"}>{b.label}</span>
       <span style={{ color: b.glyphColor }} className="text-xs">{b.glyph}</span>
