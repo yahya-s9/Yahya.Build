@@ -1,6 +1,6 @@
 export default function Tooltip({ tip: [title, sub] }: { tip: [string, string] }) {
   return (
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 hidden md:group-hover:flex z-50 pointer-events-none w-64 md:w-72 flex-col items-center filter drop-shadow-[0_12px_30px_rgba(15,10,5,0.65)]">
+    <div data-tip style={{ translate: "var(--tx, 0px) 0" }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 hidden md:group-hover:flex z-50 pointer-events-none w-64 md:w-72 flex-col items-center filter drop-shadow-[0_12px_30px_rgba(15,10,5,0.65)]">
       <div className="w-full bg-[#fdf8f0] text-[#1f1b12] border-2 border-[#7e5617] p-3.5 rounded-sm relative">
         <div className="w-full h-full border border-[#d4af37]/60 p-2 flex flex-col items-center text-center bg-[#fffdf9]/70 relative">
           <span className="absolute -top-1.5 -left-1.5 text-[8px] text-[#7e5617] leading-none">❖</span>
@@ -15,7 +15,20 @@ export default function Tooltip({ tip: [title, sub] }: { tip: [string, string] }
           <p className="font-body-md italic text-[11px] md:text-xs text-[#4d453f] leading-snug my-1" dangerouslySetInnerHTML={{ __html: sub }} />
         </div>
       </div>
-      <div className="relative -mt-2 w-3 h-3 rotate-45 bg-[#fdf8f0] border-r-2 border-b-2 border-[#7e5617]" />
+      <div style={{ translate: "calc(-1 * var(--tx, 0px)) 0" }} className="relative -mt-2 w-3 h-3 rotate-45 bg-[#fdf8f0] border-r-2 border-b-2 border-[#7e5617]" />
     </div>
   );
+}
+
+/** Keeps a tooltip on screen: nudges it sideways when the book is near an edge (the arrow still points at the book). */
+export function placeTip(e: { currentTarget: HTMLElement }) {
+  const t = e.currentTarget.querySelector<HTMLElement>("[data-tip]");
+  if (!t) return;
+  requestAnimationFrame(() => {
+    t.style.setProperty("--tx", "0px");
+    const r = t.getBoundingClientRect();
+    const pad = 12;
+    const dx = r.left < pad ? pad - r.left : r.right > window.innerWidth - pad ? window.innerWidth - pad - r.right : 0;
+    t.style.setProperty("--tx", `${dx}px`);
+  });
 }

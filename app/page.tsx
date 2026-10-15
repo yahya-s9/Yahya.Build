@@ -63,7 +63,7 @@ export default async function Home() {
 </div>
 </div>
 {/* SECTION 2: Makhzan al-Kutub (The Antique Bookshelf Archive) */}
-<section className="relative w-full py-12 md:py-16 px-4 md:px-12 bg-[var(--section)] text-on-surface overflow-hidden" id="makhzan-al-kutub">
+<section className="relative z-10 w-full pt-28 pb-12 md:pb-16 px-4 md:px-12 bg-[var(--section)] text-on-surface" id="makhzan-al-kutub">
 {/* Subtle Parchment Backing and Lighting */}
 <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(circle_at_50%_0%,_#fffdfa_0%,_#ebdcc8_100%)]"></div>
 <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-color-burn bg-[radial-gradient(circle_at_80%_30%,_#ffddb3_0%,_transparent_50%),radial-gradient(circle_at_20%_80%,_#f2bd74_0%,_transparent_60%)]"></div>
