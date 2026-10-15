@@ -155,7 +155,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             tabIndex={0}
             aria-label={phase === "open" ? undefined : `Open ${i.title ?? b.tip[0]}`}
             onClick={openCover}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCover(); } }}
+            onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCover(); } }}
             style={{ width: W, height: H, marginLeft: -W / 2, marginTop: -H / 2, transform: flight(g, origin)[0].transform }}
           >
             {/* back board, spine, and the edges of the pages */}
@@ -198,12 +198,33 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             <div ref={coverRef} className="ob-cover" style={{ transform: `${frontZ} rotateY(0deg)` }}>
               <div className="ob-face"><CoverArt book={b} index={index} /></div>
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
-                <div className="flex h-full flex-col items-center justify-center gap-2 text-center" style={{ color: look.fg }}>
-                  <span className="text-2xl opacity-80">❖</span>
-                  <p className="text-[10px] tracking-[0.35em] uppercase opacity-70">From the library of</p>
-                  <p className="font-headline-md text-xl">Yahya</p>
-                  <span className="h-px w-12 opacity-50" style={{ background: look.fg }} />
-                </div>
+                {i.toc?.length ? (
+                  <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: look.fg }}>
+                    <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
+                    <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: look.fg }} />
+                    <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
+                      {i.toc.map((e, k) => (
+                        <li key={k} className="flex gap-3">
+                          <span className="w-8 shrink-0 text-right tabular-nums opacity-55">{e.n}</span>
+                          {e.href ? (
+                            <a href={e.href} target="_blank" rel="noopener noreferrer" className="underline decoration-transparent underline-offset-2 transition hover:decoration-current">
+                              {e.title}
+                            </a>
+                          ) : (
+                            <span className="opacity-60">{e.title}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center" style={{ color: look.fg }}>
+                    <span className="text-2xl opacity-80">❖</span>
+                    <p className="text-[10px] tracking-[0.35em] uppercase opacity-70">From the library of</p>
+                    <p className="font-headline-md text-xl">Yahya</p>
+                    <span className="h-px w-12 opacity-50" style={{ background: look.fg }} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

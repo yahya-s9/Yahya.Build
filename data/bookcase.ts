@@ -5,7 +5,10 @@
 //   stack: optional horizontal books piled at the right end of the shelf
 // Add a book = add one line to books / stack.
 
+export type TocEntry = { n: string; title: string; href?: string };
+
 export type BookInfo = {
+  toc?: TocEntry[];
   ar?: string; title?: string; subtitle?: string; author?: string; authorAr?: string;
   subject?: string; school?: string; date?: string; edition?: string; binding?: string; link?: string;
 };

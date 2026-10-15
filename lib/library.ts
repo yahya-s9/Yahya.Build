@@ -1,5 +1,6 @@
 import { BOOKCASE, type Shelf } from "@/data/bookcase";
 import { parseShelf } from "./parse";
+import { parseToc, parseTreeUrl } from "./toc";
 
 const REPO = process.env.BOOKSHELF_REPO ?? "yahya-s9/Bookshelf";
 const REVALIDATE = 60; // seconds: how stale the live site may be after you push
@@ -39,7 +40,30 @@ async function fetchFromGitHub(): Promise<Record<string, Shelf>> {
     }),
   );
 
-  return Object.fromEntries(parsed);
+  const shelves = Object.fromEntries(parsed);
+  await addContents(shelves);
+  return shelves;
+}
+
+/** For books whose `link` is a GitHub folder, read that folder's README table as a table of contents. */
+async function addContents(shelves: Record<string, Shelf>) {
+  const books = Object.values(shelves).flatMap((s) => [...s.books, ...(s.stack ?? [])]);
+  await Promise.all(
+    books.map(async (b) => {
+      const t = b.info?.link ? parseTreeUrl(b.info.link) : null;
+      if (!t || !b.info) return;
+      try {
+        const enc = (p: string) => p.split("/").map(encodeURIComponent).join("/");
+        const res = await fetch(`https://raw.githubusercontent.com/${t.owner}/${t.repo}/${t.branch}/${enc(t.dir)}/README.md`, { next: { revalidate: REVALIDATE } });
+        if (!res.ok) return;
+        const fileUrl = (name: string) => `https://github.com/${t.owner}/${t.repo}/blob/${t.branch}/${enc(t.dir)}/${encodeURIComponent(name)}`;
+        const toc = parseToc(await res.text(), fileUrl);
+        if (toc.length) b.info.toc = toc;
+      } catch {
+        // no contents; the book still opens
+      }
+    }),
+  );
 }
 
 /** Live shelves from the GitHub repo; falls back to the bundled shelves if the repo is empty or unreachable. */

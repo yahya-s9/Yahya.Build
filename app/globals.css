@@ -156,3 +156,5 @@
 .ob-stage[data-phase="out"] .ob-x { opacity: 0; transition: opacity .2s; }
 .ob-book[data-phase="closed"] { cursor: pointer; outline: none; }
 .ob-book[data-phase="closed"]:hover { filter: drop-shadow(0 30px 40px rgba(0,0,0,.5)) brightness(1.06); }
+.ob-toc { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; overscroll-behavior: contain; }
+.ob-toc a { color: inherit; }
