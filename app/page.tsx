@@ -72,24 +72,11 @@ export default async function Home() {
 </div>
 </div>
 {/* SECTION 2: Makhzan al-Kutub (The Antique Bookshelf Archive) */}
-<section className="relative w-full py-20 md:py-28 px-4 md:px-12 bg-[var(--section)] text-on-surface overflow-hidden" id="makhzan-al-kutub">
+<section className="relative w-full py-12 md:py-16 px-4 md:px-12 bg-[var(--section)] text-on-surface overflow-hidden" id="makhzan-al-kutub">
 {/* Subtle Parchment Backing and Lighting */}
 <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(circle_at_50%_0%,_#fffdfa_0%,_#ebdcc8_100%)]"></div>
 <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-color-burn bg-[radial-gradient(circle_at_80%_30%,_#ffddb3_0%,_transparent_50%),radial-gradient(circle_at_20%_80%,_#f2bd74_0%,_transparent_60%)]"></div>
 <div className="relative z-10 max-w-6xl mx-auto flex flex-col items-center">
-{/* Section Header / Illuminated Cartouche */}
-<div className="text-center mb-16 flex flex-col items-center">
-<div className="flex items-center gap-3 text-secondary mb-3">
-<span className="w-2 h-2 rotate-45 bg-secondary"></span>
-
-<span className="w-2 h-2 rotate-45 bg-secondary"></span>
-</div>
-<h2 className="font-headline-lg text-headline-lg md:text-headline-xl text-primary font-serif tracking-tight mb-3">
-        Yahya's Bookshelf</h2>
-
-{/* Tadhhib Ornament Divider */}
-
-</div>
 {/* BOOKCASE STRUCTURE */}
 <div className="w-full relative">
 <Bookcase shelves={shelves} />
