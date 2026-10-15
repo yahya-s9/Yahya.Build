@@ -46,7 +46,6 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
                   <span className="text-xs text-[#7e5617]">•</span>
                   <span className="text-xs text-[#a08462] font-serif italic" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>{s.arabic}</span>
                 </div>
-                <span className="text-[10px] tracking-widest text-[#8d755b] uppercase font-mono">{s.sec}</span>
               </div>
               <div className="flex items-end justify-start gap-1 md:gap-2.5 h-[280px] md:h-[320px] px-2 pt-6 overflow-x-auto overflow-y-hidden md:overflow-visible overscroll-x-contain [-webkit-overflow-scrolling:touch]">
                 <Bookend kind={s.bookend} side="left" />
@@ -61,7 +60,7 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
             </div>
             <div className="w-full h-7 bg-gradient-to-b from-[#47301c] via-[#332112] to-[#1c120a] border-t border-[#6d4c2e] border-b border-[#0d0704] shadow-[0_12px_16px_rgba(0,0,0,0.6)] flex items-center justify-between px-6">
               <div className="w-24 h-0.5 bg-[#69482b]" />
-              {s.plinth ? <div className="px-4 py-0.5 bg-[#24160d] border border-[#7e5617]/40 rounded-xs text-[9px] uppercase tracking-[0.25em] text-[#d4af37]">{s.plinth}</div> : <div className="text-[#7e5617] text-xs">❖</div>}
+              <div className="text-[#7e5617] text-xs">❖</div>
               <div className="w-24 h-0.5 bg-[#69482b]" />
             </div>
           </div>

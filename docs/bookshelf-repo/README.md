@@ -12,7 +12,6 @@ Every **folder** is a **shelf**. Put one Markdown file in it (`books.md`, `index
 ---
 title: Diwan & Poetry        # optional, overrides the folder name
 arabic: دیوان و ادب          # optional, script label on the shelf
-plinth: Rukn al-Adab         # optional, plaque on the shelf edge
 bookend: brass               # optional: brass | wood (default wood)
 ---
 

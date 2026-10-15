@@ -39,15 +39,7 @@ async function fetchFromGitHub(): Promise<Record<string, Shelf>> {
     }),
   );
 
-  // Auto "Sec." ranges for shelves that don't set one
-  let n = 0;
-  return Object.fromEntries(
-    parsed.map(([name, shelf]) => {
-      const start = n + 1;
-      n += shelf.books.length + (shelf.stack?.length ?? 0);
-      return [name, { ...shelf, sec: shelf.sec ?? (n >= start ? `Sec. ${String(start).padStart(2, "0")}–${String(n).padStart(2, "0")}` : undefined) }];
-    }),
-  );
+  return Object.fromEntries(parsed);
 }
 
 /** Live shelves from the GitHub repo; falls back to the bundled shelves if the repo is empty or unreachable. */
