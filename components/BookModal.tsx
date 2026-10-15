@@ -57,12 +57,12 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
       aria-modal="true"
       aria-label={title}
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 backdrop-blur-sm bg-[#0a0705]/65 overflow-y-auto py-8 sm:py-12"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 backdrop-blur-sm bg-[#0a0705]/65 overflow-y-auto py-6 sm:py-8"
     >
-      <div className="relative z-10 w-full max-w-2xl lg:max-w-3xl my-auto flex flex-col items-center" style={vars}>
+      <div className="relative z-10 w-full max-w-lg lg:max-w-xl my-auto flex flex-col items-center" style={vars}>
         <MaybeLink href={i.link}>
         <div
-          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex min-h-[720px] md:min-h-[780px]"
+          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex h-[min(82dvh,660px)] min-h-[460px]"
           style={{ background: t.spine[0], border: `4px solid ${t.spine[1]}`, boxShadow: "inset 0 0 50px rgba(0,0,0,.95),0 0 0 2px var(--gold)" }}
         >
           {/* Spine */}
@@ -106,7 +106,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                   <div className="relative -top-3 flex items-center gap-2 text-sm" style={{ color: "var(--gold)" }}><span className="text-xs">❖</span><span className="text-base font-serif">۞</span><span className="text-xs">❖</span></div>
                   {i.ar && (
                     <>
-                      <h1 className="font-normal text-3xl sm:text-4xl md:text-5xl leading-[1.8] my-2" style={{ ...NASTALIQ, color: "var(--hi)", textShadow: "0 3px 10px color-mix(in srgb,var(--gold) 50%,transparent)" }}>{i.ar}</h1>
+                      <h1 className="font-normal text-3xl sm:text-4xl leading-[1.7] my-2" style={{ ...NASTALIQ, color: "var(--hi)", textShadow: "0 3px 10px color-mix(in srgb,var(--gold) 50%,transparent)" }}>{i.ar}</h1>
                       <div className="flex items-center justify-center gap-4 w-4/5 my-3 opacity-95">
                         <Rule />
                         <div className="flex items-center gap-2" style={{ color: "var(--gold)" }}><span className="text-[10px]">✦</span><span className="text-sm">❖</span><span className="text-[10px]">✦</span></div>
@@ -114,7 +114,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                       </div>
                     </>
                   )}
-                  <h2 className="font-headline-lg text-xl sm:text-2xl md:text-3xl tracking-[0.2em] uppercase font-semibold text-[#fff4d1]" style={{ textShadow: "0 2px 6px rgba(0,0,0,.95)" }} dangerouslySetInnerHTML={{ __html: title }} />
+                  <h2 className="font-headline-lg text-lg sm:text-xl md:text-2xl tracking-[0.2em] uppercase font-semibold text-[#fff4d1]" style={{ textShadow: "0 2px 6px rgba(0,0,0,.95)" }} dangerouslySetInnerHTML={{ __html: title }} />
                 </div>
 
                 {/* Author */}
