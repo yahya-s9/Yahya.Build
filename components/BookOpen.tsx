@@ -142,9 +142,12 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
 
 
   // ---- reading the notes inside the book ----
-  // right = the page on the right-hand side; the left-hand side shows the page before it (0 = the contents).
-  const [reading, setReading] = useState<{ entry: TocEntry; doc: NotesDoc | null; failed?: boolean } | null>(null);
-  const [right, setRight] = useState(1);
+  // right = the page on the right-hand side (0 = the title page); the left-hand side shows the page before it (0 = the contents).
+  const firstNote = i.toc?.find((e) => e.href);
+  const [reading, setReading] = useState<{ entry: TocEntry; doc: NotesDoc | null; failed?: boolean } | null>(
+    firstNote ? { entry: firstNote, doc: null } : null,
+  );
+  const [right, setRight] = useState(0);
   const [left, setLeft] = useState(0);
   const [leaf, setLeaf] = useState<{ page: number; dir: "fwd" | "back" } | null>(null);
   const [images, setImages] = useState<Record<number, string>>({});
@@ -152,44 +155,66 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   const flipping = useRef(false);
   const doc = reading?.doc ?? null;
 
-  const startReading = (entry: TocEntry) => {
+  const load = useCallback((entry: TocEntry) => {
     if (!entry.href) return;
     setImages({});
-    setRight(1);
-    setLeft(0);
     setReading({ entry, doc: null });
     openNotes(entry.href)
       .then((d) => setReading((r) => (r && r.entry === entry ? { ...r, doc: d } : r)))
       .catch(() => setReading((r) => (r && r.entry === entry ? { ...r, failed: true } : r)));
-  };
-  const stopReading = () => {
-    if (flipping.current) return;
-    setReading(null);
-    setLeaf(null);
-  };
+  }, []);
+
+  // start fetching the first set of notes as soon as the book is in your hands
+  useEffect(() => {
+    if (firstNote && phase === "closed") load(firstNote);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase === "closed"]);
 
   // draw the pages around the one you're on, ahead of time
   useEffect(() => {
-    if (!doc) return;
+    if (!doc || right < 1) return;
     for (const n of [right, right - 1, right + 1, right + 2]) {
       if (n < 1 || n > doc.pages) continue;
       doc.render(n).then((img) => setImages((prev) => (prev[n] ? prev : { ...prev, [n]: img }))).catch(() => {});
     }
   }, [doc, right]);
 
-  const flip = useCallback((dir: "fwd" | "back") => {
-    if (!doc || flipping.current || phaseRef.current !== "open") return;
-    if (dir === "fwd" && right >= doc.pages) return;
-    if (dir === "back" && right <= 1) return;
+  const turn = useCallback((dir: "fwd" | "back", page: number, then: () => void) => {
     flipping.current = true;
-    if (reduce) {
-      if (dir === "fwd") { setLeft(right); setRight(right + 1); } else { setRight(right - 1); setLeft(right - 2); }
-      flipping.current = false;
-      return;
+    if (reduce) { then(); flipping.current = false; return; }
+    setLeaf({ page, dir });
+    leafDone.current = then;
+  }, [reduce]);
+  const leafDone = useRef<() => void>(() => {});
+
+  const flip = useCallback((dir: "fwd" | "back") => {
+    if (!reading || flipping.current || phaseRef.current !== "open") return;
+    const pages = doc?.pages ?? Infinity;
+    if (dir === "fwd") {
+      if (right === 0) {
+        // the title page turns over; its back is the contents, so the contents stay in view
+        turn("fwd", 0, () => { setLeft(0); setRight(1); });
+        setRight(1);
+      } else if (right < pages) {
+        turn("fwd", right, () => setLeft(right));
+        setRight(right + 1);
+      } else {
+        // the end of these notes: go on to the next set
+        const list = (i.toc ?? []).filter((e) => e.href);
+        const next = list[list.findIndex((e) => e === reading.entry) + 1];
+        if (next) { setLeft(0); setRight(1); load(next); }
+      }
+    } else {
+      if (right === 0) return;
+      if (right === 1) {
+        // back to the title page
+        turn("back", 0, () => { setRight(0); setLeft(0); });
+      } else {
+        turn("back", right - 1, () => setRight(right - 1));
+        setLeft(right - 2);
+      }
     }
-    if (dir === "fwd") { setLeaf({ page: right, dir }); setRight(right + 1); }
-    else { setLeaf({ page: right - 1, dir }); setLeft(right - 2); }
-  }, [doc, reduce, right]);
+  }, [doc, i.toc, load, reading, right, turn]);
 
   // the turning leaf: hinged on the spine, it carries one page across
   useLayoutEffect(() => {
@@ -202,11 +227,18 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       { duration: 780, easing: EASE_IN_OUT, fill: "forwards" },
     );
     a.finished.then(() => {
-      if (leaf.dir === "fwd") setLeft(leaf.page); else setRight(leaf.page);
+      leafDone.current();
       setLeaf(null);
       flipping.current = false;
     }).catch(() => { flipping.current = false; });
   }, [leaf, g.D]);
+
+  // back to the title page, from anywhere
+  const toFront = () => {
+    if (flipping.current) return;
+    setRight(0);
+    setLeft(0);
+  };
 
   useEffect(() => {
     if (!reading) return;
@@ -217,6 +249,81 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [reading, flip]);
+
+  // clicking a chapter in the contents: jump straight to it
+  const startReading = (entry: TocEntry) => {
+    if (flipping.current) return;
+    if (right === 0) {
+      turn("fwd", 0, () => { setLeft(0); setRight(1); });
+      setRight(1);
+    } else {
+      setLeft(0);
+      setRight(1);
+    }
+    load(entry);
+  };
+
+  const detailsPage = (
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-8 py-10 text-center">
+                  <span className="text-xs tracking-[0.4em]" style={{ color: look.color }}>❖ ✦ ❖</span>
+                  {i.ar && <h2 className="text-3xl leading-[1.8]" style={{ ...NASTALIQ, color: "#2f2012" }}>{i.ar}</h2>}
+                  <h3 className="font-headline-md text-lg tracking-[0.12em] uppercase" dangerouslySetInnerHTML={{ __html: i.title ?? b.tip[0] }} />
+                  <div className="h-px w-16" style={{ background: look.color, opacity: 0.5 }} />
+                  <p className="font-serif text-base">{author}</p>
+                  {i.authorAr && <p className="text-sm" style={{ ...NASTALIQ, lineHeight: 1.9 }}>{i.authorAr}</p>}
+                  {i.subject && <p className="font-serif text-sm italic opacity-80 max-w-[17rem]">“{i.subject}”</p>}
+                  {i.link && (
+                    <a
+                      href={i.link}
+                      onClick={(e) => e.stopPropagation()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 rounded-sm px-4 py-2 text-[11px] uppercase tracking-[0.25em] transition-opacity hover:opacity-85"
+                      style={{ background: look.color, color: look.fg }}
+                    >
+                      Open my notes ↗
+                    </a>
+                  )}
+                </div>
+  );
+  const frontLeft = (
+    i.toc?.length ? (
+      <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: "#3a2a18" }}>
+        <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
+        <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: "#3a2a18" }} />
+        <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
+          {i.toc.map((e, k) => (
+            <li key={k} className="flex gap-3">
+              <span className="w-8 shrink-0 text-right tabular-nums opacity-55">{e.n}</span>
+              {e.href ? (
+                <span className="flex-1">
+                  <button type="button" onClick={() => startReading(e)} className="text-left underline decoration-transparent underline-offset-2 transition hover:decoration-current" style={{ fontWeight: right > 0 && reading?.entry === e ? 700 : undefined }}>
+                    {e.title}
+                  </button>
+                  <a href={e.href} target="_blank" rel="noopener noreferrer" aria-label="Open the PDF on GitHub" className="ml-2 opacity-40 hover:opacity-80">↗</a>
+                </span>
+              ) : (
+                <span className="opacity-60">{e.title}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+    ) : (
+      <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: "#3a2a18" }}>
+        <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
+        <p
+          dir="rtl"
+          lang="ar"
+          className="text-[2.1rem] leading-[2.3]"
+          style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}
+        >
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </p>
+        <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
+      </div>
+    )
+  );
 
   const notesPage = (n: number) => (
     <div className="absolute inset-0">
@@ -266,45 +373,23 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
               style={{ width: W - 9, height: H - 12, top: 6, left: 1, transform: `translateZ(${D / 2 - 2}px)`, cursor: reading ? "pointer" : undefined }}
               onClick={reading ? () => flip("fwd") : undefined}
             >
-              {reading ? (
-                reading.failed ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center font-serif text-sm">
-                    <p>These notes couldn’t be loaded.</p>
-                    <a href={reading.entry.href} target="_blank" rel="noopener noreferrer" className="underline">Open on GitHub ↗</a>
-                  </div>
-                ) : (
-                  notesPage(right)
-                )
-              ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-3 px-8 py-10 text-center">
-                  <span className="text-xs tracking-[0.4em]" style={{ color: look.color }}>❖ ✦ ❖</span>
-                  {i.ar && <h2 className="text-3xl leading-[1.8]" style={{ ...NASTALIQ, color: "#2f2012" }}>{i.ar}</h2>}
-                  <h3 className="font-headline-md text-lg tracking-[0.12em] uppercase" dangerouslySetInnerHTML={{ __html: i.title ?? b.tip[0] }} />
-                  <div className="h-px w-16" style={{ background: look.color, opacity: 0.5 }} />
-                  <p className="font-serif text-base">{author}</p>
-                  {i.authorAr && <p className="text-sm" style={{ ...NASTALIQ, lineHeight: 1.9 }}>{i.authorAr}</p>}
-                  {i.subject && <p className="font-serif text-sm italic opacity-80 max-w-[17rem]">“{i.subject}”</p>}
-                  {i.link && (
-                    <a
-                      href={i.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 rounded-sm px-4 py-2 text-[11px] uppercase tracking-[0.25em] transition-opacity hover:opacity-85"
-                      style={{ background: look.color, color: look.fg }}
-                    >
-                      Open my notes ↗
-                    </a>
-                  )}
+              {right === 0 ? (
+                detailsPage
+              ) : reading?.failed ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center font-serif text-sm">
+                  <p>These notes couldn’t be loaded.</p>
+                  <a href={reading.entry.href} target="_blank" rel="noopener noreferrer" className="underline" onClick={(e) => e.stopPropagation()}>Open on GitHub ↗</a>
                 </div>
-  
+              ) : (
+                notesPage(right)
               )}
             </div>
 
             {/* the leaf that turns */}
             {leaf && (
               <div ref={leafRef} className="ob-leaf" style={{ width: W - 9, height: H - 12, top: 6, left: 1, transform: `translateZ(${D / 2 + 1}px) rotateY(${leaf.dir === "fwd" ? 0 : -180}deg)` }}>
-                <div className="ob-face parchment gutter-l">{notesPage(leaf.page)}</div>
-                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{notesPage(leaf.page)}</div>
+                <div className="ob-face parchment gutter-l">{leaf.page === 0 ? detailsPage : notesPage(leaf.page)}</div>
+                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{leaf.page === 0 ? frontLeft : notesPage(leaf.page)}</div>
               </div>
             )}
 
@@ -313,42 +398,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
               <div className="ob-face"><CoverArt book={b} look={look} /></div>
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
                 <div className="parchment gutter-r absolute" style={{ inset: 7, cursor: reading && left > 0 ? "pointer" : undefined }} onClick={reading && left > 0 ? () => flip("back") : undefined}>
-                {reading && left > 0 ? notesPage(left) : i.toc?.length ? (
-                  <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: "#3a2a18" }}>
-                    <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
-                    <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: "#3a2a18" }} />
-                    <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
-                      {i.toc.map((e, k) => (
-                        <li key={k} className="flex gap-3">
-                          <span className="w-8 shrink-0 text-right tabular-nums opacity-55">{e.n}</span>
-                          {e.href ? (
-                            <span className="flex-1">
-                              <button type="button" onClick={() => startReading(e)} className="text-left underline decoration-transparent underline-offset-2 transition hover:decoration-current" style={{ fontWeight: reading?.entry === e ? 700 : undefined }}>
-                                {e.title}
-                              </button>
-                              <a href={e.href} target="_blank" rel="noopener noreferrer" aria-label="Open the PDF on GitHub" className="ml-2 opacity-40 hover:opacity-80">↗</a>
-                            </span>
-                          ) : (
-                            <span className="opacity-60">{e.title}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: "#3a2a18" }}>
-                    <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
-                    <p
-                      dir="rtl"
-                      lang="ar"
-                      className="text-[2.1rem] leading-[2.3]"
-                      style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}
-                    >
-                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                    </p>
-                    <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
-                  </div>
-                )}
+                  {left > 0 ? notesPage(left) : frontLeft}
                 </div>
               </div>
             </div>
@@ -357,10 +407,10 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       </div>
       {reading && phase === "open" && (
         <div className="ob-bar">
-          <button type="button" onClick={stopReading}>Contents</button>
-          <button type="button" onClick={() => flip("back")} disabled={!doc || right <= 1} aria-label="Previous page">‹</button>
-          <span>{doc ? `${right} / ${doc.pages}` : reading.failed ? "—" : "…"}</span>
-          <button type="button" onClick={() => flip("fwd")} disabled={!doc || right >= doc.pages} aria-label="Next page">›</button>
+          <button type="button" onClick={toFront} disabled={right === 0}>Contents</button>
+          <button type="button" onClick={() => flip("back")} disabled={right === 0} aria-label="Previous page">‹</button>
+          <span>{right === 0 ? "Title" : doc ? `${right} / ${doc.pages}` : reading.failed ? "—" : "…"}</span>
+          <button type="button" onClick={() => flip("fwd")} aria-label="Next page">›</button>
         </div>
       )}
       <button ref={closeRef} type="button" onClick={close} aria-label="Close" className="ob-x">✕</button>
