@@ -122,13 +122,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                   <p className="font-headline-md text-base sm:text-lg md:text-xl text-white font-medium tracking-[0.06em] leading-snug">{author}</p>
                   {i.authorAr && <span className="text-sm md:text-base italic mt-1 text-[#fed7aa]" style={NASTALIQ}>{i.authorAr}</span>}
                 </div>
-
-                {/* Subject */}
-                {i.subject && (
-                  <div className="relative w-full my-2 rounded-sm p-4 sm:p-5 shadow-inner flex flex-col items-center text-center" style={{ border: "1px solid var(--gold)", background: mix(85) }}>
-                    <p className="text-sm sm:text-base text-[#fdf2e9] leading-relaxed italic max-w-md font-serif">“{i.subject}”</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
