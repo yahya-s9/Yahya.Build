@@ -327,44 +327,46 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
                   {i.subject && <p className="font-serif text-sm italic opacity-80 max-w-[17rem]">“{i.subject}”</p>}
                 </div>
   );
-  const frontLeft = (
-    i.toc?.length ? (
-      <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: "#3a2a18" }}>
-        <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
-        <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: "#3a2a18" }} />
-        <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
-          {i.toc.map((e, k) => (
-            <li key={k} className="flex gap-3">
-              <span className="w-8 shrink-0 text-right tabular-nums opacity-55">{e.n}</span>
-              {e.href ? (
-                <span className="flex-1">
-                  <button type="button" onClick={() => startReading(e)} className="text-left underline decoration-transparent underline-offset-2 transition hover:decoration-current" style={{ fontWeight: right > 0 && reading?.entry === e ? 700 : undefined }}>
-                    {e.title}
-                  </button>
-                  <a href={e.href} target="_blank" rel="noopener noreferrer" aria-label="Open the PDF on GitHub" className="ml-2 opacity-40 hover:opacity-80">↗</a>
-                </span>
-              ) : (
-                <span className="opacity-60">{e.title}</span>
-              )}
-            </li>
-          ))}
-        </ol>
-      </div>
-    ) : (
-      <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: "#3a2a18" }}>
-        <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
-        <p
-          dir="rtl"
-          lang="ar"
-          className="text-[2.1rem] leading-[2.3]"
-          style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}
-        >
-          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-        </p>
-        <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
-      </div>
-    )
+  const tocPage = (
+    <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: "#3a2a18" }}>
+      <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
+      <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: "#3a2a18" }} />
+      <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
+        {(i.toc ?? []).map((e, k) => (
+          <li key={k} className="flex gap-3">
+            <span className="w-8 shrink-0 text-right tabular-nums opacity-55">{e.n}</span>
+            {e.href ? (
+              <span className="flex-1">
+                <button type="button" onClick={() => startReading(e)} className="text-left underline decoration-transparent underline-offset-2 transition hover:decoration-current" style={{ fontWeight: right > 0 && reading?.entry === e ? 700 : undefined }}>
+                  {e.title}
+                </button>
+                <a href={e.href} target="_blank" rel="noopener noreferrer" aria-label="Open the PDF on GitHub" className="ml-2 opacity-40 hover:opacity-80">↗</a>
+              </span>
+            ) : (
+              <span className="opacity-60">{e.title}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
   );
+  // the first page of every book
+  const bismillahPage = (
+    <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: "#3a2a18" }}>
+      <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
+      <p
+        dir="rtl"
+        lang="ar"
+        className="text-[2.1rem] leading-[2.3]"
+        style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}
+      >
+        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+      </p>
+      <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
+    </div>
+  );
+  // the left-hand page: the Bismillah, until the title page has been turned; then the contents (if the book has notes)
+  const leftPage = reading && right > 0 && leaf?.page !== 0 ? tocPage : bismillahPage;
 
   const notesPage = (n: number) => (
     <div className="absolute inset-0">
@@ -430,7 +432,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             {leaf && (
               <div ref={leafRef} className="ob-leaf" style={{ width: W - 9, height: H - 12, top: 6, left: 1, transform: `translateZ(${D / 2 + 1}px) rotateY(${leaf.dir === "fwd" ? 0 : -180}deg)` }}>
                 <div className="ob-face parchment gutter-l">{leaf.page === 0 ? detailsPage : notesPage(leaf.page)}</div>
-                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{leaf.page === 0 ? frontLeft : notesPage(leaf.page + 1)}</div>
+                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{leaf.page === 0 ? tocPage : notesPage(leaf.page + 1)}</div>
               </div>
             )}
 
@@ -440,7 +442,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
                 <div className="parchment gutter-r absolute" style={{ inset: 7, cursor: reading && right > 0 ? "pointer" : undefined }}
                   onClick={reading && right > 0 ? (e) => { if (!(e.target as HTMLElement).closest("a, button")) flip("back"); } : undefined}>
-                  {left > 0 ? notesPage(left) : frontLeft}
+                  {left > 0 ? notesPage(left) : leftPage}
                 </div>
               </div>
             </div>

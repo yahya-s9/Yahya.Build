@@ -67,6 +67,13 @@ export default function MobileReader({ title, info, author, color }: { title: st
 
   return (
     <div ref={scroller} className="ob-reader parchment" role="dialog" aria-label={title}>
+      <div className="flex flex-col items-center gap-4 px-6 pb-8 pt-14 text-center" style={{ color: "#3a2a18" }}>
+        <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
+        <p dir="rtl" lang="ar" className="text-[1.9rem] leading-[2.3]" style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}>
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </p>
+        <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
+      </div>
       <div className="flex flex-col items-center gap-3 px-7 pb-8 pt-10 text-center" style={{ color: "#3a2a18" }}>
         <span className="text-xs tracking-[0.4em]" style={{ color }}>❖ ✦ ❖</span>
         {info.ar && <h2 className="text-3xl leading-[1.8]" style={{ ...NASTALIQ, color: "#2f2012" }}>{info.ar}</h2>}
