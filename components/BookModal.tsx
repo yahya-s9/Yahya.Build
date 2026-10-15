@@ -48,7 +48,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, filter: "drop-shadow(0 35px 80px rgba(0,0,0,.98))" } as CSSProperties;
+  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, filter: "drop-shadow(0 35px 80px rgba(0,0,0,.98))", width: "min(92vw, calc(min(82dvh, 660px) * 0.68))" } as CSSProperties;
   const mix = (a: number) => `color-mix(in srgb,var(--deep) ${a}%,var(--base))`;
 
   return (
@@ -59,10 +59,10 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
       onClick={(e) => e.target === e.currentTarget && onClose()}
       className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 backdrop-blur-sm bg-[#0a0705]/65 overflow-y-auto py-6 sm:py-8"
     >
-      <div className="relative z-10 w-full max-w-lg lg:max-w-xl my-auto flex flex-col items-center" style={vars}>
+      <div className="relative z-10 my-auto flex flex-col items-center" style={vars}>
         <MaybeLink href={i.link}>
         <div
-          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex h-[min(82dvh,660px)] min-h-[460px]"
+          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex aspect-[2/3]"
           style={{ background: t.spine[0], border: `4px solid ${t.spine[1]}`, boxShadow: "inset 0 0 50px rgba(0,0,0,.95),0 0 0 2px var(--gold)" }}
         >
           {/* Spine */}
@@ -78,10 +78,10 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
           </div>
 
           {/* Cover board */}
-          <div className="relative flex-1 rounded-xs p-3 sm:p-5 md:p-6 flex flex-col justify-between overflow-hidden" style={{ background: "var(--base)", border: "2px solid var(--gold)", boxShadow: "inset 0 0 45px rgba(0,0,0,.9)" }}>
+          <div className="relative flex-1 rounded-xs p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden" style={{ background: "var(--base)", border: "2px solid var(--gold)", boxShadow: "inset 0 0 45px rgba(0,0,0,.9)" }}>
             <div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: "radial-gradient(circle at 30% 25%,var(--gold),transparent 45%),radial-gradient(circle at 70% 75%,var(--deep),transparent 55%)", mixBlendMode: "soft-light" }} />
-            <div className="relative z-10 w-full h-full p-2 sm:p-3.5 flex flex-col justify-between gap-3" style={{ border: "2px solid var(--hi)", background: mix(55), boxShadow: "0 0 0 2px var(--gold),inset 0 0 0 2px var(--gold)" }}>
-              <div className="w-full h-full p-3 sm:p-5 md:p-6 flex flex-col justify-between relative rounded-xs shadow-inner" style={{ border: "2px solid var(--hi)", background: `linear-gradient(180deg,${mix(70)},var(--base) 50%,${mix(75)})` }}>
+            <div className="relative z-10 w-full h-full p-2 sm:p-2.5 flex flex-col justify-between gap-3" style={{ border: "2px solid var(--hi)", background: mix(55), boxShadow: "0 0 0 2px var(--gold),inset 0 0 0 2px var(--gold)" }}>
+              <div className="w-full h-full p-3 sm:p-4 flex flex-col justify-between relative rounded-xs shadow-inner" style={{ border: "2px solid var(--hi)", background: `linear-gradient(180deg,${mix(70)},var(--base) 50%,${mix(75)})` }}>
                 <div className="absolute -top-1.5 -left-1.5 pointer-events-none"><Corner /></div>
                 <div className="absolute -top-1.5 -right-1.5 pointer-events-none"><Corner className="rotate-90" /></div>
                 <div className="absolute -bottom-1.5 -left-1.5 pointer-events-none"><Corner className="-rotate-90" /></div>
@@ -100,13 +100,13 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
 
                 {/* Title cartouche */}
                 <div
-                  className="relative w-full my-2 p-5 sm:p-7 md:p-8 flex flex-col items-center text-center"
+                  className="relative w-full my-2 p-4 sm:p-5 flex flex-col items-center text-center"
                   style={{ ...SHAPES[t.shape], border: "2px solid var(--gold)", background: `linear-gradient(180deg,var(--deep),${mix(60)},var(--deep))`, boxShadow: "inset 0 0 30px rgba(0,0,0,.9),0 6px 20px rgba(0,0,0,.7)" }}
                 >
                   <div className="relative -top-3 flex items-center gap-2 text-sm" style={{ color: "var(--gold)" }}><span className="text-xs">❖</span><span className="text-base font-serif">۞</span><span className="text-xs">❖</span></div>
                   {i.ar && (
                     <>
-                      <h1 className="font-normal text-3xl sm:text-4xl leading-[1.7] my-2" style={{ ...NASTALIQ, color: "var(--hi)", textShadow: "0 3px 10px color-mix(in srgb,var(--gold) 50%,transparent)" }}>{i.ar}</h1>
+                      <h1 className="font-normal text-2xl sm:text-3xl leading-[1.7] my-2" style={{ ...NASTALIQ, color: "var(--hi)", textShadow: "0 3px 10px color-mix(in srgb,var(--gold) 50%,transparent)" }}>{i.ar}</h1>
                       <div className="flex items-center justify-center gap-4 w-4/5 my-3 opacity-95">
                         <Rule />
                         <div className="flex items-center gap-2" style={{ color: "var(--gold)" }}><span className="text-[10px]">✦</span><span className="text-sm">❖</span><span className="text-[10px]">✦</span></div>
@@ -118,9 +118,9 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                 </div>
 
                 {/* Author */}
-                <div className="relative w-full my-3 py-3.5 px-6 rounded-sm flex flex-col items-center text-center" style={{ border: "2px solid var(--gold)", background: `linear-gradient(90deg,var(--deep),${mix(60)},var(--deep))`, boxShadow: "inset 0 0 20px rgba(0,0,0,.85)" }}>
-                  <p className="font-headline-md text-base sm:text-lg md:text-xl text-white font-medium tracking-[0.06em] leading-snug">{author}</p>
-                  {i.authorAr && <span className="text-sm md:text-base italic mt-1 text-[#fed7aa]" style={NASTALIQ}>{i.authorAr}</span>}
+                <div className="relative w-full my-2 py-2.5 px-4 rounded-sm flex flex-col items-center text-center" style={{ border: "2px solid var(--gold)", background: `linear-gradient(90deg,var(--deep),${mix(60)},var(--deep))`, boxShadow: "inset 0 0 20px rgba(0,0,0,.85)" }}>
+                  <p className="font-headline-md text-sm sm:text-base text-white font-medium tracking-[0.04em] leading-snug">{author}</p>
+                  {i.authorAr && <span className="text-xs sm:text-sm italic mt-1 text-[#fed7aa] leading-[1.9]" style={NASTALIQ}>{i.authorAr}</span>}
                 </div>
               </div>
             </div>
