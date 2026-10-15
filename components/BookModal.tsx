@@ -38,9 +38,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
   const t = COVERS[b.cover ?? COVER_KEYS[index % COVER_KEYS.length]];
   const i = b.info ?? {};
   const title = i.title ?? b.tip[0];
-  const sub = i.subtitle ?? b.tip[1];
   const author = i.author ?? ("author" in b ? b.author : "") ?? "";
-  const metas = [i.school, i.date, i.edition].filter(Boolean) as string[];
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -117,7 +115,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                     </>
                   )}
                   <h2 className="font-headline-lg text-xl sm:text-2xl md:text-3xl tracking-[0.2em] uppercase font-semibold text-[#fff4d1]" style={{ textShadow: "0 2px 6px rgba(0,0,0,.95)" }} dangerouslySetInnerHTML={{ __html: title }} />
-                  <span className="text-xs md:text-sm tracking-[0.3em] uppercase mt-2 font-serif opacity-90" style={{ color: "var(--gold)" }}>{sub}</span>
                 </div>
 
                 {/* Author */}
@@ -126,28 +123,10 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
                   {i.authorAr && <span className="text-sm md:text-base italic mt-1 text-[#fed7aa]" style={NASTALIQ}>{i.authorAr}</span>}
                 </div>
 
-                {/* Subject + meta */}
+                {/* Subject */}
                 {i.subject && (
                   <div className="relative w-full my-2 rounded-sm p-4 sm:p-5 shadow-inner flex flex-col items-center text-center" style={{ border: "1px solid var(--gold)", background: mix(85) }}>
                     <p className="text-sm sm:text-base text-[#fdf2e9] leading-relaxed italic max-w-md font-serif">“{i.subject}”</p>
-                    {metas.length > 0 && (
-                      <div className="flex items-center justify-between w-full mt-3 pt-2 text-xs tracking-[0.22em] uppercase" style={{ borderTop: "1px solid color-mix(in srgb,var(--gold) 30%,transparent)", color: "var(--gold)" }}>
-                        {metas.flatMap((m, k) => (k ? [<span key={`d${k}`}>•</span>, <span key={m}>{m}</span>] : [<span key={m}>{m}</span>]))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Binding footer */}
-                {i.binding && (
-                  <div className="w-full pt-3">
-                    <div className="w-full py-2.5 px-4 rounded-xs flex items-center justify-between text-xs sm:text-sm tracking-wider text-[#e2d9ca] font-serif" style={{ background: "var(--deep)", border: "1px solid color-mix(in srgb,var(--gold) 70%,transparent)" }}>
-                      <span className="flex items-center gap-2" style={{ color: "var(--gold)" }}>
-                        <span className="material-symbols-outlined text-base">verified</span>
-                        <span dangerouslySetInnerHTML={{ __html: b.tip[0] }} />
-                      </span>
-                      <span style={{ color: "var(--hi)" }}>Bound in {i.binding}</span>
-                    </div>
                   </div>
                 )}
               </div>
