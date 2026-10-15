@@ -138,3 +138,19 @@
 
 /* ---- dark mode: calm the hero's blend overlays ---- */
 [data-theme="dark"] .mix-blend-multiply, [data-theme="dark"] .mix-blend-color-burn { display: none; }
+
+/* ================= book taken off the shelf ================= */
+.ob-stage { position: fixed; inset: 0; z-index: 100; }
+.ob-backdrop { position: absolute; inset: 0; background: rgba(10, 7, 5, .66); backdrop-filter: blur(3px); animation: ob-fade .4s ease both; }
+.ob-stage[data-phase="out"] .ob-backdrop { animation: ob-fade .5s .3s ease reverse both; }
+@keyframes ob-fade { from { opacity: 0; } }
+.ob-world { position: absolute; inset: 0; perspective: 2200px; pointer-events: none; }
+.ob-shift, .ob-book, .ob-cover { transform-style: preserve-3d; }
+.ob-shift { position: absolute; inset: 0; }
+.ob-book { position: absolute; left: 50%; top: 50%; pointer-events: auto; will-change: transform; filter: drop-shadow(0 30px 40px rgba(0,0,0,.5)); }
+.ob-face { position: absolute; inset: 0; backface-visibility: hidden; }
+.ob-cover { position: absolute; inset: 0; transform-origin: 0 50%; }
+.ob-edge { background: repeating-linear-gradient(90deg, #efe4cb 0 1px, #d8c9a6 1px 2px); }
+.ob-edge-h { background: repeating-linear-gradient(0deg, #efe4cb 0 1px, #d8c9a6 1px 2px); }
+.ob-x { position: fixed; top: 16px; right: 16px; z-index: 5; width: 36px; height: 36px; border-radius: 999px; background: #0a0705; color: #d4af37; border: 1px solid #d4af37; font-size: 16px; line-height: 1; cursor: pointer; animation: ob-fade .5s .6s ease both; }
+.ob-stage[data-phase="out"] .ob-x { opacity: 0; transition: opacity .2s; }

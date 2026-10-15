@@ -1,11 +1,7 @@
-"use client";
-
-import { useEffect, useRef, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { COVERS, type CoverKey, type FlatBook, type SpineBook } from "@/data/bookcase";
 
-export type OpenBook = { book: SpineBook | FlatBook; index: number };
-
-const COVER_KEYS = Object.keys(COVERS) as CoverKey[];
+export const COVER_KEYS = Object.keys(COVERS) as CoverKey[];
 const NASTALIQ = { fontFamily: "'Noto Nastaliq Urdu', serif" };
 const SHAPES: Record<string, CSSProperties> = {
   arch: { borderRadius: "50px 50px 8px 8px" },
@@ -21,48 +17,23 @@ const Corner = ({ className = "" }: { className?: string }) => (
   </svg>
 );
 
-function MaybeLink({ href, children }: { href?: string; children: React.ReactNode }) {
-  if (!href) return <>{children}</>;
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" aria-label="Open notes for this book (opens in a new tab)" className="block w-full cursor-pointer transition-transform duration-300 hover:scale-[1.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4" style={{ outlineColor: "var(--hi)" }}>
-      {children}
-    </a>
-  );
-}
-
 const Rule = () => <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg,transparent,var(--gold),transparent)" }} />;
 const Bar = () => <div className="w-0.5 h-28" style={{ background: "linear-gradient(transparent,var(--gold),transparent)" }} />;
 
-export default function BookModal({ open, onClose }: { open: OpenBook; onClose: () => void }) {
-  const { book: b, index } = open;
+
+/** The book's front cover, filling its container (the parent sets the size). */
+export default function CoverArt({ book: b, index }: { book: SpineBook | FlatBook; index: number }) {
   const t = COVERS[b.cover ?? COVER_KEYS[index % COVER_KEYS.length]];
   const i = b.info ?? {};
   const title = i.title ?? b.tip[0];
   const author = i.author ?? ("author" in b ? b.author : "") ?? "";
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, filter: "drop-shadow(0 35px 80px rgba(0,0,0,.98))", width: "min(92vw, calc(min(82dvh, 660px) * 0.75))" } as CSSProperties;
+  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, width: "100%", height: "100%" } as CSSProperties;
   const mix = (a: number) => `color-mix(in srgb,var(--deep) ${a}%,var(--base))`;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 backdrop-blur-sm bg-[#0a0705]/65 overflow-y-auto py-6 sm:py-8"
-    >
-      <div className="relative z-10 my-auto flex flex-col items-center" style={vars}>
-        <MaybeLink href={i.link}>
+    <div style={vars}>
         <div
-          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex aspect-[3/4]"
+          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex h-full"
           style={{ background: t.spine[0], border: `4px solid ${t.spine[1]}`, boxShadow: "inset 0 0 50px rgba(0,0,0,.95),0 0 0 2px var(--gold)" }}
         >
           {/* Spine */}
@@ -126,18 +97,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
             </div>
           </div>
         </div>
-        </MaybeLink>
-        <button
-          ref={closeRef}
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-1 right-1 sm:-top-3 sm:-right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full text-lg leading-none transition-transform hover:scale-110"
-          style={{ background: "#0a0705", color: "var(--gold)", border: "1px solid var(--gold)" }}
-        >
-          ✕
-        </button>
-      </div>
     </div>
   );
 }

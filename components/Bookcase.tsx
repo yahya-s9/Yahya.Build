@@ -1,21 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FlatBook, Shelf, SpineBook } from "@/data/bookcase";
 import { FlatBookView, SpineBookView } from "./Books";
-import BookModal, { type OpenBook } from "./BookModal";
+import BookOpen, { type OpenBook } from "./BookOpen";
 
 export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }) {
-  const [open, setOpen] = useState<OpenBook | null>(null);
+  const [open, setOpen] = useState<{ open: OpenBook; origin: HTMLElement } | null>(null);
   const entries = Object.entries(shelves);
   const allBooks: (SpineBook | FlatBook)[] = entries.flatMap(([, s]) => [...s.books, ...(s.stack ?? [])]);
 
-  const show = (b: SpineBook | FlatBook) => setOpen({ book: b, index: allBooks.indexOf(b) });
-
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
+  const show = (b: SpineBook | FlatBook, origin: HTMLElement) => setOpen({ open: { book: b, index: allBooks.indexOf(b) }, origin });
 
   return (
     <>
@@ -27,10 +22,10 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
               {s.arabic && <span className="text-sm opacity-80" style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}>{s.arabic}</span>}
             </div>
             <div className="sh-row">
-              {s.books.map((b) => <SpineBookView key={b.tip[0]} book={b} onOpen={() => show(b)} />)}
+              {s.books.map((b) => <SpineBookView key={b.tip[0]} book={b} onOpen={(el) => show(b, el)} />)}
               {s.stack && (
                 <div className="ml-auto hidden md:flex flex-col justify-end items-center flex-shrink-0">
-                  {s.stack.map((b) => <FlatBookView key={b.tip[0]} book={b} onOpen={() => show(b)} />)}
+                  {s.stack.map((b) => <FlatBookView key={b.tip[0]} book={b} onOpen={(el) => show(b, el)} />)}
                 </div>
               )}
             </div>
@@ -38,7 +33,7 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
           </section>
         ))}
       </div>
-      {open && <BookModal open={open} onClose={() => setOpen(null)} />}
+      {open && <BookOpen open={open.open} origin={open.origin} onClose={() => setOpen(null)} />}
     </>
   );
 }
