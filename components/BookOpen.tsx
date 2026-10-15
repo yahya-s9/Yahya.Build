@@ -173,7 +173,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   // draw the pages around the one you're on, ahead of time
   useEffect(() => {
     if (!doc || right < 1) return;
-    for (const n of [right, right - 1, right + 1, right + 2]) {
+    for (const n of [right, right - 1, right + 1, right + 2, right + 3]) {
       if (n < 1 || n > doc.pages) continue;
       doc.render(n).then((img) => setImages((prev) => (prev[n] ? prev : { ...prev, [n]: img }))).catch(() => {});
     }
@@ -187,6 +187,8 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   }, [reduce]);
   const leafDone = useRef<() => void>(() => {});
 
+  // Like a real book: a leaf has one page on its front and the next page on its back.
+  // The right-hand page is always odd (1, 3, 5…); the left-hand page is the even one before it.
   const flip = useCallback((dir: "fwd" | "back") => {
     if (!reading || flipping.current || phaseRef.current !== "open") return;
     const pages = doc?.pages ?? Infinity;
@@ -196,8 +198,9 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
         turn("fwd", 0, () => { setLeft(0); setRight(1); });
         setRight(1);
       } else if (right < pages) {
-        turn("fwd", right, () => setLeft(right));
-        setRight(right + 1);
+        // page `right` is on the front of the leaf, page `right + 1` on its back
+        turn("fwd", right, () => setLeft(right + 1));
+        setRight(right + 2);
       } else {
         // the end of these notes: go on to the next set
         const list = (i.toc ?? []).filter((e) => e.href);
@@ -210,8 +213,9 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
         // back to the title page
         turn("back", 0, () => { setRight(0); setLeft(0); });
       } else {
-        turn("back", right - 1, () => setRight(right - 1));
-        setLeft(right - 2);
+        // the leaf comes back from the left: its back is the page you were reading on the left
+        turn("back", right - 2, () => setRight(right - 2));
+        setLeft(Math.max(0, right - 3));
       }
     }
   }, [doc, i.toc, load, reading, right, turn]);
@@ -327,13 +331,13 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
 
   const notesPage = (n: number) => (
     <div className="absolute inset-0">
-      {images[n] ? (
+      {doc && n > doc.pages ? null : images[n] ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={images[n]} alt={`Notes, page ${n}`} draggable={false} className="absolute select-none" style={{ inset: 16, width: "calc(100% - 32px)", height: "calc(100% - 32px)", objectFit: "contain", mixBlendMode: "multiply" }} />
       ) : (
         <span className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-[0.3em] opacity-50">…</span>
       )}
-      <span className="absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-[0.3em] opacity-50">{n}</span>
+      {!(doc && n > doc.pages) && <span className="absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-[0.3em] opacity-50">{n}</span>}
     </div>
   );
 
@@ -389,7 +393,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             {leaf && (
               <div ref={leafRef} className="ob-leaf" style={{ width: W - 9, height: H - 12, top: 6, left: 1, transform: `translateZ(${D / 2 + 1}px) rotateY(${leaf.dir === "fwd" ? 0 : -180}deg)` }}>
                 <div className="ob-face parchment gutter-l">{leaf.page === 0 ? detailsPage : notesPage(leaf.page)}</div>
-                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{leaf.page === 0 ? frontLeft : notesPage(leaf.page)}</div>
+                <div className="ob-face parchment gutter-r" style={{ transform: "rotateY(180deg)" }}>{leaf.page === 0 ? frontLeft : notesPage(leaf.page + 1)}</div>
               </div>
             )}
 
@@ -409,7 +413,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
         <div className="ob-bar">
           <button type="button" onClick={toFront} disabled={right === 0}>Contents</button>
           <button type="button" onClick={() => flip("back")} disabled={right === 0} aria-label="Previous page">‹</button>
-          <span>{right === 0 ? "Title" : doc ? `${right} / ${doc.pages}` : reading.failed ? "—" : "…"}</span>
+          <span>{right === 0 ? "Title" : doc ? `${right > 1 ? `${right - 1}–${right}` : right} / ${doc.pages}` : reading.failed ? "—" : "…"}</span>
           <button type="button" onClick={() => flip("fwd")} aria-label="Next page">›</button>
         </div>
       )}
