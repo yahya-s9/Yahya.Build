@@ -276,18 +276,6 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
                   <p className="font-serif text-base">{author}</p>
                   {i.authorAr && <p className="text-sm" style={{ ...NASTALIQ, lineHeight: 1.9 }}>{i.authorAr}</p>}
                   {i.subject && <p className="font-serif text-sm italic opacity-80 max-w-[17rem]">“{i.subject}”</p>}
-                  {i.link && (
-                    <a
-                      href={i.link}
-                      onClick={(e) => e.stopPropagation()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 rounded-sm px-4 py-2 text-[11px] uppercase tracking-[0.25em] transition-opacity hover:opacity-85"
-                      style={{ background: look.color, color: look.fg }}
-                    >
-                      Open my notes ↗
-                    </a>
-                  )}
                 </div>
   );
   const frontLeft = (
