@@ -73,7 +73,7 @@ function spineBook(title: string, f: Fields, text: string): SpineBook {
   const cover = (COVER_KEYS.includes(f.cover as CoverKey) ? f.cover : pick(COVER_KEYS, title)) as CoverKey;
   const t = COVERS[cover];
   const big = f.size?.toLowerCase() === "big";
-  const spineText = f.spine ?? (title.length > 16 ? title.split(/\s+/).filter((w) => !/^(of|the|and|a|an|to|al-)$/i.test(w)).slice(0, 2).join(" ") : title);
+  const spineText = f.spine ?? f.ar ?? (title.length > 16 ? title.split(/\s+/).filter((w) => !/^(of|the|and|a|an|to|al-)$/i.test(w)).slice(0, 2).join(" ") : title);
   const author = f.author?.split(/\s+/).slice(-1)[0]?.toUpperCase();
   return {
     size: big ? BIG_SIZE : pick(SPINE_SIZES, title, 1),
@@ -93,7 +93,7 @@ function flatBook(title: string, f: Fields, text: string, i: number): FlatBook {
   return {
     size: pick(FLAT_SIZES, title, i),
     grad: [t.spine[1], t.base, t.spine[2]], edge: t.gold,
-    label: f.spine ?? (f.author ? `${title} • ${f.author.split(/\s+/).slice(-1)[0]}` : title),
+    label: f.spine ?? f.ar ?? (f.author ? `${title} • ${f.author.split(/\s+/).slice(-1)[0]}` : title),
     labelColor: t.hi, glyph: "❖", glyphColor: t.gold, overlap: i > 0,
     tip: [escapeHtml(title), escapeHtml(f.subtitle ?? f.author ?? "")],
     cover, info: infoFor(title, f, text),

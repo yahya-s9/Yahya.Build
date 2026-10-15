@@ -3,6 +3,9 @@ import Tooltip from "./Tooltip";
 
 // Colours come from data at runtime, so they are applied as inline styles
 // (Tailwind can't see dynamically built class names).
+const ARABIC = /[\u0600-\u06FF]/;
+const NASTALIQ = { fontFamily: "'Noto Nastaliq Urdu', serif" };
+
 type Props<T> = { book: T; onOpen: () => void };
 
 export function SpineBookView({ book: b, onOpen }: Props<SpineBook>) {
@@ -19,8 +22,8 @@ export function SpineBookView({ book: b, onOpen }: Props<SpineBook>) {
       <div className={`band w-full ${b.bandH} opacity-85 mt-3`} style={band} />
       <div className="mx-auto my-auto flex flex-col items-center">
         <span
-          style={{ color: b.titleColor }}
-          className={`${big ? "text-xs md:text-sm tracking-[0.28em] py-3 font-semibold" : "text-[10px] md:text-xs tracking-[0.22em] py-2"} font-headline-sm uppercase [writing-mode:vertical-rl] rotate-180`}
+          style={ARABIC.test(b.title) ? { color: b.titleColor, ...NASTALIQ } : { color: b.titleColor }}
+          className={`${ARABIC.test(b.title) ? `${big ? "text-base md:text-lg" : "text-sm md:text-base"} leading-[1.9] py-2` : `${big ? "text-xs md:text-sm tracking-[0.28em] py-3 font-semibold" : "text-[10px] md:text-xs tracking-[0.22em] py-2"} font-headline-sm uppercase`} [writing-mode:vertical-rl] rotate-180`}
         >
           {b.title}
         </span>
@@ -54,7 +57,7 @@ export function FlatBookView({ book: b, onOpen }: Props<FlatBook>) {
       style={{ backgroundImage: `linear-gradient(to bottom, ${b.grad.join(", ")})`, borderColor: b.edge }}
       className={`group relative ${b.size} border-t border-l rounded-sm shadow-md flex items-center justify-between px-3 cursor-pointer hover:translate-x-1 transition-transform ${b.overlap ? "-mt-0.5" : ""}`}
     >
-      <span style={{ color: b.labelColor }} className="text-[9px] font-headline-sm tracking-widest uppercase">{b.label}</span>
+      <span style={ARABIC.test(b.label) ? { color: b.labelColor, ...NASTALIQ } : { color: b.labelColor }} className={ARABIC.test(b.label) ? "text-sm leading-[1.9]" : "text-[9px] font-headline-sm tracking-widest uppercase"}>{b.label}</span>
       <span style={{ color: b.glyphColor }} className="text-xs">{b.glyph}</span>
       <Tooltip tip={b.tip} />
     </button>
