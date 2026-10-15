@@ -155,7 +155,6 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
           </div>
         </div>
         </MaybeLink>
-        {i.link && <p className="mt-4 text-[11px] tracking-[0.3em] uppercase font-serif" style={{ color: "var(--hi)" }}>Click the cover to open my notes ↗</p>}
         <button ref={closeRef} type="button" onClick={onClose} className="mt-6 px-6 py-2 text-[11px] tracking-[0.3em] uppercase font-serif rounded-xs transition-colors" style={{ background: "#0a0705", color: "var(--gold)", border: "1px solid var(--gold)" }}>
           Return to Shelf
         </button>
