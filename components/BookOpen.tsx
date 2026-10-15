@@ -218,11 +218,17 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
                     </ol>
                   </div>
                 ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center" style={{ color: look.fg }}>
-                    <span className="text-2xl opacity-80">❖</span>
-                    <p className="text-[10px] tracking-[0.35em] uppercase opacity-70">From the library of</p>
-                    <p className="font-headline-md text-xl">Yahya</p>
-                    <span className="h-px w-12 opacity-50" style={{ background: look.fg }} />
+                  <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: look.fg }}>
+                    <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
+                    <p
+                      dir="rtl"
+                      lang="ar"
+                      className="text-[2.1rem] leading-[2.3]"
+                      style={{ ...NASTALIQ, textShadow: "0 1px 0 rgba(0,0,0,.35), 0 0 1px rgba(0,0,0,.25)" }}
+                    >
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    <span className="h-px w-16 opacity-40" style={{ background: look.fg }} />
                   </div>
                 )}
               </div>
