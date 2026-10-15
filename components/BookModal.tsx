@@ -48,7 +48,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, filter: "drop-shadow(0 35px 80px rgba(0,0,0,.98))", width: "min(92vw, calc(min(82dvh, 660px) * 0.68))" } as CSSProperties;
+  const vars = { "--base": t.base, "--deep": t.deep, "--gold": t.gold, "--hi": t.hi, filter: "drop-shadow(0 35px 80px rgba(0,0,0,.98))", width: "min(92vw, calc(min(82dvh, 660px) * 0.75))" } as CSSProperties;
   const mix = (a: number) => `color-mix(in srgb,var(--deep) ${a}%,var(--base))`;
 
   return (
@@ -62,7 +62,7 @@ export default function BookModal({ open, onClose }: { open: OpenBook; onClose: 
       <div className="relative z-10 my-auto flex flex-col items-center" style={vars}>
         <MaybeLink href={i.link}>
         <div
-          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex aspect-[2/3]"
+          className="relative w-full rounded-sm overflow-hidden p-3 md:p-5 flex aspect-[3/4]"
           style={{ background: t.spine[0], border: `4px solid ${t.spine[1]}`, boxShadow: "inset 0 0 50px rgba(0,0,0,.95),0 0 0 2px var(--gold)" }}
         >
           {/* Spine */}
