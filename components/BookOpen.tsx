@@ -6,6 +6,7 @@ import type { FlatBook, SpineBook, TocEntry } from "@/data/bookcase";
 import { openNotes, type NotesDoc } from "@/lib/pdf-notes";
 import { lookOf } from "@/lib/look";
 import { tween, type Bezier, type Frame } from "@/lib/tween";
+import MobileReader from "./MobileReader";
 import { Spine, coverBase } from "./Books";
 import CoverArt from "./CoverArt";
 
@@ -53,6 +54,25 @@ function flight(g: Geo, el: HTMLElement): Frame[] {
   ];
 }
 
+const bez = (b: Bezier) => `cubic-bezier(${b.join(", ")})`;
+
+/** Animates a transform: the browser's own animation on a laptop (smooth), frame by frame on a phone (reliable). */
+function animateTransform(
+  wide: boolean,
+  el: HTMLElement,
+  make: (v: number[]) => string,
+  frames: Frame[],
+  o: { duration: number; delay?: number; ease?: Bezier },
+): { finished: Promise<void>; cancel: () => void } {
+  if (!wide) return tween(el, make, frames, o);
+  const perFrame = frames.some((f) => f.ease);
+  const a = el.animate(
+    frames.map((f) => ({ offset: f.offset, transform: make(f.v), ...(perFrame && f.ease ? { easing: bez(f.ease) } : {}) })),
+    { duration: o.duration, delay: o.delay ?? 0, fill: "forwards", ...(!perFrame && o.ease ? { easing: bez(o.ease) } : {}) },
+  );
+  return { finished: a.finished.then(() => undefined), cancel: () => a.cancel() };
+}
+
 export default function BookOpen({ open, origin, onClose }: { open: OpenBook; origin: HTMLElement; onClose: () => void }) {
   const { book: b, index } = open;
   const look = lookOf(b.tip[0], "big" in b ? !!b.big : false, coverBase(b.cover));
@@ -91,7 +111,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       return;
     }
     const spine = origin.classList.contains("sp");
-    const fly = tween(book, T, flight(g, origin), { duration: spine ? 860 : 680 });
+    const fly = animateTransform(g.wide, book, T, flight(g, origin), { duration: spine ? 860 : 680 });
     flyRef.current = fly;
     fly.finished.then(() => go("closed")).catch(() => {});
     setTimeout(() => { if (phaseRef.current === "in") go("closed"); }, (spine ? 860 : 680) + 250);
@@ -104,6 +124,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     if (phaseRef.current !== "closed") return;
     const cover = coverRef.current!, sh = shiftRef.current!;
     go("open");
+    if (!g.wide) return; // on a phone the notes open as a scrolling page instead
     if (reduce) {
       cover.style.transform = `${frontZ} rotateY(-180deg)`;
       sh.style.transform = `translateX(${shift}px)`;
@@ -111,25 +132,26 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     }
     const swing = (a: number[]) => `${frontZ} rotateY(${a[0]}deg)`;
     const slide = (a: number[]) => `translateX(${a[0]}px)`;
-    tween(cover, swing, [{ offset: 0, v: [0] }, { offset: 1, v: [-180] }], { duration: 760, ease: EASE_IN_OUT });
-    tween(sh, slide, [{ offset: 0, v: [0] }, { offset: 1, v: [shift] }], { duration: 760, ease: EASE_IN_OUT });
+    animateTransform(g.wide, cover, swing, [{ offset: 0, v: [0] }, { offset: 1, v: [-180] }], { duration: 760, ease: EASE_IN_OUT });
+    animateTransform(g.wide, sh, slide, [{ offset: 0, v: [0] }, { offset: 1, v: [shift] }], { duration: 760, ease: EASE_IN_OUT });
   }, [frontZ, reduce, shift]);
 
   const close = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
-    const wasOpen = phaseRef.current === "open";
+    const wasOpen = phaseRef.current === "open" && g.wide;
     go("out");
     const book = bookRef.current!, cover = coverRef.current!, sh = shiftRef.current!;
     if (reduce) return onClose();
     if (wasOpen) {
       const swing = (a: number[]) => `${frontZ} rotateY(${a[0]}deg)`;
       const slide = (a: number[]) => `translateX(${a[0]}px)`;
-      tween(cover, swing, [{ offset: 0, v: [-180] }, { offset: 1, v: [0] }], { duration: 520, ease: EASE_IN_OUT });
-      tween(sh, slide, [{ offset: 0, v: [shift] }, { offset: 1, v: [0] }], { duration: 520, ease: EASE_IN_OUT });
+      animateTransform(g.wide, cover, swing, [{ offset: 0, v: [-180] }, { offset: 1, v: [0] }], { duration: 520, ease: EASE_IN_OUT });
+      animateTransform(g.wide, sh, slide, [{ offset: 0, v: [shift] }, { offset: 1, v: [0] }], { duration: 520, ease: EASE_IN_OUT });
     }
     // fly back to wherever it came from, once the cover is shut
-    const fly = tween(
+    const fly = animateTransform(
+      g.wide,
       book,
       T,
       flight(measure(look.w, look.h), origin).map((k) => ({ ...k, offset: 1 - k.offset, ease: EASE })).reverse(),
@@ -177,7 +199,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
 
   // start fetching the first set of notes as soon as the book is in your hands
   useEffect(() => {
-    if (firstNote && phase === "closed") load(firstNote);
+    if (g.wide && firstNote && phase === "closed") load(firstNote);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase === "closed"]);
 
@@ -237,7 +259,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     if (!leaf || !el) return;
     const z = `translateZ(${g.D / 2 + 1}px)`;
     const [from, to] = leaf.dir === "fwd" ? [0, -180] : [-180, 0];
-    const a = tween(el, (v) => `${z} rotateY(${v[0]}deg)`, [{ offset: 0, v: [from] }, { offset: 1, v: [to] }], { duration: 780, ease: EASE_IN_OUT });
+    const a = animateTransform(g.wide, el, (v) => `${z} rotateY(${v[0]}deg)`, [{ offset: 0, v: [from] }, { offset: 1, v: [to] }], { duration: 780, ease: EASE_IN_OUT });
     let finished = false;
     const done = () => {
       if (finished) return;
@@ -372,7 +394,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             aria-label={phase === "open" ? undefined : `Open ${i.title ?? b.tip[0]}`}
             onClick={openCover}
             onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openCover(); } }}
-            style={{ width: W, height: H, marginLeft: -W / 2, marginTop: -H / 2, transform: startTransform }}
+            style={{ width: W, height: H, marginLeft: -W / 2, marginTop: -H / 2, transform: startTransform, visibility: !g.wide && phase === "open" ? "hidden" : undefined }}
           >
             {/* back board, spine, and the edges of the pages */}
             <div className="ob-face" style={{ background: look.color, transform: `rotateY(180deg) translateZ(${D / 2}px)`, boxShadow: "0 28px 46px -6px rgba(0,0,0,.5)" }} />
@@ -425,15 +447,12 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
           </div>
         </div>
       </div>
-      {reading && phase === "open" && !g.wide && sheet && (
-        <>
-          <div className="fixed inset-0 z-[4]" onClick={() => setSheet(false)} />
-          <div className="ob-sheet parchment" role="dialog" aria-label="Contents">{frontLeft}</div>
-        </>
+      {!g.wide && phase === "open" && (
+        <MobileReader title={i.title ?? b.tip[0]} info={i} author={author} color={look.color} />
       )}
-      {reading && phase === "open" && (
+      {g.wide && reading && phase === "open" && (
         <div className="ob-bar">
-          <button type="button" onClick={g.wide ? toFront : () => setSheet((v) => !v)} disabled={g.wide && right === 0}>Contents</button>
+          <button type="button" onClick={toFront} disabled={right === 0}>Contents</button>
           <button type="button" onClick={() => flip("back")} disabled={right === 0} aria-label="Previous page">‹</button>
 <select
             className="ob-sel"
