@@ -67,6 +67,8 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   const closing = useRef(false);
   const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const shift = g.wide ? g.W / 2 : 0;
+  const step = g.wide ? 2 : 1; // pages that come into view with each turn: a spread, or a single page on a phone
+  const [sheet, setSheet] = useState(false); // the contents, as a sheet, on a phone
   const frontZ = `translateZ(${g.D / 2}px)`;
   const i = b.info ?? {};
   const author = i.author ?? ("author" in b ? b.author : "") ?? "";
@@ -89,6 +91,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     const fly = book.animate(flight(g, origin), { duration: spine ? 860 : 680, fill: "forwards" });
     flyRef.current = fly;
     fly.finished.then(() => go("closed")).catch(() => {});
+    setTimeout(() => { if (phaseRef.current === "in") go("closed"); }, (spine ? 860 : 680) + 250);
     // once, on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -126,6 +129,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       { duration: origin.classList.contains("sp") ? 740 : 580, delay: wasOpen ? 380 : 0, fill: "forwards" },
     );
     fly.finished.then(onClose).catch(onClose);
+    setTimeout(onClose, (origin.classList.contains("sp") ? 740 : 580) + (wasOpen ? 380 : 0) + 400);
   }, [frontZ, look.h, look.w, onClose, origin, reduce, shift]);
 
   useEffect(() => {
@@ -200,7 +204,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       } else if (right < pages) {
         // page `right` is on the front of the leaf, page `right + 1` on its back
         turn("fwd", right, () => setLeft(right + 1));
-        setRight(right + 2);
+        setRight(right + step);
       } else {
         // the end of these notes: go on to the next set
         const list = (i.toc ?? []).filter((e) => e.href);
@@ -214,11 +218,11 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
         turn("back", 0, () => { setRight(0); setLeft(0); });
       } else {
         // the leaf comes back from the left: its back is the page you were reading on the left
-        turn("back", right - 2, () => setRight(right - 2));
-        setLeft(Math.max(0, right - 3));
+        turn("back", right - step, () => setRight(right - step));
+        setLeft(Math.max(0, right - step - 1));
       }
     }
-  }, [doc, i.toc, load, reading, right, turn]);
+  }, [doc, i.toc, load, reading, right, step, turn]);
 
   // the turning leaf: hinged on the spine, it carries one page across
   useLayoutEffect(() => {
@@ -230,11 +234,16 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
       [{ transform: `${z} rotateY(${from}deg)` }, { transform: `${z} rotateY(${to}deg)` }],
       { duration: 780, easing: EASE_IN_OUT, fill: "forwards" },
     );
-    a.finished.then(() => {
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
       leafDone.current();
       setLeaf(null);
       flipping.current = false;
-    }).catch(() => { flipping.current = false; });
+    };
+    a.finished.then(done).catch(done);
+    setTimeout(done, 1150);
   }, [leaf, g.D]);
 
   // back to the title page, from anywhere
@@ -250,7 +259,11 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
     setRight(r);
     setLeft(r <= 1 ? 0 : r - 1);
   };
-  const spreads = doc ? Array.from({ length: Math.ceil(doc.pages / 2) + 1 }, (_, k) => 2 * k + 1).filter((r) => r - 1 <= doc.pages) : [];
+  const spreads = doc
+    ? g.wide
+      ? Array.from({ length: Math.ceil(doc.pages / 2) + 1 }, (_, k) => 2 * k + 1).filter((r) => r - 1 <= doc.pages)
+      : Array.from({ length: doc.pages }, (_, k) => k + 1)
+    : [];
 
   useEffect(() => {
     if (!reading) return;
@@ -266,6 +279,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   // clicking a chapter in the contents: jump straight to it
   const startReading = (entry: TocEntry) => {
     if (flipping.current) return;
+    setSheet(false);
     if (right === 0) {
       turn("fwd", 0, () => { setLeft(0); setRight(1); });
       setRight(1);
@@ -357,7 +371,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             style={{ width: W, height: H, marginLeft: -W / 2, marginTop: -H / 2, transform: flight(g, origin)[0].transform }}
           >
             {/* back board, spine, and the edges of the pages */}
-            <div className="ob-face" style={{ background: look.color, transform: `rotateY(180deg) translateZ(${D / 2}px)` }} />
+            <div className="ob-face" style={{ background: look.color, transform: `rotateY(180deg) translateZ(${D / 2}px)`, boxShadow: "0 28px 46px -6px rgba(0,0,0,.5)" }} />
             <div className="ob-face" style={{ width: D, left: (W - D) / 2, transform: `rotateY(-90deg) translateZ(${W / 2}px)`, overflow: "hidden" }}>
               <div style={{ transform: `scale(${D / look.w}, ${H / look.h})`, transformOrigin: "0 0", width: look.w, height: look.h }}>
                 {"title" in b && "bandH" in b ? <Spine book={b as SpineBook} look={look} /> : <div style={{ width: look.w, height: look.h, background: look.color }} />}
@@ -407,9 +421,15 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
           </div>
         </div>
       </div>
+      {reading && phase === "open" && !g.wide && sheet && (
+        <>
+          <div className="fixed inset-0 z-[4]" onClick={() => setSheet(false)} />
+          <div className="ob-sheet parchment" role="dialog" aria-label="Contents">{frontLeft}</div>
+        </>
+      )}
       {reading && phase === "open" && (
         <div className="ob-bar">
-          <button type="button" onClick={toFront} disabled={right === 0}>Contents</button>
+          <button type="button" onClick={g.wide ? toFront : () => setSheet((v) => !v)} disabled={g.wide && right === 0}>Contents</button>
           <button type="button" onClick={() => flip("back")} disabled={right === 0} aria-label="Previous page">‹</button>
 <select
             className="ob-sel"
@@ -422,7 +442,7 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             {doc ? (
               spreads.map((r) => (
                 <option key={r} value={r}>
-                  {r === 1 ? `Page 1 / ${doc.pages}` : `Pages ${r - 1}–${Math.min(r, doc.pages)} / ${doc.pages}`}
+                  {!g.wide || r === 1 ? `Page ${r} / ${doc.pages}` : `Pages ${r - 1}–${Math.min(r, doc.pages)} / ${doc.pages}`}
                 </option>
               ))
             ) : (
