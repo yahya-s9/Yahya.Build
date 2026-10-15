@@ -140,7 +140,6 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
   }, [close]);
 
   const { W, H, D } = g;
-  const paper = "#f6efdf";
 
   return createPortal(
     <div className="ob-stage" data-phase={phase} role="dialog" aria-modal="true" aria-label={i.title ?? b.tip[0]}>
@@ -171,10 +170,10 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
 
             {/* inside of the back board, then the first page */}
             <div className="ob-face" style={{ background: look.color, transform: `translateZ(${D / 2 - 6}px)` }} />
-            <div className="ob-face" style={{ width: W - 9, height: H - 12, top: 6, left: 1, background: paper, color: "#2a2520", transform: `translateZ(${D / 2 - 2}px)`, boxShadow: "inset 8px 0 14px -8px rgba(60,40,20,.35)" }}>
+            <div className="ob-face parchment gutter-l" style={{ width: W - 9, height: H - 12, top: 6, left: 1, transform: `translateZ(${D / 2 - 2}px)` }}>
               <div className="flex h-full flex-col items-center justify-center gap-3 px-8 py-10 text-center">
                 <span className="text-xs tracking-[0.4em]" style={{ color: look.color }}>❖ ✦ ❖</span>
-                {i.ar && <h2 className="text-3xl leading-[1.8]" style={{ ...NASTALIQ, color: "#2a2520" }}>{i.ar}</h2>}
+                {i.ar && <h2 className="text-3xl leading-[1.8]" style={{ ...NASTALIQ, color: "#2f2012" }}>{i.ar}</h2>}
                 <h3 className="font-headline-md text-lg tracking-[0.12em] uppercase" dangerouslySetInnerHTML={{ __html: i.title ?? b.tip[0] }} />
                 <div className="h-px w-16" style={{ background: look.color, opacity: 0.5 }} />
                 <p className="font-serif text-base">{author}</p>
@@ -198,10 +197,11 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
             <div ref={coverRef} className="ob-cover" style={{ transform: `${frontZ} rotateY(0deg)` }}>
               <div className="ob-face"><CoverArt book={b} look={look} /></div>
               <div className="ob-face" style={{ background: look.color, transform: "rotateY(180deg)" }}>
+                <div className="parchment gutter-r absolute" style={{ inset: 7 }}>
                 {i.toc?.length ? (
-                  <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: look.fg }}>
+                  <div className="flex h-full flex-col px-7 pb-6 pt-8" style={{ color: "#3a2a18" }}>
                     <p className="text-center text-[10px] uppercase tracking-[0.4em] opacity-70">Contents</p>
-                    <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: look.fg }} />
+                    <span className="mx-auto mt-3 mb-3 h-px w-12 opacity-40" style={{ background: "#3a2a18" }} />
                     <ol className="ob-toc min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-2 font-serif text-[13px] leading-snug">
                       {i.toc.map((e, k) => (
                         <li key={k} className="flex gap-3">
@@ -218,19 +218,20 @@ export default function BookOpen({ open, origin, onClose }: { open: OpenBook; or
                     </ol>
                   </div>
                 ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: look.fg }}>
+                  <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center" style={{ color: "#3a2a18" }}>
                     <span className="text-xs tracking-[0.5em] opacity-70">❖ ✦ ❖</span>
                     <p
                       dir="rtl"
                       lang="ar"
                       className="text-[2.1rem] leading-[2.3]"
-                      style={{ ...NASTALIQ, textShadow: "0 1px 0 rgba(0,0,0,.35), 0 0 1px rgba(0,0,0,.25)" }}
+                      style={{ ...NASTALIQ, textShadow: "0 0 .6px rgba(58,42,24,.5)" }}
                     >
                       بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                     </p>
-                    <span className="h-px w-16 opacity-40" style={{ background: look.fg }} />
+                    <span className="h-px w-16 opacity-40" style={{ background: "#3a2a18" }} />
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>

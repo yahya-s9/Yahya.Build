@@ -156,5 +156,23 @@
 .ob-stage[data-phase="out"] .ob-x { opacity: 0; transition: opacity .2s; }
 .ob-book[data-phase="closed"] { cursor: pointer; outline: none; }
 .ob-book[data-phase="closed"]:hover { filter: drop-shadow(0 30px 40px rgba(0,0,0,.5)) brightness(1.06); }
-.ob-toc { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; overscroll-behavior: contain; }
+.ob-toc { scrollbar-width: thin; scrollbar-color: rgba(90,60,25,.45) transparent; overscroll-behavior: contain; }
 .ob-toc a { color: inherit; }
+
+/* faded parchment: warm vignette, stains, paper grain */
+.parchment {
+  color: #3a2a18;
+  background:
+    radial-gradient(ellipse at 18% 82%, rgba(140, 92, 36, .20), transparent 38%),
+    radial-gradient(ellipse at 86% 14%, rgba(150, 105, 44, .16), transparent 34%),
+    radial-gradient(circle at 62% 70%, rgba(120, 80, 30, .08), transparent 22%),
+    radial-gradient(ellipse at 50% 42%, #f4e8c9 0%, #ecdcb0 55%, #d8bf88 100%);
+  box-shadow: inset 0 0 38px rgba(120, 80, 30, .38), inset 0 0 2px rgba(80, 50, 20, .5);
+}
+.parchment::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: .5;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .32  0 0 0 0 .16  0 0 0 .55 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.parchment > * { position: relative; }
+.parchment.gutter-r { box-shadow: inset 0 0 38px rgba(120, 80, 30, .38), inset -16px 0 18px -10px rgba(60, 35, 12, .5); }
+.parchment.gutter-l { box-shadow: inset 0 0 38px rgba(120, 80, 30, .38), inset 16px 0 18px -10px rgba(60, 35, 12, .5); }
