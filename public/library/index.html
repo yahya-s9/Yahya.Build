@@ -1,0 +1,4064 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Walk the Libraries</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Noto+Nastaliq+Urdu&display=swap">
+<style>
+    /* Layout: full-bleed WebGL hall with a few quiet controls over it. */
+    :root {
+      color-scheme: dark;
+      --gold: #d6b36a;
+      --cream: #f3e8cf;
+      --ink-night: #10161c;
+      --parchment: #f1e7d3;
+      --ink: #2a1d12;
+      --accent: #7c5a22;
+      --glass: rgba(15, 20, 25, 0.58);
+      --display: Georgia, "Times New Roman", serif;
+      --body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--ink-night);
+      font-family: var(--body);
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+      outline: none;
+    }
+
+    #vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 42%, transparent 42%, rgba(3, 7, 11, 0.36) 100%);
+      z-index: 2;
+    }
+
+    #controls {
+      position: fixed;
+      right: max(clamp(16px, 3vw, 38px), env(safe-area-inset-right, 0px));
+      bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom, 0px));
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #hint {
+      padding: 11px 15px;
+      border: 1px solid rgba(214, 179, 106, 0.18);
+      border-radius: 999px;
+      background: var(--glass);
+      color: rgba(243, 232, 207, 0.75);
+      font-size: 11px;
+      letter-spacing: 0.045em;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      pointer-events: none;
+    }
+
+    button {
+      color: var(--cream);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .pill {
+      min-height: 39px;
+      padding: 0 16px;
+      border: 1px solid rgba(214, 179, 106, 0.38);
+      border-radius: 999px;
+      background: rgba(20, 25, 29, 0.72);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .pill:hover {
+      border-color: rgba(214, 179, 106, 0.8);
+      background: rgba(66, 52, 31, 0.82);
+      transform: translateY(-1px);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--cream);
+      outline-offset: 2px;
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      background: var(--ink-night);
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    #fade {
+      position: fixed;
+      inset: 0;
+      z-index: 15;
+      background: #05070a;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease;
+    }
+
+    #fade.on {
+      opacity: 1;
+    }
+
+    #door-hint {
+      position: fixed;
+      top: calc(16px + env(safe-area-inset-top, 0px));
+      left: 50%;
+      z-index: 5;
+      transform: translateX(-50%);
+      max-width: calc(100vw - 32px);
+      padding: 9px 15px;
+      border: 1px solid rgba(214, 179, 106, 0.4);
+      border-radius: 999px;
+      background: var(--glass);
+      color: var(--cream);
+      font-size: 12px;
+      text-align: center;
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    #dot {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 3;
+      width: 5px;
+      height: 5px;
+      margin: -2.5px 0 0 -2.5px;
+      border-radius: 50%;
+      background: rgba(243, 232, 207, 0.55);
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
+      pointer-events: none;
+    }
+
+    body.reading #controls,
+    body.reading #credit,
+    body.reading #pad {
+      visibility: hidden;
+    }
+
+    #reader {
+      position: fixed;
+      inset: 0;
+      z-index: 12;
+      display: grid;
+      place-items: center;
+      overflow-y: auto;
+      padding-block: clamp(14px, 4vh, 40px);
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      background: rgba(7, 6, 5, 0.84);
+      animation: reader-in 260ms ease;
+    }
+
+    @keyframes reader-in {
+      from { opacity: 0; }
+    }
+
+    .leaf {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      width: 100%;
+      max-width: 1000px;
+      max-height: min(86dvh, 700px);
+      min-height: min(70dvh, 520px);
+      overflow: hidden;
+      border: 1px solid var(--gold);
+      border-radius: 4px;
+      background: var(--parchment);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+      color: var(--ink);
+    }
+
+    .about {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+      padding: clamp(20px, 3.4vw, 40px);
+      overflow-y: auto;
+      border-right: 1px solid rgba(138, 104, 48, 0.4);
+      text-align: center;
+    }
+
+    .about .script {
+      margin: 6px 0 10px;
+      color: var(--accent);
+      font-family: "Noto Nastaliq Urdu", "Amiri", serif;
+      font-size: clamp(25px, 3.4vw, 36px);
+      line-height: 2;
+    }
+
+    .about h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(22px, 2.6vw, 30px);
+      font-weight: 400;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+
+    .about .by {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .about .subject {
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .about a {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      padding: clamp(16px, 2.6vw, 30px);
+    }
+
+    .list h3 {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .list p {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .list ol {
+      flex: 1;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .list button,
+    .list .plain {
+      display: grid;
+      grid-template-columns: 2.6em minmax(0, 1fr);
+      gap: 4px;
+      width: 100%;
+      padding: 7px 6px;
+      border: 0;
+      border-bottom: 1px solid rgba(138, 104, 48, 0.2);
+      background: none;
+      color: var(--ink);
+      font-family: var(--display);
+      font-size: 14px;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .list .plain {
+      opacity: 0.45;
+    }
+
+    .list button:hover {
+      background: rgba(138, 104, 48, 0.14);
+    }
+
+    .list span:first-child {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    #reader button:focus-visible,
+    #reader a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .close {
+      position: fixed;
+      top: calc(14px + env(safe-area-inset-top, 0px));
+      right: max(16px, env(safe-area-inset-right, 0px));
+      z-index: 13;
+    }
+
+    .sheet {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .sheet img {
+      flex: 1;
+      min-height: 0;
+      max-width: 100%;
+      max-height: calc(100dvh - 118px);
+      object-fit: contain;
+      border-radius: 2px;
+      background: var(--parchment);
+    }
+
+    .waiting {
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 18px;
+    }
+
+    .turn {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--cream);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fades {
+      transition: opacity 600ms ease, visibility 600ms ease;
+    }
+
+    .fades.gone {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    #credit {
+      position: fixed;
+      bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom, 0px));
+      left: max(clamp(16px, 3vw, 38px), env(safe-area-inset-left, 0px));
+      z-index: 4;
+      max-width: min(300px, calc(100vw - 32px));
+      color: rgba(243, 232, 207, 0.86);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+      font-size: 10px;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    #pad {
+      position: fixed;
+      left: max(16px, env(safe-area-inset-left, 0px));
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      z-index: 5;
+      display: none;
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(2, 56px);
+      gap: 6px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #pad button {
+      min-height: 0;
+      padding: 0;
+      font-size: 14px;
+    }
+
+    #pad [data-action="forward"] {
+      grid-column: 2;
+    }
+
+    #pad [data-action="left"] {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    @media (pointer: coarse) {
+      #pad {
+        display: grid;
+      }
+
+      #credit {
+        bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+      }
+
+      #hint {
+        display: none;
+      }
+    }
+
+    @media (max-width: 680px) {
+      #hint {
+        display: none;
+      }
+
+      #controls {
+        flex-direction: column;
+        align-items: flex-end;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pill,
+      .fades {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">Opening the hall…</div>
+
+  <div id="vignette"></div>
+  <div id="fade"></div>
+  <div id="door-hint" hidden></div>
+
+  <!--
+    The Grand Reading Room comes from the CCORE Three.js 3D Scenes dataset (MIT), scene-001446.
+    The Library of Cordoba was generated by Qwen3.5-4B-3D-Coder, with its halls rebuilt for walking.
+  -->
+  <small id="credit" class="fades">
+    Grand Reading Room from the CCORE Three.js 3D Scenes dataset (MIT), scene-001446.
+    Library of Cordoba generated by Qwen3.5-4B-3D-Coder.
+  </small>
+
+  <div id="dot" hidden></div>
+  <div id="reader" hidden></div>
+
+  <div id="pad" aria-label="Walking controls">
+    <button class="pill" type="button" data-action="forward" aria-label="Walk forward">W</button>
+    <button class="pill" type="button" data-action="left" aria-label="Step left">A</button>
+    <button class="pill" type="button" data-action="back" aria-label="Walk back">S</button>
+    <button class="pill" type="button" data-action="right" aria-label="Step right">D</button>
+  </div>
+
+  <div id="controls">
+    <div id="hint" class="fades">W A S D to walk · Click to look · Aim at a book and click to open it</div>
+  </div>
+
+
+  <script type="module">
+    import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js";
+
+    const camera = new THREE.PerspectiveCamera(
+      46,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      160
+    );
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance"
+    });
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = false;  // lighting never moves; redrawn per map
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.localClippingEnabled = false;
+    document.body.prepend(renderer.domElement);
+
+    // ---------------------------------------------------------------------
+    // Maghrib, shared by both halls: the sky after sunset, and candlelight
+    // ---------------------------------------------------------------------
+
+    function addDuskSky(scene) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 2048;
+      canvas.height = 1024;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const atElevation = degrees => H * (0.5 - degrees / 180);
+
+      const sky = ctx.createLinearGradient(0, atElevation(90), 0, atElevation(0));
+      sky.addColorStop(0, "#080b20");
+      sky.addColorStop(0.35, "#141638");
+      sky.addColorStop(0.55, "#3a2760");
+      sky.addColorStop(0.7, "#8a3f66");
+      sky.addColorStop(0.85, "#d9653f");
+      sky.addColorStop(1, "#f0a050");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H / 2);
+      ctx.fillStyle = "#14101c";
+      ctx.fillRect(0, H / 2, W, H / 2);
+
+      // Afterglow on the western horizon. This texture coordinate faces -z.
+      const west = W * 0.75;
+      ctx.save();
+      ctx.translate(west, H / 2);
+      ctx.scale(2.6, 1);
+      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, H * 0.3);
+      glow.addColorStop(0, "rgba(255, 164, 84, 0.95)");
+      glow.addColorStop(0.45, "rgba(226, 90, 70, 0.5)");
+      glow.addColorStop(1, "rgba(120, 50, 100, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(-W, -H / 2, W * 2, H / 2);
+      ctx.restore();
+
+      // Stars come out away from the glow.
+      let seed = 4711;
+      const next = () => (seed = seed * 1664525 + 1013904223 >>> 0) / 4294967296;
+      for (let i = 0; i < 900; i++) {
+        const x = next() * W;
+        const elevation = 16 + next() * 74;
+        const away = Math.min(Math.abs(x - west), W - Math.abs(x - west)) / (W / 2);
+        const alpha = Math.min(1, (elevation - 16) / 34) * (0.35 + away * 0.65) * (0.4 + next() * 0.6);
+        ctx.fillStyle = `rgba(255, 244, 222, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x, atElevation(elevation), 0.7 + next() * 1.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // The thin new moon, horns turned away from where the sun went down.
+      const moonX = W * 0.715;
+      const moonY = atElevation(32);
+      const moonR = 26;
+      ctx.fillStyle = "#fff3d0";
+      ctx.shadowColor = "rgba(255, 236, 190, 0.9)";
+      ctx.shadowBlur = 22;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, moonR, Math.PI * 0.6, Math.PI * 1.9 + 0.5, true);
+      ctx.arc(moonX + 7, moonY - 9, moonR * 0.8, Math.PI * 1.9 + 0.5, Math.PI * 0.6, false);
+      ctx.fill();
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(120, 48, 24),
+        new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.BackSide,
+          fog: false,
+          toneMapped: false,
+          depthWrite: false
+        })
+      );
+      scene.add(dome);
+      scene.background = new THREE.Color(0x080b20);
+    }
+
+    // Wax candles in one draw call, with flames that move each on its own.
+    function addCandles(scene, spots) {
+      const wax = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(0.038, 0.042, 0.26, 10),
+        new THREE.MeshStandardMaterial({
+          color: 0xf3e6c8,
+          emissive: 0x8a4a16,
+          emissiveIntensity: 0.5,
+          roughness: 0.6
+        }),
+        spots.length
+      );
+
+      const flames = new THREE.InstancedMesh(
+        new THREE.SphereGeometry(1, 10, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffcf7a, toneMapped: false }),
+        spots.length
+      );
+      flames.frustumCulled = false;
+      wax.frustumCulled = false;
+
+      const place = new THREE.Matrix4();
+      const halo = new Float32Array(spots.length * 3);
+
+      spots.forEach(([x, y, z], index) => {
+        wax.setMatrixAt(index, place.makeTranslation(x, y + 0.13, z));
+        halo.set([x, y + 0.36, z], index * 3);
+      });
+
+      scene.add(wax, flames);
+
+      const glowCanvas = document.createElement("canvas");
+      glowCanvas.width = glowCanvas.height = 64;
+      const ctx = glowCanvas.getContext("2d");
+      const fade = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      fade.addColorStop(0, "rgba(255, 196, 110, 0.9)");
+      fade.addColorStop(0.3, "rgba(255, 150, 60, 0.28)");
+      fade.addColorStop(1, "rgba(255, 120, 40, 0)");
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const haloGeometry = new THREE.BufferGeometry();
+      haloGeometry.setAttribute("position", new THREE.BufferAttribute(halo, 3));
+      scene.add(new THREE.Points(haloGeometry, new THREE.PointsMaterial({
+        map: new THREE.CanvasTexture(glowCanvas),
+        size: 0.85,
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        fog: false
+      })));
+
+      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const position = new THREE.Vector3();
+      const rotation = new THREE.Quaternion();
+      const size = new THREE.Vector3();
+
+      return elapsed => {
+        spots.forEach(([x, y, z], index) => {
+          const flicker = still
+            ? 1
+            : 1 + Math.sin(elapsed * 9 + index * 2.3) * 0.13 + Math.sin(elapsed * 17 + index) * 0.08;
+          position.set(x, y + 0.34, z);
+          size.set(0.04, 0.095 * flicker, 0.04);
+          flames.setMatrixAt(index, place.compose(position, rotation, size));
+        });
+        flames.instanceMatrix.needsUpdate = true;
+      };
+    }
+
+    // ---------------------------------------------------------------------
+    // The horseshoe door shared by both halls; its face looks towards -z
+    // ---------------------------------------------------------------------
+
+    function addHorseshoeDoor(scene, z, size) {
+      const RADIUS = 1.25;
+      const OVERSHOOT = Math.PI / 6;
+      const IMPOST = 2.9;
+      const CENTER = IMPOST + RADIUS * Math.sin(OVERSHOOT);
+      const CHORD = RADIUS * Math.cos(OVERSHOOT);
+      const RING = 0.38;
+      const STONES = 15;
+
+      const material = (color, roughness, metalness = 0) =>
+        new THREE.MeshStandardMaterial({ color, roughness, metalness });
+
+      const timber = material(0x4a2a1a, 0.7);
+      const plaster = material(0xe6d8bb, 0.82);
+      const red = material(0x87303b, 0.76);
+      const white = material(0xf0e6d3, 0.6);
+      const brass = material(0xc29a4a, 0.3, 0.85);
+
+      const door = new THREE.Group();
+      door.position.set(0, 0, z);
+      door.scale.setScalar(size);
+      scene.add(door);
+
+      const part = (geometry, mat, x = 0, y = 0, depth = 0) => {
+        const mesh = new THREE.Mesh(geometry, mat);
+        mesh.position.set(x, y, depth);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        door.add(mesh);
+        return mesh;
+      };
+
+      // Plaster panel and gold frame.
+      part(new THREE.BoxGeometry(3.9, 5.4, 0.14), plaster, 0, 2.7, 0.05);
+      part(new THREE.BoxGeometry(3.9, 0.08, 0.18), brass, 0, 5.36, 0.02);
+      part(new THREE.BoxGeometry(0.08, 5.4, 0.18), brass, -1.91, 2.7, 0.02);
+      part(new THREE.BoxGeometry(0.08, 5.4, 0.18), brass, 1.91, 2.7, 0.02);
+
+      // Timber leaves filling the arch.
+      const leaf = new THREE.Shape();
+      leaf.moveTo(-CHORD, 0);
+      leaf.lineTo(CHORD, 0);
+      leaf.lineTo(CHORD, IMPOST);
+      leaf.absarc(0, CENTER, RADIUS, -OVERSHOOT, Math.PI + OVERSHOOT, false);
+      leaf.closePath();
+
+      const leafGeometry = new THREE.ExtrudeGeometry(leaf, {
+        depth: 0.1,
+        bevelEnabled: false,
+        curveSegments: 32
+      });
+      part(leafGeometry, timber, 0, 0, -0.06);
+      part(new THREE.BoxGeometry(0.05, CENTER + RADIUS - 0.04, 0.03), brass, 0, (CENTER + RADIUS) / 2, -0.075);
+
+      // Rows of brass studs, stopping short of the curve.
+      const stud = new THREE.SphereGeometry(0.035, 10, 8);
+      for (let row = 0; row < 7; row++) {
+        const y = 0.45 + row * 0.62;
+        const reach = y > IMPOST
+          ? Math.sqrt(Math.max(0, RADIUS * RADIUS - (y - CENTER) * (y - CENTER)))
+          : CHORD;
+
+        for (let x = 0.25; x < reach - 0.12; x += 0.3) {
+          part(stud, brass, x, y, -0.07);
+          part(stud, brass, -x, y, -0.07);
+        }
+      }
+
+      // Rings on both leaves.
+      for (const x of [-0.24, 0.24]) {
+        const ring = part(new THREE.TorusGeometry(0.1, 0.018, 8, 24), brass, x, 1.75, -0.1);
+        ring.rotation.y = 0;
+      }
+
+      // Striped voussoirs and matching jambs.
+      const sweep = (Math.PI + OVERSHOOT * 2) / STONES;
+      const wedge = new THREE.Shape();
+      wedge.absarc(0, 0, RADIUS, -sweep / 2 + 0.008, sweep / 2 - 0.008, false);
+      wedge.absarc(0, 0, RADIUS + RING, sweep / 2 - 0.008, -sweep / 2 + 0.008, true);
+      wedge.closePath();
+
+      const wedgeGeometry = new THREE.ExtrudeGeometry(wedge, {
+        depth: 0.18,
+        bevelEnabled: false,
+        curveSegments: 4
+      });
+
+      for (let i = 0; i < STONES; i++) {
+        const stone = part(wedgeGeometry, i % 2 ? white : red, 0, CENTER, -0.17);
+        stone.rotation.z = -OVERSHOOT + sweep * (i + 0.5);
+      }
+
+      const jamb = new THREE.BoxGeometry(0.34, 0.62, 0.18);
+      for (let i = 0; i < 5; i++) {
+        const y = 0.31 + i * 0.64;
+        part(jamb, i % 2 ? white : red, -CHORD - 0.17, y, -0.08);
+        part(jamb, i % 2 ? white : red, CHORD + 0.17, y, -0.08);
+      }
+
+      // A warm lamp over the door so it reads as the way through.
+      const glow = new THREE.PointLight(0xffc675, 16, 8, 2);
+      glow.position.set(0, 3.6, -1.1);
+      door.add(glow);
+    }
+
+    // ---------------------------------------------------------------------
+    // Books from the Bookshelf repo, each resting on a folding rahle stand.
+    // BOOKS is a snapshot made by fetch_books.py.
+    // ---------------------------------------------------------------------
+
+    const BOOKS = [];
+    const hallOf = book => /machine|mathematic/i.test(book.shelf) ? "reading-room" : "cordoba";
+    try {
+      const response = await fetch("/library/books");
+      if (response.ok) BOOKS.push(...(await response.json()));
+    } catch {
+      // The halls still open; they just have no books on the stands.
+    }
+    const readable = entry => Boolean(entry.href || entry.pages?.length);
+    const hasNotes = book => book.contents.some(readable);
+
+    // Page images in the artifact; on the website, PDFs read live from GitHub.
+    let pdfjs = null;
+
+    async function openPdf(href) {
+      pdfjs ??= import("/pdfjs/pdf.min.mjs").then(module => {
+        module.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+        return module;
+      });
+
+      const raw = href.replace(
+        /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\//,
+        "https://raw.githubusercontent.com/$1/$2/"
+      );
+      const [lib, response] = await Promise.all([pdfjs, fetch(raw)]);
+      if (!response.ok) throw new Error(`PDF ${response.status}`);
+
+      const pdf = await lib.getDocument({ data: new Uint8Array(await response.arrayBuffer()) }).promise;
+      const rendered = new Map();
+
+      return {
+        count: pdf.numPages,
+        src(index) {
+          if (!rendered.has(index)) {
+            rendered.set(index, (async () => {
+              const page = await pdf.getPage(index + 1);
+              const viewport = page.getViewport({ scale: 1.7 });
+              const paper = document.createElement("canvas");
+              paper.width = Math.floor(viewport.width);
+              paper.height = Math.floor(viewport.height);
+              await page.render({ canvasContext: paper.getContext("2d"), viewport }).promise;
+              return paper.toDataURL("image/jpeg", 0.86);
+            })());
+          }
+          return rendered.get(index);
+        }
+      };
+    }
+
+    async function pagesOf(entry) {
+      if (entry.pages?.length) {
+        return { count: entry.pages.length, src: index => entry.pages[index] };
+      }
+      entry.doc ??= openPdf(entry.href).catch(error => {
+        entry.doc = null;
+        throw error;
+      });
+      return entry.doc;
+    }
+
+    function drawCover(canvas, book) {
+      const [base, gold, light] = book.colors;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.fillStyle = base;
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = gold;
+      ctx.lineWidth = 7;
+      ctx.strokeRect(22, 22, W - 44, H - 44);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(36, 36, W - 72, H - 72);
+
+      // A mihrab arch framing the title.
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(84, H - 84);
+      ctx.lineTo(84, H * 0.36);
+      ctx.quadraticCurveTo(84, H * 0.2, W / 2, 84);
+      ctx.quadraticCurveTo(W - 84, H * 0.2, W - 84, H * 0.36);
+      ctx.lineTo(W - 84, H - 84);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = light;
+      if (book.ar) {
+        let size = 58;
+        ctx.font = `${size}px "Noto Nastaliq Urdu", "Amiri", serif`;
+        while (ctx.measureText(book.ar).width > W - 200 && size > 24) {
+          size -= 2;
+          ctx.font = `${size}px "Noto Nastaliq Urdu", "Amiri", serif`;
+        }
+        ctx.fillText(book.ar, W / 2, H * 0.44);
+      }
+
+      ctx.fillStyle = gold;
+      const words = book.title.split(" ");
+      const lines = [""];
+      ctx.font = '26px Georgia, "Times New Roman", serif';
+      for (const word of words) {
+        const line = `${lines[lines.length - 1]} ${word}`.trim();
+        if (ctx.measureText(line).width > W - 210) lines.push(word);
+        else lines[lines.length - 1] = line;
+      }
+      lines.forEach((line, i) => ctx.fillText(line, W / 2, H * 0.66 + i * 34));
+    }
+
+    let glowTexture = null;
+
+    function bookGlow() {
+      if (!glowTexture) {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 128;
+        const ctx = canvas.getContext("2d");
+        const fade = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        fade.addColorStop(0, "rgba(255, 214, 140, 1)");
+        fade.addColorStop(0.45, "rgba(255, 190, 100, 0.35)");
+        fade.addColorStop(1, "rgba(255, 170, 80, 0)");
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 0, 128, 128);
+        glowTexture = new THREE.CanvasTexture(canvas);
+      }
+
+      return new THREE.Sprite(new THREE.SpriteMaterial({
+        map: glowTexture,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        opacity: 0.08
+      }));
+    }
+
+    function placeBooks(scene, hall, spots, size) {
+      const wood = new THREE.MeshStandardMaterial({ color: 0x5a3320, roughness: 0.62 });
+      const pages = new THREE.MeshStandardMaterial({ color: 0xe6d8b8, roughness: 0.9 });
+
+      return BOOKS.filter(book => hallOf(book) === hall).slice(0, spots.length).map((data, index) => {
+        const [x, z, yaw] = spots[index];
+        const stand = new THREE.Group();
+        stand.position.set(x, 0, z);
+        stand.rotation.y = yaw;
+        stand.scale.setScalar(size);
+        scene.add(stand);
+
+        // Crossed boards seen from the side, as on a folding rahle.
+        for (const side of [-0.3, 0.3]) {
+          for (const lean of [-0.42, 0.42]) {
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 0.09), wood);
+            leg.position.set(side, 0.52, 0);
+            leg.rotation.x = lean;
+            leg.castShadow = true;
+            stand.add(leg);
+          }
+        }
+
+        const tray = new THREE.Group();
+        tray.position.set(0, 1.03, 0);
+        tray.rotation.x = 0.62;
+        stand.add(tray);
+
+        const board = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.035, 0.96), wood);
+        board.castShadow = true;
+        tray.add(board);
+
+        const ledge = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.08, 0.04), wood);
+        ledge.position.set(0, 0.05, 0.47);
+        tray.add(ledge);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 720;
+        drawCover(canvas, data);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = 8;
+
+        const redraw = () => {
+          drawCover(canvas, data);
+          texture.needsUpdate = true;
+        };
+        document.fonts?.load?.('58px "Noto Nastaliq Urdu"', data.ar || "ا").then(redraw, () => {});
+
+        const cover = new THREE.MeshStandardMaterial({
+          map: texture,
+          emissive: 0xffffff,
+          emissiveMap: texture,
+          emissiveIntensity: 0.05,
+          roughness: 0.5
+        });
+        const edge = new THREE.MeshStandardMaterial({ color: data.colors[0], roughness: 0.6 });
+
+        // Box faces: +x -x +y -y +z -z. The cover is the top face.
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.11, 0.84),
+          [pages, edge, cover, edge, pages, pages]
+        );
+        mesh.position.y = 0.075;
+        mesh.castShadow = true;
+        tray.add(mesh);
+
+        const book = { data, mesh, tray, cover, glow: null, hovered: false, notes: hasNotes(data) };
+
+        if (book.notes) {
+          book.glow = bookGlow();
+          book.glow.position.y = 0.16;
+          book.glow.scale.set(1.5, 1.5, 1);
+          tray.add(book.glow);
+        }
+
+        return book;
+      });
+    }
+
+    // Books with notes breathe, very faintly; the one you aim at wakes up.
+    function pulseBooks(books, elapsed) {
+      for (const book of books) {
+        const wave = book.notes ? Math.sin(elapsed * 1.1 + book.mesh.id) : 0;
+        const rest = book.notes ? 0.1 + wave * 0.025 : 0.05;
+        book.cover.emissiveIntensity = book.hovered ? 0.4 : rest;
+        if (book.glow) book.glow.material.opacity = (book.hovered ? 0.2 : 0.075) + wave * 0.02;
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // Map: The Grand Reading Room
+    // ---------------------------------------------------------------------
+
+    function buildReadingRoom() {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x10161c);
+      scene.fog = new THREE.FogExp2(0x111820, 0.011);
+
+    const TAU = Math.PI * 2;
+    const Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+    // A moving vertical clipping plane creates a cutaway architectural view.
+    const cutPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
+
+    function cuttable(material) {
+      material.clippingPlanes = [cutPlane];
+      material.clipShadows = true;
+      return material;
+    }
+
+    let seed = 90210;
+    function random() {
+      seed |= 0;
+      seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+
+    const rand = (min, max) => min + (max - min) * random();
+
+    // ---------------------------------------------------------------------
+    // Procedural textures
+    // ---------------------------------------------------------------------
+
+    function makeMarbleTexture() {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#aa9679";
+      ctx.fillRect(0, 0, 512, 512);
+
+      for (let i = 0; i < 170; i++) {
+        const y = rand(-40, 552);
+        const bend = rand(-100, 100);
+        ctx.beginPath();
+        ctx.moveTo(-20, y);
+        ctx.bezierCurveTo(
+          130, y + bend,
+          330, y - bend * 0.7,
+          532, y + rand(-60, 60)
+        );
+        ctx.strokeStyle = i % 4 === 0
+          ? "rgba(74,61,48,0.10)"
+          : "rgba(238,224,192,0.10)";
+        ctx.lineWidth = rand(0.4, 2.3);
+        ctx.stroke();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(3, 3);
+      texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      return texture;
+    }
+
+    function makeSkyTexture() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+      gradient.addColorStop(0, "#10122e");
+      gradient.addColorStop(0.58, "#5b2f5e");
+      gradient.addColorStop(1, "#e0763a");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 128, 256);
+
+      ctx.fillStyle = "rgba(255,244,222,0.85)";
+      for (let i = 0; i < 70; i++) {
+        ctx.beginPath();
+        ctx.ellipse(
+          rand(-20, 148),
+          rand(4, 150),
+          rand(0.5, 1.1),
+          rand(0.5, 1.1),
+          rand(-0.2, 0.2),
+          0,
+          TAU
+        );
+        ctx.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      return texture;
+    }
+
+    const marbleTexture = makeMarbleTexture();
+    const skyTexture = makeSkyTexture();
+
+    // ---------------------------------------------------------------------
+    // Materials and reusable geometry
+    // ---------------------------------------------------------------------
+
+    const materials = {
+      floorSide: new THREE.MeshStandardMaterial({
+        color: 0x806b52,
+        roughness: 0.86
+      }),
+      floorTop: new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: marbleTexture,
+        roughness: 0.72,
+        metalness: 0.02
+      }),
+      base: new THREE.MeshStandardMaterial({
+        color: 0x22282c,
+        roughness: 0.75
+      }),
+      wall: cuttable(new THREE.MeshStandardMaterial({
+        color: 0xb9a78d,
+        roughness: 0.9,
+        side: THREE.BackSide
+      })),
+      stone: cuttable(new THREE.MeshStandardMaterial({
+        color: 0xc8b899,
+        roughness: 0.78
+      })),
+      shelf: cuttable(new THREE.MeshStandardMaterial({
+        color: 0x4e2b1d,
+        roughness: 0.64
+      })),
+      frame: cuttable(new THREE.MeshStandardMaterial({
+        color: 0x302a25,
+        roughness: 0.48,
+        metalness: 0.28
+      })),
+      dome: cuttable(new THREE.MeshStandardMaterial({
+        color: 0xd5c5a7,
+        roughness: 0.86,
+        side: THREE.BackSide
+      })),
+      rib: cuttable(new THREE.MeshStandardMaterial({
+        color: 0x9a7945,
+        roughness: 0.48,
+        metalness: 0.42
+      })),
+      sky: cuttable(new THREE.MeshBasicMaterial({
+        map: skyTexture,
+        side: THREE.DoubleSide
+      })),
+      wood: new THREE.MeshStandardMaterial({
+        color: 0x5b2f1d,
+        roughness: 0.55
+      }),
+      polishedWood: new THREE.MeshStandardMaterial({
+        color: 0x713c25,
+        roughness: 0.36
+      }),
+      green: new THREE.MeshStandardMaterial({
+        color: 0x173f33,
+        roughness: 0.82
+      }),
+      leather: new THREE.MeshStandardMaterial({
+        color: 0x1f3d33,
+        roughness: 0.7
+      }),
+      brass: new THREE.MeshStandardMaterial({
+        color: 0xb38a43,
+        roughness: 0.28,
+        metalness: 0.82
+      }),
+      darkBrass: new THREE.MeshStandardMaterial({
+        color: 0x6b512b,
+        roughness: 0.38,
+        metalness: 0.7
+      }),
+      paper: new THREE.MeshStandardMaterial({
+        color: 0xe9ddbf,
+        roughness: 0.9
+      }),
+      rug: new THREE.MeshStandardMaterial({
+        color: 0x263b32,
+        roughness: 0.95
+      }),
+      rugBorder: new THREE.MeshStandardMaterial({
+        color: 0x8a6b36,
+        roughness: 0.9
+      }),
+      glass: new THREE.MeshPhysicalMaterial({
+        color: 0xc9e5e5,
+        roughness: 0.08,
+        metalness: 0,
+        transparent: true,
+        opacity: 0.16,
+        transmission: 0.25,
+        thickness: 0.08,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      }),
+      lamp: new THREE.MeshStandardMaterial({
+        color: 0x174d3c,
+        emissive: 0x153b2c,
+        emissiveIntensity: 0.45,
+        roughness: 0.38,
+        metalness: 0.08
+      }),
+      bulb: new THREE.MeshStandardMaterial({
+        color: 0xffe1a0,
+        emissive: 0xffbf58,
+        emissiveIntensity: 3.1,
+        roughness: 0.25
+      })
+    };
+
+    const bookPalette = [
+      0x6e2523, 0x264b45, 0x304d72, 0x8b4f26,
+      0x7a6738, 0x3e3150, 0x8a7750, 0x273a38
+    ].map(color => cuttable(new THREE.MeshStandardMaterial({
+      color,
+      roughness: 0.82
+    })));
+
+    const unitBox = new THREE.BoxGeometry(1, 1, 1);
+    const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 32);
+    const unitSphere = new THREE.SphereGeometry(1, 20, 12);
+    const unitPlane = new THREE.PlaneGeometry(1, 1);
+
+    function box(parent, material, x, y, z, sx, sy, sz, ry = 0) {
+      const mesh = new THREE.Mesh(unitBox, material);
+      mesh.position.set(x, y, z);
+      mesh.scale.set(sx, sy, sz);
+      mesh.rotation.y = ry;
+      mesh.castShadow = !material.transparent;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function cylinder(parent, material, radius, height, x, y, z) {
+      const mesh = new THREE.Mesh(unitCylinder, material);
+      mesh.position.set(x, y, z);
+      mesh.scale.set(radius, height, radius);
+      mesh.castShadow = !material.transparent;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function sphere(parent, material, radius, x, y, z) {
+      const mesh = new THREE.Mesh(unitSphere, material);
+      mesh.position.set(x, y, z);
+      mesh.scale.setScalar(radius);
+      mesh.castShadow = !material.transparent;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function torus(parent, material, radius, tube, x, y, z, rx = 0, ry = 0) {
+      const mesh = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, tube, 10, 96),
+        material
+      );
+      mesh.position.set(x, y, z);
+      mesh.rotation.set(rx, ry, 0);
+      mesh.castShadow = !material.transparent;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    // ---------------------------------------------------------------------
+    // Floor and circular shell
+    // ---------------------------------------------------------------------
+
+    cylinder(scene, materials.base, 19.15, 0.9, 0, -0.82, 0);
+
+    const floorGeometry = new THREE.CylinderGeometry(18.6, 18.9, 0.7, 96);
+    const floor = new THREE.Mesh(floorGeometry, [
+      materials.floorSide,
+      materials.floorTop,
+      materials.floorSide
+    ]);
+    floor.position.y = -0.35;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const inlayMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8f7039,
+      roughness: 0.42,
+      metalness: 0.48
+    });
+
+    [3.1, 5.9, 12.0, 16.2].forEach(radius => {
+      torus(scene, inlayMaterial, radius, 0.035, 0, 0.027, 0, Math.PI / 2);
+    });
+
+    for (let i = 0; i < 16; i++) {
+      const angle = i * TAU / 16;
+      const x = Math.sin(angle) * 10.0;
+      const z = Math.cos(angle) * 10.0;
+      box(scene, inlayMaterial, x, 0.028, z, 0.027, 0.015, 13.5, angle);
+    }
+
+    const wall = new THREE.Mesh(
+      new THREE.CylinderGeometry(18.5, 18.5, 14, 96, 1, true),
+      materials.wall
+    );
+    wall.position.y = 7;
+    wall.receiveShadow = true;
+    scene.add(wall);
+
+    torus(scene, materials.stone, 18.25, 0.3, 0, 0.35, 0, Math.PI / 2);
+    torus(scene, materials.stone, 18.25, 0.22, 0, 10.85, 0, Math.PI / 2);
+    torus(scene, materials.stone, 18.35, 0.34, 0, 14.0, 0, Math.PI / 2);
+
+    // ---------------------------------------------------------------------
+    // Domed ceiling and structural ribs
+    // ---------------------------------------------------------------------
+
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(18.5, 96, 40, 0, TAU, 0, Math.PI / 2),
+      materials.dome
+    );
+    dome.position.y = 14;
+    dome.receiveShadow = true;
+    scene.add(dome);
+
+    for (let i = 0; i < 16; i++) {
+      const angle = i * TAU / 16;
+      const start = new THREE.Vector3(
+        Math.sin(angle) * 18.25,
+        14.0,
+        Math.cos(angle) * 18.25
+      );
+      const control = new THREE.Vector3(
+        Math.sin(angle) * 10.0,
+        28.0,
+        Math.cos(angle) * 10.0
+      );
+      const end = new THREE.Vector3(0, 32.25, 0);
+
+      const curve = new THREE.QuadraticBezierCurve3(start, control, end);
+      const rib = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 42, 0.14, 8, false),
+        materials.rib
+      );
+      rib.castShadow = true;
+      scene.add(rib);
+    }
+
+    [17.3, 21.0, 25.0].forEach(height => {
+      const radius = Math.sqrt(
+        18.5 * 18.5 - (height - 14) * (height - 14)
+      );
+      torus(scene, materials.rib, radius, 0.075, 0, height, 0, Math.PI / 2);
+    });
+
+    cylinder(scene, materials.darkBrass, 0.7, 0.12, 0, 32.43, 0);
+    torus(scene, materials.brass, 0.78, 0.09, 0, 32.42, 0, Math.PI / 2);
+
+    // ---------------------------------------------------------------------
+    // Clerestory windows
+    // ---------------------------------------------------------------------
+
+    const windowAngles = [];
+
+    for (let i = 0; i < 24; i++) {
+      const angle = i * TAU / 24;
+      windowAngles.push(angle);
+
+      const windowGroup = new THREE.Group();
+      windowGroup.position.set(
+        Math.sin(angle) * 18.24,
+        12.1,
+        Math.cos(angle) * 18.24
+      );
+      windowGroup.rotation.y = angle + Math.PI;
+      scene.add(windowGroup);
+
+      const glass = new THREE.Mesh(unitPlane, materials.sky);
+      glass.position.z = 0.05;
+      glass.scale.set(2.05, 2.45, 1);
+      windowGroup.add(glass);
+
+      box(windowGroup, materials.frame, -1.11, 0, 0.12, 0.16, 2.68, 0.2);
+      box(windowGroup, materials.frame, 1.11, 0, 0.12, 0.16, 2.68, 0.2);
+      box(windowGroup, materials.frame, 0, 1.28, 0.12, 2.38, 0.16, 0.2);
+      box(windowGroup, materials.frame, 0, -1.28, 0.12, 2.38, 0.16, 0.2);
+      box(windowGroup, materials.frame, 0, 0, 0.14, 0.065, 2.52, 0.14);
+      box(windowGroup, materials.frame, 0, 0.18, 0.14, 2.14, 0.065, 0.14);
+      box(windowGroup, materials.stone, 0, -1.48, 0.18, 2.65, 0.2, 0.48);
+    }
+
+    // Pilasters between the windows.
+    for (let i = 0; i < 24; i++) {
+      const angle = i * TAU / 24;
+      box(
+        scene,
+        materials.stone,
+        Math.sin(angle) * 18.02,
+        5.6,
+        Math.cos(angle) * 18.02,
+        0.44,
+        11.2,
+        0.68,
+        angle
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // Tiered circular book wall
+    // ---------------------------------------------------------------------
+
+    const shelfLevels = [0.72, 2.50, 4.28, 6.06, 7.84, 9.62];
+    const bookMatrices = bookPalette.map(() => []);
+
+    shelfLevels.forEach(level => {
+      torus(scene, materials.shelf, 17.08, 0.13, 0, level - 0.07, 0, Math.PI / 2);
+    });
+
+    for (let section = 0; section < 32; section++) {
+      const sectionAngle = (section + 0.5) * TAU / 32;
+      const edgeAngle = section * TAU / 32;
+
+      box(
+        scene,
+        materials.shelf,
+        Math.sin(edgeAngle) * 17.18,
+        5.25,
+        Math.cos(edgeAngle) * 17.18,
+        0.18,
+        10.25,
+        0.58,
+        edgeAngle
+      );
+
+      shelfLevels.forEach(level => {
+        for (let bookIndex = 0; bookIndex < 9; bookIndex++) {
+          if (random() < 0.075) continue;
+
+          const width = rand(0.18, 0.31);
+          const height = rand(0.66, 0.93);
+          const depth = rand(0.44, 0.61);
+          const tangentOffset = (bookIndex - 4) * 0.34 + rand(-0.045, 0.045);
+          const radius = 17.04 + rand(-0.04, 0.04);
+
+          const position = new THREE.Vector3(
+            Math.sin(sectionAngle) * radius +
+              Math.cos(sectionAngle) * tangentOffset,
+            level + 0.07 + height / 2,
+            Math.cos(sectionAngle) * radius -
+              Math.sin(sectionAngle) * tangentOffset
+          );
+
+          const quaternion = new THREE.Quaternion().setFromAxisAngle(
+            Y_AXIS,
+            sectionAngle
+          );
+
+          const matrix = new THREE.Matrix4().compose(
+            position,
+            quaternion,
+            new THREE.Vector3(width, height, depth)
+          );
+
+          const colorIndex = Math.floor(random() * bookPalette.length);
+          bookMatrices[colorIndex].push(matrix);
+        }
+      });
+    }
+
+    bookMatrices.forEach((matrices, materialIndex) => {
+      if (!matrices.length) return;
+
+      const books = new THREE.InstancedMesh(
+        unitBox,
+        bookPalette[materialIndex],
+        matrices.length
+      );
+
+      matrices.forEach((matrix, index) => books.setMatrixAt(index, matrix));
+      books.instanceMatrix.needsUpdate = true;
+      books.receiveShadow = true;
+      books.frustumCulled = false;
+      scene.add(books);
+    });
+
+    torus(scene, materials.shelf, 17.15, 0.18, 0, 10.67, 0, Math.PI / 2);
+
+    // ---------------------------------------------------------------------
+    // Central circular catalog cabinet
+    // ---------------------------------------------------------------------
+
+    const catalog = new THREE.Group();
+    scene.add(catalog);
+
+    cylinder(catalog, materials.stone, 2.82, 0.28, 0, 0.14, 0);
+    cylinder(catalog, materials.polishedWood, 2.3, 3.2, 0, 1.88, 0);
+    cylinder(catalog, materials.brass, 2.36, 0.1, 0, 0.43, 0);
+    cylinder(catalog, materials.brass, 2.36, 0.1, 0, 3.42, 0);
+    cylinder(catalog, materials.polishedWood, 2.68, 0.24, 0, 3.65, 0);
+
+    for (let row = 0; row < 3; row++) {
+      for (let i = 0; i < 12; i++) {
+        const angle = i * TAU / 12;
+        const y = 0.9 + row * 0.86;
+
+        box(
+          catalog,
+          materials.wood,
+          Math.sin(angle) * 2.34,
+          y,
+          Math.cos(angle) * 2.34,
+          0.91,
+          0.72,
+          0.16,
+          angle
+        );
+
+        box(
+          catalog,
+          materials.paper,
+          Math.sin(angle) * 2.225,
+          y + 0.12,
+          Math.cos(angle) * 2.225,
+          0.24,
+          0.09,
+          0.025,
+          angle
+        );
+
+        sphere(
+          catalog,
+          materials.brass,
+          0.065,
+          Math.sin(angle) * 2.19,
+          y - 0.1,
+          Math.cos(angle) * 2.19
+        );
+      }
+    }
+
+    // Glass vitrine and armillary catalog globe.
+    cylinder(catalog, materials.brass, 1.48, 0.16, 0, 3.84, 0);
+    cylinder(catalog, materials.glass, 1.34, 1.35, 0, 4.58, 0);
+
+    const glassDome = new THREE.Mesh(
+      new THREE.SphereGeometry(1.34, 40, 20, 0, TAU, 0, Math.PI / 2),
+      materials.glass
+    );
+    glassDome.position.y = 5.255;
+    catalog.add(glassDome);
+
+    for (let i = 0; i < 8; i++) {
+      const angle = i * TAU / 8;
+      box(
+        catalog,
+        materials.brass,
+        Math.sin(angle) * 1.33,
+        4.58,
+        Math.cos(angle) * 1.33,
+        0.035,
+        1.35,
+        0.035,
+        angle
+      );
+    }
+
+    sphere(catalog, materials.paper, 0.48, 0, 4.62, 0);
+    const ringA = torus(catalog, materials.brass, 0.68, 0.026, 0, 4.62, 0);
+    const ringB = torus(catalog, materials.brass, 0.68, 0.026, 0, 4.62, 0, Math.PI / 2);
+    const ringC = torus(catalog, materials.brass, 0.78, 0.024, 0, 4.62, 0, 0, Math.PI / 2);
+
+    ringA.rotation.x = 0.28;
+    ringB.rotation.z = 0.22;
+    ringC.rotation.x = 0.5;
+
+    const catalogLight = new THREE.PointLight(0xffc96e, 38, 9, 2);
+    catalogLight.position.set(0, 4.6, 0);
+    scene.add(catalogLight);
+
+    // ---------------------------------------------------------------------
+    // Reading furniture
+    // ---------------------------------------------------------------------
+
+    function createChair(parent, x, z, rotation) {
+      const chair = new THREE.Group();
+      chair.position.set(x, 0, z);
+      chair.rotation.y = rotation;
+      parent.add(chair);
+
+      box(chair, materials.wood, 0, 0.64, 0, 0.82, 0.13, 0.78);
+      box(chair, materials.leather, 0, 0.75, 0.02, 0.7, 0.12, 0.65);
+      box(chair, materials.wood, 0, 1.13, -0.35, 0.84, 0.76, 0.12);
+      box(chair, materials.leather, 0, 1.15, -0.275, 0.68, 0.48, 0.06);
+
+      [-0.31, 0.31].forEach(legX => {
+        [-0.28, 0.28].forEach(legZ => {
+          box(
+            chair,
+            materials.wood,
+            legX,
+            0.31,
+            legZ,
+            0.09,
+            0.62,
+            0.09
+          );
+        });
+      });
+
+      return chair;
+    }
+
+    function createOpenBook(parent, x, z, y, rotation = 0) {
+      const book = new THREE.Group();
+      book.position.set(x, y, z);
+      book.rotation.y = rotation;
+      parent.add(book);
+
+      box(book, materials.wood, 0, 0, 0, 0.92, 0.055, 0.64);
+
+      const leftPage = box(
+        book,
+        materials.paper,
+        -0.23,
+        0.05,
+        0,
+        0.43,
+        0.025,
+        0.58
+      );
+      leftPage.rotation.z = 0.09;
+
+      const rightPage = box(
+        book,
+        materials.paper,
+        0.23,
+        0.05,
+        0,
+        0.43,
+        0.025,
+        0.58
+      );
+      rightPage.rotation.z = -0.09;
+
+      box(book, materials.darkBrass, 0, 0.07, 0, 0.035, 0.028, 0.61);
+      return book;
+    }
+
+    function createLamp(parent, x, z) {
+      const lamp = new THREE.Group();
+      lamp.position.set(x, 1.44, z);
+      parent.add(lamp);
+
+      cylinder(lamp, materials.brass, 0.22, 0.07, 0, 0.035, 0);
+      cylinder(lamp, materials.brass, 0.035, 0.58, 0, 0.33, 0);
+
+      const shade = new THREE.Mesh(
+        new THREE.SphereGeometry(0.34, 24, 12, 0, TAU, 0, Math.PI / 2),
+        materials.lamp
+      );
+      shade.position.y = 0.61;
+      shade.scale.y = 0.62;
+      shade.castShadow = true;
+      lamp.add(shade);
+
+      sphere(lamp, materials.bulb, 0.09, 0, 0.57, 0);
+      return lamp;
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const angle = i * TAU / 8 + Math.PI / 8;
+      const desk = new THREE.Group();
+      desk.position.set(
+        Math.sin(angle) * 8.35,
+        0,
+        Math.cos(angle) * 8.35
+      );
+      desk.rotation.y = angle;
+      scene.add(desk);
+
+      box(desk, materials.rug, 0, 0.065, 0, 3.45, 0.025, 5.2);
+      box(desk, materials.rugBorder, 0, 0.082, 0, 3.18, 0.012, 4.92);
+
+      box(desk, materials.polishedWood, 0, 1.31, 0, 1.5, 0.18, 4.25);
+      box(desk, materials.green, 0, 1.415, 0, 1.29, 0.035, 4.02);
+
+      [-0.59, 0.59].forEach(x => {
+        [-1.72, 1.72].forEach(z => {
+          box(desk, materials.wood, x, 0.66, z, 0.13, 1.25, 0.13);
+        });
+      });
+
+      box(desk, materials.wood, 0, 0.82, 0, 1.15, 0.12, 3.4);
+
+      createChair(desk, 1.22, 1.02, -Math.PI / 2);
+      createChair(desk, 1.22, -1.02, -Math.PI / 2);
+      createChair(desk, -1.22, 1.02, Math.PI / 2);
+      createChair(desk, -1.22, -1.02, Math.PI / 2);
+
+      createLamp(desk, 0.43, 1.35);
+      createOpenBook(desk, -0.04, 0.38, 1.48, rand(-0.12, 0.12));
+
+      box(
+        desk,
+        i % 2 ? bookPalette[2] : bookPalette[0],
+        0.08,
+        1.49,
+        -1.05,
+        0.62,
+        0.12,
+        0.82,
+        rand(-0.25, 0.25)
+      );
+
+      box(
+        desk,
+        materials.brass,
+        0,
+        1.44,
+        2.12,
+        0.34,
+        0.07,
+        0.14
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // Suspended chandelier
+    // ---------------------------------------------------------------------
+
+    cylinder(scene, materials.darkBrass, 0.035, 21.4, 0, 21.2, 0);
+    torus(scene, materials.brass, 3.45, 0.11, 0, 10.5, 0, Math.PI / 2);
+    torus(scene, materials.darkBrass, 2.25, 0.06, 0, 10.35, 0, Math.PI / 2);
+
+    for (let i = 0; i < 16; i++) {
+      const angle = i * TAU / 16;
+      const x = Math.sin(angle) * 3.45;
+      const z = Math.cos(angle) * 3.45;
+
+      cylinder(scene, materials.brass, 0.035, 0.46, x, 10.27, z);
+      sphere(scene, materials.bulb, 0.13, x, 10.0, z);
+    }
+
+    const chandelierLight = new THREE.PointLight(0xffb866, 360, 36, 2);
+    chandelierLight.position.set(0, 9.4, 0);
+    scene.add(chandelierLight);
+
+    // ---------------------------------------------------------------------
+    // Lighting and atmospheric sunbeams
+    // ---------------------------------------------------------------------
+
+    scene.add(new THREE.AmbientLight(0xffd9a8, 0.42));
+
+    const hemisphere = new THREE.HemisphereLight(0x39406e, 0x3b291d, 0.5);
+    scene.add(hemisphere);
+
+    const sunlight = new THREE.DirectionalLight(0x8f7fc4, 0.3);
+    sunlight.position.set(9, 24, 11);
+    sunlight.castShadow = true;
+    sunlight.shadow.mapSize.set(2048, 2048);
+    sunlight.shadow.camera.left = -24;
+    sunlight.shadow.camera.right = 24;
+    sunlight.shadow.camera.top = 24;
+    sunlight.shadow.camera.bottom = -24;
+    sunlight.shadow.camera.near = 1;
+    sunlight.shadow.camera.far = 60;
+    sunlight.shadow.bias = -0.00025;
+    sunlight.shadow.normalBias = 0.035;
+    scene.add(sunlight);
+
+    for (let i = 0; i < 0; i++) {
+      const angle = i * TAU / 4 + 0.25;
+      const spot = new THREE.SpotLight(
+        0xd7ecff,
+        210,
+        34,
+        0.34,
+        0.85,
+        2
+      );
+      spot.position.set(
+        Math.sin(angle) * 16.5,
+        13.2,
+        Math.cos(angle) * 16.5
+      );
+      spot.target.position.set(
+        Math.sin(angle) * 7.2,
+        0,
+        Math.cos(angle) * 7.2
+      );
+      scene.add(spot, spot.target);
+    }
+
+    const beamMaterial = new THREE.MeshBasicMaterial({
+      color: 0xc7e1e8,
+      transparent: true,
+      opacity: 0.022,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+
+    for (let i = 0; i < 0; i++) {
+      const angle = windowAngles[i * 3];
+      const start = new THREE.Vector3(
+        Math.sin(angle) * 17.8,
+        12.0,
+        Math.cos(angle) * 17.8
+      );
+      const end = new THREE.Vector3(
+        Math.sin(angle) * 7.2,
+        0.08,
+        Math.cos(angle) * 7.2
+      );
+
+      const direction = start.clone().sub(end);
+      const length = direction.length();
+
+      const beam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 2.25, length, 14, 1, true),
+        beamMaterial
+      );
+      beam.position.copy(start).add(end).multiplyScalar(0.5);
+      beam.quaternion.setFromUnitVectors(Y_AXIS, direction.normalize());
+      scene.add(beam);
+    }
+
+    // Floating dust catches the window light.
+    const dustCount = 850;
+    const dustPositions = new Float32Array(dustCount * 3);
+
+    for (let i = 0; i < dustCount; i++) {
+      const angle = rand(0, TAU);
+      const radius = Math.sqrt(random()) * 16.5;
+      dustPositions[i * 3] = Math.sin(angle) * radius;
+      dustPositions[i * 3 + 1] = rand(0.5, 18.5);
+      dustPositions[i * 3 + 2] = Math.cos(angle) * radius;
+    }
+
+    const dustGeometry = new THREE.BufferGeometry();
+    dustGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(dustPositions, 3)
+    );
+
+    const dust = new THREE.Points(
+      dustGeometry,
+      new THREE.PointsMaterial({
+        color: 0xf4ddb0,
+        size: 0.045,
+        transparent: true,
+        opacity: 0.3,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    scene.add(dust);
+
+      addHorseshoeDoor(scene, 16.5, 1.2);
+
+      const candleSpots = [];
+
+      // Around the top of the catalog.
+      for (let i = 0; i < 16; i++) {
+        const angle = i * TAU / 16;
+        candleSpots.push([Math.sin(angle) * 2.5, 3.77, Math.cos(angle) * 2.5]);
+      }
+
+      // A pair at the head of each desk.
+      for (let i = 0; i < 8; i++) {
+        const angle = i * TAU / 8 + Math.PI / 8;
+        const x = Math.sin(angle) * 8.35;
+        const z = Math.cos(angle) * 8.35;
+        for (const side of [-0.4, 0.4]) {
+          candleSpots.push([
+            x + side * Math.cos(angle) - 1.75 * Math.sin(angle),
+            1.44,
+            z - side * Math.sin(angle) - 1.75 * Math.cos(angle)
+          ]);
+        }
+      }
+
+      // Along the foot of the book wall, leaving the door clear.
+      for (let i = 1; i < 32; i++) {
+        const angle = i * TAU / 32;
+        if (i % 2) candleSpots.push([Math.sin(angle) * 16.5, 0, Math.cos(angle) * 16.5]);
+      }
+
+      const moveCandles = addCandles(scene, candleSpots);
+
+      // Books stand out past the ends of the desks, facing the middle.
+      const bookSpots = [30, 150, 270, 90, 210, 330].map(degrees => {
+        const angle = degrees * Math.PI / 180;
+        const x = Math.sin(angle) * 12.6;
+        const z = Math.cos(angle) * 12.6;
+        return [x, z, Math.atan2(-x, -z)];
+      });
+      const books = placeBooks(scene, "reading-room", bookSpots, 1.28);
+
+      // Candle fill low in the room, so the catalog and desks stay readable.
+      for (const z of [-6.5, 6.5]) {
+        const fill = new THREE.PointLight(0xffb066, 34, 16, 2);
+        fill.position.set(0, 2.6, z);
+        scene.add(fill);
+      }
+
+      const CATALOG_RADIUS = 2.82;
+      const SHELF_LIMIT = 16.2;
+      const BODY_RADIUS = 0.45;
+      const DESK_HALF_WIDTH = 1.66;
+      const DESK_HALF_LENGTH = 2.13;
+
+      const desks = [];
+      for (let i = 0; i < 8; i++) {
+        const angle = i * TAU / 8 + Math.PI / 8;
+        desks.push({
+          x: Math.sin(angle) * 8.35,
+          z: Math.cos(angle) * 8.35,
+          cos: Math.cos(angle),
+          sin: Math.sin(angle)
+        });
+      }
+
+      function collideDesk(player, desk) {
+        const dx = player.x - desk.x;
+        const dz = player.z - desk.z;
+
+        // Work in the desk's own axes, where it is a plain rectangle.
+        const localX = dx * desk.cos - dz * desk.sin;
+        const localZ = dx * desk.sin + dz * desk.cos;
+
+        const nearX = THREE.MathUtils.clamp(localX, -DESK_HALF_WIDTH, DESK_HALF_WIDTH);
+        const nearZ = THREE.MathUtils.clamp(localZ, -DESK_HALF_LENGTH, DESK_HALF_LENGTH);
+        const gapX = localX - nearX;
+        const gapZ = localZ - nearZ;
+        const gap = Math.hypot(gapX, gapZ);
+
+        if (gap >= BODY_RADIUS) return;
+
+        let pushX;
+        let pushZ;
+
+        if (gap > 0) {
+          pushX = gapX / gap * (BODY_RADIUS - gap);
+          pushZ = gapZ / gap * (BODY_RADIUS - gap);
+        } else {
+          // Centre is inside the rectangle: leave by the nearest side.
+          const roomX = DESK_HALF_WIDTH - Math.abs(localX);
+          const roomZ = DESK_HALF_LENGTH - Math.abs(localZ);
+          pushX = roomX < roomZ ? Math.sign(localX || 1) * (roomX + BODY_RADIUS) : 0;
+          pushZ = roomX < roomZ ? 0 : Math.sign(localZ || 1) * (roomZ + BODY_RADIUS);
+        }
+
+        player.x += pushX * desk.cos + pushZ * desk.sin;
+        player.z += -pushX * desk.sin + pushZ * desk.cos;
+      }
+
+      function collide(player) {
+        desks.forEach(desk => collideDesk(player, desk));
+
+        for (const [x, z] of bookSpots.slice(0, books.length)) {
+          const dx = player.x - x;
+          const dz = player.z - z;
+          const gap = Math.hypot(dx, dz) || 0.0001;
+          if (gap < 1.05) {
+            player.x = x + dx / gap * 1.05;
+            player.z = z + dz / gap * 1.05;
+          }
+        }
+
+        const distance = Math.hypot(player.x, player.z) || 0.0001;
+        const inner = CATALOG_RADIUS + BODY_RADIUS;
+
+        if (distance > SHELF_LIMIT) {
+          player.x *= SHELF_LIMIT / distance;
+          player.z *= SHELF_LIMIT / distance;
+        } else if (distance < inner) {
+          player.x *= inner / distance;
+          player.z *= inner / distance;
+        }
+      }
+
+      return {
+        scene,
+        exposure: 1.12,
+        fov: 46,
+        eye: 2.75,          // a desk is 1.4 units tall, so a metre is about 1.8 units
+        walk: 5.5,
+        run: 10,
+        entrance: { x: 0, z: 15, yaw: 0, pitch: 0.08 },
+        books,
+        bookSize: 1.28,
+        door: {
+          edge: 16.1,
+          halfWidth: 1.2,
+          to: "cordoba",
+          label: "Door to the Library of Cordoba: walk into it",
+          arrive: { x: 0.8, z: 7.1, yaw: -0.3, pitch: 0.06 }
+        },
+        collide,
+        update(elapsed) {
+          dust.rotation.y = elapsed * 0.009;
+          materials.bulb.emissiveIntensity = 3.0 + Math.sin(elapsed * 1.4) * 0.12;
+          catalogLight.intensity = 62 + Math.sin(elapsed * 7.3) * 4 + Math.sin(elapsed * 13.1) * 2;
+          moveCandles(elapsed);
+          pulseBooks(books, elapsed);
+        }
+      };
+    }
+
+    // ---------------------------------------------------------------------
+    // Map: Library of Cordoba
+    // ---------------------------------------------------------------------
+
+    function buildCordoba() {
+const scene = new THREE.Scene();
+
+const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    let randomSeed = 84271;
+
+    function random() {
+      randomSeed = (randomSeed * 1664525 + 1013904223) >>> 0;
+      return randomSeed / 4294967296;
+    }
+
+    function makeTexture(size, painter, repeatX = 1, repeatY = 1) {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+
+      const context = canvas.getContext("2d");
+      painter(context, size);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeatX, repeatY);
+      texture.anisotropy = maxAnisotropy;
+      return texture;
+    }
+
+    const marbleTexture = makeTexture(256, (ctx, size) => {
+      ctx.fillStyle = "#e9e1cf";
+      ctx.fillRect(0, 0, size, size);
+
+      for (let i = 0; i < 24; i++) {
+        const x = random() * size;
+        const bend = (random() - 0.5) * 38;
+
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.bezierCurveTo(
+          x + bend, size * 0.3,
+          x - bend * 0.7, size * 0.7,
+          x + (random() - 0.5) * 24, size
+        );
+        ctx.strokeStyle = `rgba(111, 91, 70, ${0.035 + random() * 0.09})`;
+        ctx.lineWidth = 0.5 + random() * 1.8;
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < 70; i++) {
+        const x = random() * size;
+        const y = random() * size;
+        const radius = 1 + random() * 5;
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(112, 94, 70, ${0.015 + random() * 0.045})`;
+        ctx.fill();
+      }
+    }, 2, 2);
+
+    const floorTexture = makeTexture(512, (ctx, size) => {
+      ctx.fillStyle = "#b8a88b";
+      ctx.fillRect(0, 0, size, size);
+
+      const tile = 64;
+
+      for (let y = 0; y < size; y += tile) {
+        for (let x = 0; x < size; x += tile) {
+          const shade = 166 + Math.floor(random() * 22);
+          ctx.fillStyle = `rgb(${shade}, ${shade - 8}, ${shade - 22})`;
+          ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
+        }
+      }
+
+      ctx.strokeStyle = "rgba(78, 67, 51, 0.38)";
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i <= 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * tile, 0);
+        ctx.lineTo(i * tile, size);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i * tile);
+        ctx.lineTo(size, i * tile);
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < 1400; i++) {
+        const alpha = 0.015 + random() * 0.035;
+        ctx.fillStyle = `rgba(55, 42, 28, ${alpha})`;
+        ctx.fillRect(random() * size, random() * size, 1 + random() * 2, 1 + random() * 2);
+      }
+    }, 4, 3);
+
+    const woodTexture = makeTexture(256, (ctx, size) => {
+      ctx.fillStyle = "#765033";
+      ctx.fillRect(0, 0, size, size);
+
+      for (let i = 0; i < 95; i++) {
+        const y = random() * size;
+        const amplitude = 1 + random() * 7;
+
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+
+        for (let x = 0; x <= size; x += 16) {
+          ctx.lineTo(x, y + Math.sin(x * 0.035 + i) * amplitude);
+        }
+
+        ctx.strokeStyle = `rgba(${40 + random() * 35}, ${20 + random() * 18}, 10, ${0.08 + random() * 0.22})`;
+        ctx.lineWidth = 0.5 + random() * 2.2;
+        ctx.stroke();
+      }
+    }, 2, 2);
+
+    const carpetTexture = makeTexture(512, (ctx, size) => {
+      ctx.fillStyle = "#681f2b";
+      ctx.fillRect(0, 0, size, size);
+
+      const inset = 34;
+
+      ctx.strokeStyle = "#c89b55";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(inset, inset, size - inset * 2, size - inset * 2);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(inset + 9, inset + 9, size - inset * 2 - 18, size - inset * 2 - 18);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(inset + 15, inset + 15, size - inset * 2 - 30, size - inset * 2 - 30);
+
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+
+      for (let ring = 0; ring < 5; ring++) {
+        const radius = 55 + ring * 29;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius, radius * 1.12, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = ring % 2 ? "#b8793d" : "#8e303c";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 22, 34, 0, 0, Math.PI * 2);
+        ctx.fillStyle = i % 2 ? "#b8793d" : "#8e303c";
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 42, 0, Math.PI * 2);
+      ctx.fillStyle = "#b8793d";
+      ctx.fill();
+      ctx.restore();
+
+      ctx.strokeStyle = "rgba(224, 188, 113, 0.55)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 80; i++) {
+        const x = random() * size;
+        const y = random() * size;
+        ctx.beginPath();
+        ctx.arc(x, y, 1 + random() * 3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }, 1.35, 1.35);
+
+    const stripeTexture = makeTexture(256, (ctx, size) => {
+      ctx.fillStyle = "#f0e6d3";
+      ctx.fillRect(0, 0, size, size);
+
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, "#8f2f38");
+      gradient.addColorStop(0.48, "#b94850");
+      gradient.addColorStop(0.5, "#d96b70");
+      gradient.addColorStop(0.52, "#74262f");
+      gradient.addColorStop(1, "#a83b43");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.strokeStyle = "rgba(247, 235, 210, 0.9)";
+      ctx.lineWidth = 5;
+
+      for (let x = -72; x < size + 72; x += 64) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 64, size);
+        ctx.stroke();
+      }
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(73, 35, 42, 0.55)";
+      ctx.strokeRect(12, 12, size - 24, size - 24);
+    }, 0.45, 0.35);
+
+    const materials = {
+      marble: new THREE.MeshStandardMaterial({
+        map: marbleTexture,
+        color: 0xfff4df,
+        roughness: 0.48,
+        metalness: 0.02
+      }),
+      paleStone: new THREE.MeshStandardMaterial({
+        color: 0xd8cbb1,
+        roughness: 0.8
+      }),
+      darkStone: new THREE.MeshStandardMaterial({
+        color: 0x695e50,
+        roughness: 0.9
+      }),
+      floor: new THREE.MeshStandardMaterial({
+        map: floorTexture,
+        roughness: 0.92
+      }),
+      wood: new THREE.MeshStandardMaterial({
+        map: woodTexture,
+        color: 0x8a5d3c,
+        roughness: 0.76
+      }),
+      darkWood: new THREE.MeshStandardMaterial({
+        map: woodTexture,
+        color: 0x513323,
+        roughness: 0.82
+      }),
+      red: new THREE.MeshStandardMaterial({
+        color: 0x87303b,
+        roughness: 0.76
+      }),
+      brass: new THREE.MeshStandardMaterial({
+        color: 0xb68b3d,
+        metalness: 0.88,
+        roughness: 0.25
+      }),
+      gold: new THREE.MeshStandardMaterial({
+        color: 0xd3a65d,
+        metalness: 0.72,
+        roughness: 0.32
+      }),
+      glass: new THREE.MeshStandardMaterial({
+        color: 0xffbd62,
+        emissive: 0xff842c,
+        emissiveIntensity: 1.5,
+        transparent: true,
+        opacity: 0.86,
+        roughness: 0.22,
+        metalness: 0.05
+      }),
+      water: new THREE.MeshStandardMaterial({
+        color: 0x69b9c5,
+        emissive: 0x164b55,
+        emissiveIntensity: 0.35,
+        metalness: 0.28,
+        roughness: 0.16
+      }),
+      leaf: new THREE.MeshStandardMaterial({
+        color: 0x426838,
+        roughness: 0.9
+      }),
+      leafLight: new THREE.MeshStandardMaterial({
+        color: 0x668243,
+        roughness: 0.9
+      }),
+      orange: new THREE.MeshStandardMaterial({
+        color: 0xe98528,
+        roughness: 0.58
+      }),
+      carpet: new THREE.MeshStandardMaterial({
+        map: carpetTexture,
+        roughness: 0.96
+      })
+    };
+
+    function addBox(width, height, depth, material, x = 0, y = 0, z = 0, parent = scene) {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, depth),
+        material
+      );
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function addCylinder(
+      radiusTop,
+      radiusBottom,
+      height,
+      material,
+      x = 0,
+      y = 0,
+      z = 0,
+      parent = scene,
+      segments = 24
+    ) {
+      const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments),
+        material
+      );
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function addSphere(radius, material, x = 0, y = 0, z = 0, parent = scene) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 18, 12),
+        material
+      );
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function addTorus(radius, tube, material, x = 0, y = 0, z = 0, parent = scene) {
+      const mesh = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, tube, 10, 48),
+        material
+      );
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function cylinderBetween(start, end, radius, material, parent = scene) {
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const length = direction.length();
+      const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+
+      const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius, radius, length, 8),
+        material
+      );
+
+      mesh.position.copy(midpoint);
+      mesh.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.normalize()
+      );
+      mesh.castShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function flutedShaftGeometry(radiusBottom, radiusTop, height, flutes = 16) {
+      const radialSegments = 36;
+      const verticalSegments = 20;
+      const positions = [];
+      const indices = [];
+
+      for (let iy = 0; iy <= verticalSegments; iy++) {
+        const t = iy / verticalSegments;
+        const y = -height / 2 + t * height;
+        const baseRadius = THREE.MathUtils.lerp(radiusBottom, radiusTop, t);
+
+        for (let ix = 0; ix <= radialSegments; ix++) {
+          const angle = (ix / radialSegments) * Math.PI * 2;
+          const flute = 1 - 0.055 * (0.5 + 0.5 * Math.cos(flutes * angle));
+          const radius = baseRadius * flute;
+
+          positions.push(
+            Math.cos(angle) * radius,
+            y,
+            Math.sin(angle) * radius
+          );
+        }
+      }
+
+      for (let iy = 0; iy < verticalSegments; iy++) {
+        for (let ix = 0; ix < radialSegments; ix++) {
+          const a = iy * (radialSegments + 1) + ix;
+          const b = a + radialSegments + 1;
+          const c = b + 1;
+          const d = a + 1;
+
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3)
+      );
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      return geometry;
+    }
+
+    // ---------------------------------------------------------------------
+    // Halls rebuilt for walking: a closed court ringed by a real gallery
+    // ---------------------------------------------------------------------
+
+    const CEILING = 7.25;
+    const BAY = 2.9;              // column spacing on all four sides
+    const COURT_X = 8.7;
+    const COURT_Z = 5.8;
+    const IMPOST = 4.6;           // top of the capitals; the arches spring here
+    const ARCH_TOP = 7.35;
+    const WALL_X = 12.1;
+    const WALL_Z = 9.1;
+
+    addDuskSky(scene);
+    scene.fog = new THREE.Fog(0x171320, 34, 90);
+
+    const tileTexture = makeTexture(128, (ctx, size) => {
+      ctx.fillStyle = "#e8dcc2";
+      ctx.fillRect(0, 0, size, size);
+
+      // An eight-pointed star of two overlapping squares, the zellij motif.
+      const star = (cx, cy, r, fill) => {
+        ctx.fillStyle = fill;
+        for (const turn of [0, Math.PI / 4]) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(turn);
+          ctx.fillRect(-r, -r, r * 2, r * 2);
+          ctx.restore();
+        }
+      };
+
+      star(size / 2, size / 2, 34, "#1f5c63");
+      star(size / 2, size / 2, 20, "#c89b55");
+      star(size / 2, size / 2, 9, "#87303b");
+      for (const x of [0, size]) {
+        for (const y of [0, size]) star(x, y, 14, "#87303b");
+      }
+    });
+
+    const tileMaterial = new THREE.MeshStandardMaterial({
+      map: tileTexture,
+      roughness: 0.42
+    });
+
+    // Floor and base.
+    floorTexture.repeat.set(5.4, 4);
+    addBox(25.2, 0.3, 19.2, materials.darkStone, 0, -0.18, 0);
+
+    const paving = new THREE.Mesh(
+      new THREE.PlaneGeometry(24.4, 18.4),
+      materials.floor
+    );
+    paving.rotation.x = -Math.PI / 2;
+    paving.position.y = 0.012;
+    paving.receiveShadow = true;
+    scene.add(paving);
+
+    // Outer walls.
+    addBox(24.6, 7.6, 0.4, materials.paleStone, 0, 3.8, -WALL_Z);
+    addBox(24.6, 7.6, 0.4, materials.paleStone, 0, 3.8, WALL_Z);
+    addBox(0.4, 7.6, 18.6, materials.paleStone, -WALL_X, 3.8, 0);
+    addBox(0.4, 7.6, 18.6, materials.paleStone, WALL_X, 3.8, 0);
+
+    // A band of star tiles above the bookcases.
+    function addFrieze(width, x, z, rotationY) {
+      const geometry = new THREE.PlaneGeometry(width, 0.9);
+      const uv = geometry.attributes.uv;
+      for (let i = 0; i < uv.count; i++) {
+        uv.setXY(i, uv.getX(i) * width / 0.9, uv.getY(i));
+      }
+      const frieze = new THREE.Mesh(geometry, tileMaterial);
+      frieze.position.set(x, 5.3, z);
+      frieze.rotation.y = rotationY;
+      frieze.receiveShadow = true;
+      scene.add(frieze);
+
+      const rail = new THREE.Mesh(new THREE.PlaneGeometry(width, 0.1), materials.gold);
+      rail.position.set(x, 4.8, z);
+      rail.rotation.y = rotationY;
+      scene.add(rail);
+    }
+
+    addFrieze(23.8, 0, -WALL_Z + 0.21, 0);
+    addFrieze(23.8, 0, WALL_Z - 0.21, Math.PI);
+    addFrieze(17.8, -WALL_X + 0.21, 0, Math.PI / 2);
+    addFrieze(17.8, WALL_X - 0.21, 0, -Math.PI / 2);
+
+    // The door to the Grand Reading Room, behind where the visitor starts.
+    addHorseshoeDoor(scene, WALL_Z - 0.3, 0.88);
+
+    // Gallery ceilings: boards with exposed beams.
+    addBox(24.4, 0.2, 3.3, materials.wood, 0, CEILING + 0.1, -7.45);
+    addBox(24.4, 0.2, 3.3, materials.wood, 0, CEILING + 0.1, 7.45);
+    addBox(3.4, 0.2, 11.6, materials.wood, -10.4, CEILING + 0.1, 0);
+    addBox(3.4, 0.2, 11.6, materials.wood, 10.4, CEILING + 0.1, 0);
+
+    // Instanced parts: twenty arches of the same size share their geometry.
+    function instanced(geometry, material, matrices) {
+      const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
+      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+      return mesh;
+    }
+
+    const beams = [];
+    const beamAt = (x, z, rotationY) => new THREE.Matrix4().compose(
+      new THREE.Vector3(x, CEILING - 0.1, z),
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotationY),
+      new THREE.Vector3(1, 1, 1)
+    );
+
+    for (let x = -11.2; x <= 11.2; x += 1.6) {
+      beams.push(beamAt(x, -7.45, 0), beamAt(x, 7.45, 0));
+    }
+    for (let z = -4.8; z <= 4.8; z += 1.6) {
+      beams.push(beamAt(-10.4, z, Math.PI / 2), beamAt(10.4, z, Math.PI / 2));
+    }
+    instanced(new THREE.BoxGeometry(0.2, 0.22, 3.3), materials.darkWood, beams);
+
+    // Columns on a single 2.9 unit grid, corners included.
+    const columnPositions = [];
+    for (const x of [-COURT_X, COURT_X]) {
+      for (let i = -2; i <= 2; i++) columnPositions.push([x, i * BAY]);
+    }
+    for (const z of [-COURT_Z, COURT_Z]) {
+      for (let i = -2; i <= 2; i++) columnPositions.push([i * BAY, z]);
+    }
+
+    const shaftGeometry = flutedShaftGeometry(0.31, 0.36, 3.92, 16);
+
+    function makeColumn(x, z) {
+      const group = new THREE.Group();
+      group.position.set(x, 0, z);
+      scene.add(group);
+
+      addCylinder(0.48, 0.55, 0.24, materials.paleStone, 0, 0.12, 0, group);
+      addTorus(0.4, 0.065, materials.marble, 0, 0.25, 0, group).rotation.x = Math.PI / 2;
+
+      const shaft = new THREE.Mesh(shaftGeometry, materials.marble);
+      shaft.position.y = 2.24;
+      shaft.castShadow = true;
+      shaft.receiveShadow = true;
+      group.add(shaft);
+
+      addCylinder(0.44, 0.37, 0.14, materials.marble, 0, 4.29, 0, group);
+      addBox(0.75, 0.18, 0.75, materials.marble, 0, 4.45, 0, group);
+    }
+
+    columnPositions.forEach(([x, z]) => makeColumn(x, z));
+
+    // Horseshoe arches: the circle runs 30 degrees past the semicircle, so
+    // the opening narrows to the width between the capitals at the impost.
+    const OVERSHOOT = Math.PI / 6;
+    const ARCH_RADIUS = (BAY / 2 - 0.3) / Math.cos(OVERSHOOT);
+    const ARCH_CENTER = IMPOST + ARCH_RADIUS * Math.sin(OVERSHOOT);
+    const VOUSSOIR_DEPTH = 0.42;
+    const VOUSSOIRS = 15;
+
+    const wallShape = new THREE.Shape();
+    const chord = ARCH_RADIUS * Math.cos(OVERSHOOT);
+    wallShape.moveTo(-BAY / 2, IMPOST);
+    wallShape.lineTo(-chord, IMPOST);
+    wallShape.absarc(0, ARCH_CENTER, ARCH_RADIUS, Math.PI + OVERSHOOT, -OVERSHOOT, true);
+    wallShape.lineTo(BAY / 2, IMPOST);
+    wallShape.lineTo(BAY / 2, ARCH_TOP);
+    wallShape.lineTo(-BAY / 2, ARCH_TOP);
+    wallShape.closePath();
+
+    const wallGeometry = new THREE.ExtrudeGeometry(wallShape, {
+      depth: 0.5,
+      bevelEnabled: false,
+      curveSegments: 32
+    });
+    wallGeometry.translate(0, 0, -0.25);
+
+    // One wedge of the striped ring, pointing along +x.
+    const sweep = (Math.PI + OVERSHOOT * 2) / VOUSSOIRS;
+    const wedgeShape = new THREE.Shape();
+    wedgeShape.absarc(0, 0, ARCH_RADIUS, -sweep / 2 + 0.006, sweep / 2 - 0.006, false);
+    wedgeShape.absarc(0, 0, ARCH_RADIUS + VOUSSOIR_DEPTH, sweep / 2 - 0.006, -sweep / 2 + 0.006, true);
+    wedgeShape.closePath();
+
+    const wedgeGeometry = new THREE.ExtrudeGeometry(wedgeShape, {
+      depth: 0.58,
+      bevelEnabled: false,
+      curveSegments: 4
+    });
+    wedgeGeometry.translate(0, 0, -0.29);
+
+    const bays = [];
+    for (let i = 0; i < 6; i++) {
+      const x = -COURT_X + BAY / 2 + i * BAY;
+      bays.push([x, -COURT_Z, 0], [x, COURT_Z, 0]);
+    }
+    for (let i = 0; i < 4; i++) {
+      const z = -COURT_Z + BAY / 2 + i * BAY;
+      bays.push([-COURT_X, z, Math.PI / 2], [COURT_X, z, Math.PI / 2]);
+    }
+
+    const walls = [];
+    const redStones = [];
+    const whiteStones = [];
+
+    for (const [x, z, rotationY] of bays) {
+      const bay = new THREE.Matrix4().makeRotationY(rotationY).setPosition(x, 0, z);
+      walls.push(bay);
+
+      for (let i = 0; i < VOUSSOIRS; i++) {
+        const angle = -OVERSHOOT + sweep * (i + 0.5);
+        const stone = new THREE.Matrix4()
+          .makeTranslation(0, ARCH_CENTER, 0)
+          .multiply(new THREE.Matrix4().makeRotationZ(angle));
+        (i % 2 ? whiteStones : redStones).push(bay.clone().multiply(stone));
+      }
+    }
+
+    const stucco = new THREE.MeshStandardMaterial({ color: 0xe6d8bb, roughness: 0.82 });
+    instanced(wallGeometry, stucco, walls);
+    instanced(wedgeGeometry, materials.red, redStones);
+    instanced(wedgeGeometry, new THREE.MeshStandardMaterial({ color: 0xf0e6d3, roughness: 0.6 }), whiteStones);
+
+    // Cornice and stepped merlons around the court.
+    addBox(18.2, 0.2, 0.9, materials.marble, 0, 7.45, -COURT_Z);
+    addBox(18.2, 0.2, 0.9, materials.marble, 0, 7.45, COURT_Z);
+    addBox(0.9, 0.2, 11.6, materials.marble, -COURT_X, 7.45, 0);
+    addBox(0.9, 0.2, 11.6, materials.marble, COURT_X, 7.45, 0);
+
+    // ---------------------------------------------------------------------
+    // Roof after the Hall of Ambassadors in the Alcazar of Seville: a gilded
+    // half-orange dome of interlaced stars on a window drum, set in a coffered
+    // cedar ceiling
+    // ---------------------------------------------------------------------
+
+    const ATTIC_TOP = 8.35;
+    const DOME_RADIUS = 5.2;
+    const DRUM_TOP = 9.75;
+    const TAU = Math.PI * 2;
+
+    // Outline of an eight-pointed star (or more), centred on the origin.
+    function starPoints(radius, points = 8, waist = 0.62) {
+      const outline = [];
+      for (let i = 0; i < points * 2; i++) {
+        const angle = i * Math.PI / points;
+        const r = i % 2 ? radius * waist : radius;
+        outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+      }
+      return outline;
+    }
+
+    function tracePath(ctx, outline) {
+      ctx.beginPath();
+      outline.forEach(([x, y], index) => (index ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+    }
+
+    // Coffered cedar: one tile covers one 2.9 unit bay.
+    const cofferTexture = makeTexture(512, (ctx, size) => {
+      ctx.fillStyle = "#3b2013";
+      ctx.fillRect(0, 0, size, size);
+
+      const shift = (x, y, outline) => outline.map(([px, py]) => [px + x, py + y]);
+
+      ctx.lineJoin = "round";
+      for (const [x, y] of [[0, 0], [size, 0], [0, size], [size, size], [size / 2, size / 2]]) {
+        tracePath(ctx, shift(x, y, starPoints(size * 0.3)));
+        ctx.fillStyle = "#1f3f52";
+        ctx.fill();
+        ctx.strokeStyle = "#e0b45c";
+        ctx.lineWidth = 11;
+        ctx.stroke();
+
+        tracePath(ctx, shift(x, y, starPoints(size * 0.13, 8, 0.7)));
+        ctx.fillStyle = "#d8a84e";
+        ctx.fill();
+      }
+
+      for (const [x, y] of [[size / 2, 0], [0, size / 2], [size, size / 2], [size / 2, size]]) {
+        tracePath(ctx, shift(x, y, starPoints(size * 0.16)));
+        ctx.fillStyle = "#7a2230";
+        ctx.fill();
+        ctx.strokeStyle = "#e0b45c";
+        ctx.lineWidth = 7;
+        ctx.stroke();
+      }
+    });
+    cofferTexture.repeat.set(1 / BAY, 1 / BAY);
+
+    const cofferMaterial = new THREE.MeshStandardMaterial({
+      map: cofferTexture,
+      roughness: 0.55,
+      metalness: 0.15,
+      emissive: 0x2a1a0c,
+      emissiveMap: cofferTexture,
+      side: THREE.DoubleSide
+    });
+
+    // Gold lattice painted in latitude and longitude, so rings of stars keep
+    // their shape and thin out towards the crown as they do in Seville.
+    function makeDomeTexture() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 4096;
+      canvas.height = 1024;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const ground = ctx.createLinearGradient(0, 0, 0, H);
+      ground.addColorStop(0, "#d9a441");
+      ground.addColorStop(1, "#8f5f1d");
+      ctx.fillStyle = ground;
+      ctx.fillRect(0, 0, W, H);
+
+      const toCanvas = (lon, lat) => [W * lon / TAU, H * (1 - lat / (Math.PI / 2))];
+      const onDome = (lon, lat, outline) => outline.map(([x, y]) =>
+        toCanvas(lon + x / Math.max(Math.cos(lat), 0.12), lat + y));
+
+      ctx.lineJoin = "round";
+      const step = 0.2;
+
+      for (let row = 0; row * step < 1.25; row++) {
+        const lat = 0.1 + row * step;
+        const count = 4 * Math.round(TAU * Math.cos(lat) / step / 4);
+
+        for (let i = 0; i < count; i++) {
+          const lon = (i + (row % 2 ? 0.5 : 0)) * TAU / count;
+
+          for (const wrap of [-TAU, 0, TAU]) {
+            tracePath(ctx, onDome(lon + wrap, lat, starPoints(step * 0.64)));
+            ctx.fillStyle = row % 2 ? "#b8842c" : "#a8741f";
+            ctx.fill();
+            ctx.strokeStyle = "#ffe29a";
+            ctx.lineWidth = 7;
+            ctx.stroke();
+
+            tracePath(ctx, onDome(lon + wrap, lat, starPoints(step * 0.27, 8, 0.7)));
+            ctx.fillStyle = (i + row) % 2 ? "#7a2230" : "#1f3f52";
+            ctx.fill();
+            ctx.strokeStyle = "#ffe29a";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.anisotropy = maxAnisotropy;
+      return texture;
+    }
+
+    const domeTexture = makeDomeTexture();
+
+    const gildedMaterial = texture => new THREE.MeshStandardMaterial({
+      map: texture,
+      bumpMap: texture,
+      bumpScale: 1.2,
+      emissive: 0x6b4312,
+      emissiveMap: texture,
+      metalness: 0.35,
+      roughness: 0.42,
+      side: THREE.BackSide,
+      shadowSide: THREE.DoubleSide
+    });
+
+    // Attic above the arches, with a band of the same star tiles.
+    addBox(19, 0.8, 0.6, stucco, 0, 7.95, -COURT_Z - 0.2);
+    addBox(19, 0.8, 0.6, stucco, 0, 7.95, COURT_Z + 0.2);
+    addBox(0.6, 0.8, 12.6, stucco, -COURT_X - 0.2, 7.95, 0);
+    addBox(0.6, 0.8, 12.6, stucco, COURT_X + 0.2, 7.95, 0);
+
+    function addAtticTiles(width, x, z, rotationY) {
+      const geometry = new THREE.PlaneGeometry(width, 0.62);
+      const uv = geometry.attributes.uv;
+      for (let i = 0; i < uv.count; i++) {
+        uv.setXY(i, uv.getX(i) * width / 0.62, uv.getY(i));
+      }
+      const band = new THREE.Mesh(geometry, tileMaterial);
+      band.position.set(x, 7.96, z);
+      band.rotation.y = rotationY;
+      scene.add(band);
+    }
+
+    addAtticTiles(17.3, 0, -COURT_Z + 0.12, 0);
+    addAtticTiles(17.3, 0, COURT_Z - 0.12, Math.PI);
+    addAtticTiles(11.5, -COURT_X + 0.12, 0, Math.PI / 2);
+    addAtticTiles(11.5, COURT_X - 0.12, 0, -Math.PI / 2);
+
+    // Coffered ceiling with a round opening for the drum.
+    const ceilingShape = new THREE.Shape();
+    ceilingShape.moveTo(-9.4, -6.5);
+    ceilingShape.lineTo(9.4, -6.5);
+    ceilingShape.lineTo(9.4, 6.5);
+    ceilingShape.lineTo(-9.4, 6.5);
+    ceilingShape.closePath();
+
+    const drumOpening = new THREE.Path();
+    drumOpening.absarc(0, 0, DOME_RADIUS, 0, TAU, true);
+    ceilingShape.holes.push(drumOpening);
+
+    const ceilingGeometry = new THREE.ExtrudeGeometry(ceilingShape, {
+      depth: 0.3,
+      bevelEnabled: false,
+      curveSegments: 64
+    });
+    ceilingGeometry.rotateX(Math.PI / 2);
+
+    const courtCeiling = new THREE.Mesh(ceilingGeometry, cofferMaterial);
+    courtCeiling.position.y = ATTIC_TOP + 0.3;
+    courtCeiling.castShadow = true;
+    scene.add(courtCeiling);
+
+    // Window drum: twenty-four piers, with open sky between them.
+    const piers = [];
+    for (let i = 0; i < 24; i++) {
+      const angle = i * TAU / 24;
+      piers.push(new THREE.Matrix4().compose(
+        new THREE.Vector3(Math.sin(angle) * 5.3, (ATTIC_TOP + DRUM_TOP) / 2 + 0.1, Math.cos(angle) * 5.3),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle),
+        new THREE.Vector3(1, 1, 1)
+      ));
+    }
+    instanced(
+      new THREE.BoxGeometry(0.74, DRUM_TOP - ATTIC_TOP - 0.1, 0.44),
+      materials.gold,
+      piers
+    );
+
+    for (const y of [ATTIC_TOP + 0.02, DRUM_TOP]) {
+      addTorus(DOME_RADIUS, 0.13, materials.gold, 0, y, 0).rotation.x = Math.PI / 2;
+    }
+
+    // The half-orange itself.
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(DOME_RADIUS + 0.25, 96, 48, 0, TAU, 0, Math.PI / 2),
+      gildedMaterial(domeTexture)
+    );
+    dome.position.y = DRUM_TOP;
+    dome.castShadow = true;
+    scene.add(dome);
+
+    // Sixteen-pointed star at the crown, drawn flat and laid over the top.
+    const crownTexture = makeTexture(512, (ctx, size) => {
+      ctx.fillStyle = "#a8741f";
+      ctx.fillRect(0, 0, size, size);
+      ctx.translate(size / 2, size / 2);
+      ctx.lineJoin = "round";
+
+      for (const [radius, fill] of [
+        [size * 0.5, "#c9973a"],
+        [size * 0.36, "#7a2230"],
+        [size * 0.22, "#1f3f52"],
+        [size * 0.1, "#ffe29a"]
+      ]) {
+        tracePath(ctx, starPoints(radius, 16, 0.76));
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.strokeStyle = "#ffe29a";
+        ctx.lineWidth = 6;
+        ctx.stroke();
+      }
+    });
+
+    const CROWN_ANGLE = 0.4;
+    const crownGeometry = new THREE.SphereGeometry(DOME_RADIUS + 0.22, 64, 8, 0, TAU, 0, CROWN_ANGLE);
+    const crownPositions = crownGeometry.attributes.position;
+    const crownUv = crownGeometry.attributes.uv;
+    const crownSpan = (DOME_RADIUS + 0.22) * Math.sin(CROWN_ANGLE) * 2;
+    for (let i = 0; i < crownPositions.count; i++) {
+      crownUv.setXY(
+        i,
+        0.5 + crownPositions.getX(i) / crownSpan,
+        0.5 + crownPositions.getZ(i) / crownSpan
+      );
+    }
+
+    const crown = new THREE.Mesh(crownGeometry, gildedMaterial(crownTexture));
+    crown.position.y = DRUM_TOP;
+    scene.add(crown);
+
+    // A great brass ring of candles hanging from the crown of the dome.
+    const CANDLE_RING = 6.75;
+    addCylinder(0.03, 0.03, 15.05 - CANDLE_RING, materials.brass, 0, (15.05 + CANDLE_RING) / 2, 0, scene, 8);
+    addTorus(3.1, 0.07, materials.brass, 0, CANDLE_RING, 0).rotation.x = Math.PI / 2;
+    addTorus(2.0, 0.05, materials.brass, 0, CANDLE_RING, 0).rotation.x = Math.PI / 2;
+    for (let i = 0; i < 4; i++) {
+      addBox(6.2, 0.05, 0.07, materials.brass, 0, CANDLE_RING, 0).rotation.y = i * Math.PI / 4;
+    }
+
+    const domeGlow = new THREE.PointLight(0xffc27a, 165, 34, 2);
+    domeGlow.position.set(0, CANDLE_RING - 1.5, 0);
+    scene.add(domeGlow);
+
+
+    const bookGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const bookMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.8
+    });
+
+    function makeBookcase(x, z, rotationY) {
+      const group = new THREE.Group();
+      group.position.set(x, 0, z);
+      group.rotation.y = rotationY;
+      scene.add(group);
+
+      addBox(3.45, 3.2, 0.08, materials.darkWood, 0, 1.7, -0.27, group);
+      addBox(0.13, 3.25, 0.58, materials.wood, -1.63, 1.7, 0, group);
+      addBox(0.13, 3.25, 0.58, materials.wood, 1.63, 1.7, 0, group);
+
+      const shelfHeights = [0.28, 1.08, 1.88, 2.68, 3.34];
+
+      for (const y of shelfHeights) {
+        addBox(3.48, 0.1, 0.59, materials.wood, 0, y, 0, group);
+      }
+
+      addBox(3.7, 0.13, 0.7, materials.darkWood, 0, 3.43, 0.015, group);
+
+      const bookTransforms = [];
+      const bookColors = [
+        0x8b333d,
+        0x355b62,
+        0x40503a,
+        0x75513b,
+        0x9c7236,
+        0x3e3155,
+        0x6c4931,
+        0x36584a,
+        0xa26c3d,
+        0x77343e
+      ];
+
+      for (let row = 0; row < 4; row++) {
+        const shelfY = shelfHeights[row] + 0.07;
+
+        for (let bay = 0; bay < 4; bay++) {
+          const bayX = -1.05 + bay * 0.7;
+
+          for (let bookIndex = 0; bookIndex < 5; bookIndex++) {
+            const width = 0.15 + random() * 0.12;
+            const height = 0.46 + random() * 0.2;
+            const depth = 0.3 + random() * 0.12;
+            const color = bookColors[Math.floor(random() * bookColors.length)];
+
+            bookTransforms.push({
+              x: bayX - 0.28 + bookIndex * 0.135 + (random() - 0.5) * 0.025,
+              y: shelfY + height / 2,
+              z: 0.04 + random() * 0.09,
+              width,
+              height,
+              depth,
+              color
+            });
+          }
+        }
+      }
+
+      const books = new THREE.InstancedMesh(
+        bookGeometry,
+        bookMaterial,
+        bookTransforms.length
+      );
+      books.castShadow = true;
+      books.receiveShadow = true;
+
+      const dummy = new THREE.Object3D();
+
+      bookTransforms.forEach((book, index) => {
+        dummy.position.set(book.x, book.y, book.z);
+        dummy.scale.set(book.width, book.height, book.depth);
+        dummy.updateMatrix();
+        books.setMatrixAt(index, dummy.matrix);
+        books.setColorAt(index, new THREE.Color(book.color));
+      });
+
+      books.instanceMatrix.needsUpdate = true;
+      if (books.instanceColor) {
+        books.instanceColor.needsUpdate = true;
+      }
+
+      group.add(books);
+      return group;
+    }
+
+    function makeCarpet(x, z, width = 3.8, depth = 4.2) {
+      const carpet = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, depth),
+        materials.carpet
+      );
+      carpet.rotation.x = -Math.PI / 2;
+      carpet.position.set(x, 0.085, z);
+      carpet.receiveShadow = true;
+      scene.add(carpet);
+    }
+
+    function makeDesk(x, z, rotationY) {
+      const group = new THREE.Group();
+      group.position.set(x, 0, z);
+      group.rotation.y = rotationY;
+      scene.add(group);
+
+      addBox(1.8, 0.14, 0.88, materials.wood, 0, 1.05, 0, group);
+      addBox(1.55, 0.1, 0.65, materials.darkWood, 0, 0.52, 0, group);
+
+      for (const lx of [-0.68, 0.68]) {
+        for (const lz of [-0.31, 0.31]) {
+          addBox(0.12, 1.02, 0.12, materials.darkWood, lx, 0.51, lz, group);
+        }
+      }
+
+      addBox(0.58, 0.08, 0.42, materials.wood, -0.48, 1.18, 0.03, group);
+      addBox(0.58, 0.08, 0.42, materials.wood, 0.48, 1.18, 0.03, group);
+      addBox(0.5, 0.035, 0.37, materials.paleStone, -0.48, 1.235, 0.03, group);
+      addBox(0.5, 0.035, 0.37, materials.paleStone, 0.48, 1.235, 0.03, group);
+
+      for (let i = 0; i < 3; i++) {
+        addBox(
+          0.17 + random() * 0.08,
+          0.46 + random() * 0.12,
+          0.27,
+          new THREE.MeshStandardMaterial({ color: [0x8b333d, 0x355b62, 0x9c7236][i] }),
+          -0.55 + i * 0.48,
+          1.38,
+          -0.18,
+          group
+        );
+      }
+
+      const chair = new THREE.Group();
+      chair.position.set(0, 0, 1.35);
+      group.add(chair);
+
+      addBox(0.72, 0.12, 0.62, materials.wood, 0, 0.72, 0, chair);
+      addBox(0.72, 0.8, 0.1, materials.wood, 0, 1.08, -0.26, chair);
+
+      for (const lx of [-0.28, 0.28]) {
+        for (const lz of [-0.2, 0.2]) {
+          addBox(0.07, 0.7, 0.07, materials.darkWood, lx, 0.35, lz, chair);
+        }
+      }
+
+      makeCarpet(x, z);
+    }
+
+    const fountain = new THREE.Group();
+    fountain.position.y = 0.08;
+    scene.add(fountain);
+
+    addCylinder(1.62, 1.72, 0.34, materials.paleStone, 0, 0.17, 0, fountain);
+    addCylinder(1.4, 1.48, 0.28, materials.marble, 0, 0.4, 0, fountain);
+
+    const water = new THREE.Mesh(
+      new THREE.CircleGeometry(1.31, 64),
+      materials.water
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.y = 0.55;
+    fountain.add(water);
+
+    addTorus(1.28, 0.11, materials.marble, 0, 0.57, 0, fountain).rotation.x = Math.PI / 2;
+
+    addCylinder(0.22, 0.34, 1.5, materials.marble, 0, 1.28, 0, fountain);
+    addCylinder(0.52, 0.22, 0.2, materials.marble, 0, 2.13, 0, fountain);
+    addCylinder(0.08, 0.18, 0.52, materials.marble, 0, 2.48, 0, fountain);
+    addSphere(0.17, materials.marble, 0, 2.8, 0, fountain);
+
+    const jetMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8fd5df,
+      emissive: 0x245e67,
+      emissiveIntensity: 0.35,
+      transparent: true,
+      opacity: 0.58,
+      roughness: 0.15
+    });
+
+    for (let i = 0; i < 3; i++) {
+      const angle = (i / 3) * Math.PI * 2 + 0.3;
+      const curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0, 2.72, 0),
+        new THREE.Vector3(
+          Math.cos(angle) * 0.38,
+          3.0 + i * 0.12,
+          Math.sin(angle) * 0.38
+        ),
+        new THREE.Vector3(
+          Math.cos(angle) * 1.05,
+          1.13,
+          Math.sin(angle) * 1.05
+        )
+      );
+
+      const jet = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 28, 0.022, 6, false),
+        jetMaterial
+      );
+      fountain.add(jet);
+    }
+
+    const dropletCount = 90;
+    const dropletPositions = new Float32Array(dropletCount * 3);
+    const dropletData = [];
+
+    for (let i = 0; i < dropletCount; i++) {
+      dropletData.push({
+        angle: random() * Math.PI * 2,
+        radius: 0.25 + random() * 0.8,
+        phase: random() * Math.PI * 2,
+        speed: 0.8 + random() * 0.8
+      });
+    }
+
+    const dropletGeometry = new THREE.BufferGeometry();
+    dropletGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(dropletPositions, 3)
+    );
+
+    const droplets = new THREE.Points(
+      dropletGeometry,
+      new THREE.PointsMaterial({
+        color: 0xc4f4f5,
+        size: 0.055,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false
+      })
+    );
+    scene.add(droplets);
+
+    // -------------------------------------------------------------------------
+    // Orange trees
+    // -------------------------------------------------------------------------
+
+    function makeOrangeTree(x, z, scale = 1) {
+      const group = new THREE.Group();
+      group.position.set(x, 0, z);
+      group.scale.setScalar(scale);
+      scene.add(group);
+
+      addCylinder(0.12, 0.2, 2.15, materials.darkWood, 0, 1.05, 0, group);
+
+      const branches = [
+        [new THREE.Vector3(0, 1.45, 0), new THREE.Vector3(-0.65, 2.25, 0.15)],
+        [new THREE.Vector3(0, 1.6, 0), new THREE.Vector3(0.62, 2.4, -0.12)],
+        [new THREE.Vector3(0, 1.8, 0), new THREE.Vector3(0.08, 2.95, 0.18)],
+        [new THREE.Vector3(0, 1.5, 0), new THREE.Vector3(-0.25, 2.75, -0.3)]
+      ];
+
+      for (const [start, end] of branches) {
+        cylinderBetween(start, end, 0.065, materials.darkWood, group);
+      }
+
+      const clusters = [
+        [-0.85, 2.55, 0.1, 0.85],
+        [0.85, 2.65, -0.1, 0.9],
+        [0.05, 3.05, 0.2, 0.95],
+        [-0.25, 2.85, -0.45, 0.8],
+        [0.45, 2.9, -0.55, 0.78],
+        [-1.1, 2.25, 0.3, 0.65],
+        [1.15, 2.3, -0.25, 0.68]
+      ];
+
+      for (let i = 0; i < clusters.length; i++) {
+        const [cx, cy, cz, radius] = clusters[i];
+        const cluster = new THREE.Mesh(
+          new THREE.DodecahedronGeometry(radius, 1),
+          i % 2 ? materials.leaf : materials.leafLight
+        );
+        cluster.position.set(cx, cy, cz);
+        cluster.scale.set(1.1, 0.85, 1);
+        cluster.castShadow = true;
+        group.add(cluster);
+      }
+
+      const fruitPositions = [
+        [-0.85, 2.28, 0.35],
+        [0.88, 2.48, -0.2],
+        [0.12, 2.83, 0.42],
+        [-0.35, 2.72, -0.48],
+        [0.48, 2.78, -0.5],
+        [-1.02, 2.02, 0.18],
+        [1.08, 2.12, 0.1]
+      ];
+
+      for (let i = 0; i < fruitPositions.length; i++) {
+        addSphere(
+          0.105 + random() * 0.025,
+          materials.orange,
+          fruitPositions[i][0],
+          fruitPositions[i][1],
+          fruitPositions[i][2],
+          group
+        );
+      }
+    }
+
+    const lanternLights = [];
+
+    function makeLantern(x, y, z) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      scene.add(group);
+
+      const chain = CEILING - y - 0.4;
+      addCylinder(0.018, 0.018, chain, materials.brass, 0, 0.4 + chain / 2, 0, group, 8);
+      addCylinder(0.19, 0.2, 0.62, materials.glass, 0, 0, 0, group, 20);
+
+      const top = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+        materials.brass
+      );
+      top.position.y = 0.34;
+      top.castShadow = true;
+      group.add(top);
+
+      const bottom = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+        materials.brass
+      );
+      bottom.position.y = -0.34;
+      bottom.castShadow = true;
+      group.add(bottom);
+
+      addTorus(0.2, 0.035, materials.brass, 0, 0.34, 0, group).rotation.x = Math.PI / 2;
+      addTorus(0.2, 0.035, materials.brass, 0, -0.34, 0, group).rotation.x = Math.PI / 2;
+
+      const light = new THREE.PointLight(0xffa64d, 28, 10, 2);
+      light.position.y = 0;
+      group.add(light);
+      lanternLights.push(light);
+    }
+
+    // ---------------------------------------------------------------------
+    // Layout: bookcases against the outer walls, desks and trees in the court
+    // ---------------------------------------------------------------------
+
+    const TALL = 1.35;  // bookcases reach the tile band
+
+    for (const x of [-8, -4, 0, 4, 8]) {
+      makeBookcase(x, -WALL_Z + 0.5, 0).scale.y = TALL;
+    }
+    for (const x of [-8, -4, 4, 8]) {
+      makeBookcase(x, WALL_Z - 0.5, Math.PI).scale.y = TALL;
+    }
+    for (const z of [-6, -2, 2, 6]) {
+      makeBookcase(-WALL_X + 0.5, z, Math.PI / 2).scale.y = TALL;
+      makeBookcase(WALL_X - 0.5, z, -Math.PI / 2).scale.y = TALL;
+    }
+
+    const deskSpots = [
+      [-6.7, 2.3, 1],
+      [6.7, -1.7, -1],
+      [-4.8, -3.8, 1],
+      [4.8, 3.8, -1]
+    ];
+    deskSpots.forEach(([x, z, side]) => makeDesk(x, z, side * Math.PI / 2));
+
+    const treeSpots = [
+      [7.3, 1.6, 0.88],
+      [-7.3, -1.6, 0.92],
+      [-3, 4.6, 0.72],
+      [3, -4.6, 0.72]
+    ];
+    treeSpots.forEach(([x, z, scale]) => makeOrangeTree(x, z, scale));
+
+    makeLantern(-10.4, 5, -2.9);
+    makeLantern(-10.4, 5, 2.9);
+    makeLantern(10.4, 5, -2.9);
+    makeLantern(10.4, 5, 2.9);
+    makeLantern(-5, 5, -7.45);
+    makeLantern(5, 5, -7.45);
+    makeLantern(-5, 5, 7.45);
+    makeLantern(5, 5, 7.45);
+
+    // ---------------------------------------------------------------------
+    // Candles: the hanging ring, the fountain, the desks and the colonnade
+    // ---------------------------------------------------------------------
+
+    const candleSpots = [];
+
+    for (let i = 0; i < 32; i++) {
+      const angle = i * TAU / 32;
+      candleSpots.push([Math.sin(angle) * 3.1, CANDLE_RING + 0.07, Math.cos(angle) * 3.1]);
+    }
+    for (let i = 0; i < 16; i++) {
+      const angle = (i + 0.5) * TAU / 16;
+      candleSpots.push([Math.sin(angle) * 2, CANDLE_RING + 0.05, Math.cos(angle) * 2]);
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const angle = i * TAU / 12;
+      candleSpots.push([Math.sin(angle) * 1.56, 0.42, Math.cos(angle) * 1.56]);
+    }
+
+    for (const [x, z, side] of deskSpots) {
+      candleSpots.push([x + side * 0.3, 1.12, z - 0.8], [x + side * 0.3, 1.12, z + 0.8]);
+    }
+
+    for (const [x, z] of columnPositions) {
+      const reach = Math.hypot(x, z);
+      candleSpots.push([x - x / reach * 0.42, 0.24, z - z / reach * 0.42]);
+    }
+
+    const moveCandles = addCandles(scene, candleSpots);
+
+    // Books stand against the gallery walls and either side of the fountain.
+    const bookSpots = [
+      [0, -7.7, 0],
+      [-10.8, 0, Math.PI / 2],
+      [10.8, 4.35, -Math.PI / 2],
+      [-2.9, 1.2, 0],
+      [2.9, -1.2, 0],
+      [-10.8, -4.35, Math.PI / 2],
+      [10.8, -4.35, -Math.PI / 2],
+      [-5.8, 7.7, Math.PI]
+    ];
+    const books = placeBooks(scene, "cordoba", bookSpots, 1);
+
+    const fountainGlow = new THREE.PointLight(0xffb066, 11, 9, 2);
+    fountainGlow.position.set(0, 1.7, 2.4);
+    scene.add(fountainGlow);
+
+    // ---------------------------------------------------------------------
+    // What the visitor cannot walk through
+    // ---------------------------------------------------------------------
+
+    const BODY = 0.4;
+    const circles = [
+      [0, 0, 1.75],
+      ...columnPositions.map(([x, z]) => [x, z, 0.55]),
+      ...treeSpots.map(([x, z, scale]) => [x, z, 1.35 * scale]),
+      ...bookSpots.slice(0, books.length).map(([x, z]) => [x, z, 0.45])
+    ];
+
+    // Each desk and its chair, as a plain rectangle: the chair sits on the
+    // side the desk was rotated towards.
+    const rects = deskSpots.map(([x, z, side]) => [
+      side > 0 ? x - 0.5 : x - 1.75,
+      side > 0 ? x + 1.75 : x + 0.5,
+      z - 0.95,
+      z + 0.95
+    ]);
+
+    function collideCordoba(p) {
+      for (const [cx, cz, radius] of circles) {
+        const dx = p.x - cx;
+        const dz = p.z - cz;
+        const gap = Math.hypot(dx, dz) || 0.0001;
+        const reach = radius + BODY;
+        if (gap < reach) {
+          p.x = cx + dx / gap * reach;
+          p.z = cz + dz / gap * reach;
+        }
+      }
+
+      for (const [left, right, near, far] of rects) {
+        const nx = Math.max(left, Math.min(p.x, right));
+        const nz = Math.max(near, Math.min(p.z, far));
+        const dx = p.x - nx;
+        const dz = p.z - nz;
+        const gap = Math.hypot(dx, dz);
+
+        if (gap > 0 && gap < BODY) {
+          p.x = nx + dx / gap * BODY;
+          p.z = nz + dz / gap * BODY;
+        } else if (gap === 0) {
+          const moves = [
+            [p.x - left, -1, 0], [right - p.x, 1, 0],
+            [p.z - near, 0, -1], [far - p.z, 0, 1]
+          ].sort((a, b) => a[0] - b[0]);
+          const [room, mx, mz] = moves[0];
+          p.x += mx * (room + BODY);
+          p.z += mz * (room + BODY);
+        }
+      }
+
+      // Stops at the book faces.
+      p.x = Math.max(-10.9, Math.min(10.9, p.x));
+      p.z = Math.max(-7.9, Math.min(7.9, p.z));
+    }
+
+
+    const hemisphere = new THREE.HemisphereLight(0x39406e, 0x3a2418, 0.75);
+    scene.add(hemisphere);
+
+    const sun = new THREE.DirectionalLight(0x8f7fc4, 0.35);
+    sun.position.set(-12, 18, 13);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -22;
+    sun.shadow.camera.right = 22;
+    sun.shadow.camera.top = 22;
+    sun.shadow.camera.bottom = -22;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 55;
+    sun.shadow.normalBias = 0.025;
+    sun.shadow.bias = -0.00015;
+    scene.add(sun);
+    scene.add(sun.target);
+
+    const warmFill = new THREE.DirectionalLight(0xffb96f, 0.12);
+    warmFill.position.set(14, 8, -10);
+    scene.add(warmFill);
+
+      return {
+        scene,
+        exposure: 1.08,
+        fov: 58,
+        eye: 2.2,           // a desk is 1.05 units tall, so a metre is about 1.4 units
+        walk: 4.4,
+        run: 8,
+        entrance: { x: 1.45, z: 7.8, yaw: 0, pitch: 0.06 },
+        door: {
+          edge: 7.85,
+          halfWidth: 0.95,
+          to: "reading-room",
+          label: "Door to the Grand Reading Room: walk into it"
+        },
+        books,
+        bookSize: 1,
+        collide: collideCordoba,
+        update(elapsed) {
+          const positions = dropletGeometry.attributes.position.array;
+
+          for (let i = 0; i < dropletCount; i++) {
+            const data = dropletData[i];
+            const angle = data.angle + elapsed * data.speed;
+            const radius = data.radius + Math.sin(elapsed * 1.3 + data.phase) * 0.07;
+
+            positions[i * 3] = Math.cos(angle) * radius;
+            positions[i * 3 + 1] = 1.28 + Math.sin(elapsed * 2.1 + data.phase) * 0.11;
+            positions[i * 3 + 2] = Math.sin(angle) * radius;
+          }
+
+          dropletGeometry.attributes.position.needsUpdate = true;
+
+          lanternLights.forEach((light, index) => {
+            light.intensity =
+              34 + Math.sin(elapsed * 5.3 + index * 1.7) * 2.2 +
+              Math.sin(elapsed * 11.1 + index) * 0.9;
+          });
+
+          domeGlow.intensity = 165 + Math.sin(elapsed * 6.1) * 9 + Math.sin(elapsed * 12.7) * 5;
+          fountainGlow.intensity = 11 + Math.sin(elapsed * 8.3) * 1.2;
+          moveCandles(elapsed);
+          pulseBooks(books, elapsed);
+        }
+      };
+    }
+
+    // ---------------------------------------------------------------------
+    // First-person walking, shared by both maps
+    // ---------------------------------------------------------------------
+
+    const LOOK_SPEED = 0.0022;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const canvas = renderer.domElement;
+    canvas.tabIndex = 0;
+    camera.rotation.order = "YXZ";
+
+    const builders = { "reading-room": buildReadingRoom, cordoba: buildCordoba };
+    const built = {};
+    let currentId = null;
+    let map = null;
+
+    const player = { x: 0, z: 0, vx: 0, vz: 0, step: 0 };
+    let yaw = 0;
+    let pitch = 0;
+
+    const held = new Set();
+    const keyMap = {
+      KeyW: "forward", ArrowUp: "forward",
+      KeyS: "back", ArrowDown: "back",
+      KeyA: "left", ArrowLeft: "left",
+      KeyD: "right", ArrowRight: "right",
+      ShiftLeft: "run", ShiftRight: "run"
+    };
+
+    const loading = document.getElementById("loading");
+    const hint = document.getElementById("hint");
+
+    const music = document.getElementById("music");
+    const musicToggle = document.getElementById("music-toggle");
+    let musicOn = true;
+    if (music) music.volume = 0.6;
+
+    function syncMusic(id = currentId) {
+      if (!music) return;
+      musicToggle.hidden = !id;
+
+      if (!id || !musicOn) {
+        music.pause();
+      } else if (music.paused) {
+        // Browsers refuse until the first click or key press; the listeners
+        // below try again then.
+        music.play().catch(() => {});
+      }
+    }
+
+    function toggleMusic() {
+      if (!music) return;
+      musicOn = !musicOn;
+      musicToggle.textContent = musicOn ? "Music on" : "Music off";
+      musicToggle.setAttribute("aria-pressed", String(musicOn));
+      syncMusic();
+    }
+
+    musicToggle?.addEventListener("click", () => {
+      toggleMusic();
+      canvas.focus({ preventScroll: true });
+    });
+
+    // A link straight to a hall opens with no click to start the sound.
+    window.addEventListener("pointerdown", () => syncMusic());
+    window.addEventListener("keydown", () => syncMusic());
+
+    function updateWalk(dt) {
+      const forward = (held.has("forward") ? 1 : 0) - (held.has("back") ? 1 : 0);
+      const strafe = (held.has("right") ? 1 : 0) - (held.has("left") ? 1 : 0);
+      const length = Math.hypot(forward, strafe) || 1;
+      const speed = held.has("run") ? map.run : map.walk;
+
+      const sinYaw = Math.sin(yaw);
+      const cosYaw = Math.cos(yaw);
+      const wantX = (-sinYaw * forward + cosYaw * strafe) / length * speed;
+      const wantZ = (-cosYaw * forward - sinYaw * strafe) / length * speed;
+
+      const ease = 1 - Math.exp(-12 * dt);
+      player.vx += (wantX - player.vx) * ease;
+      player.vz += (wantZ - player.vz) * ease;
+
+      player.x += player.vx * dt;
+      player.z += player.vz * dt;
+      map.collide(player);
+      map.collide(player);
+
+      const moving = Math.hypot(player.vx, player.vz);
+      player.step += moving * dt * 1.5;
+      const bob = reducedMotion
+        ? 0
+        : Math.sin(player.step) * 0.035 * Math.min(moving / map.walk, 1);
+
+      camera.position.set(player.x, map.eye + bob, player.z);
+      camera.rotation.set(pitch, yaw, 0);
+    }
+
+    function look(dx, dy) {
+      yaw -= dx * LOOK_SPEED;
+      pitch = THREE.MathUtils.clamp(pitch - dy * LOOK_SPEED, -1.45, 1.45);
+    }
+
+    function backToEntrance() {
+      const start = map.entrance;
+      player.x = start.x;
+      player.z = start.z;
+      player.vx = player.vz = 0;
+      yaw = start.yaw;
+      pitch = start.pitch;
+    }
+
+    function lockPointer() {
+      try {
+        const result = canvas.requestPointerLock?.();
+        result?.catch?.(() => {});
+      } catch {
+        // Dragging still works when the browser refuses pointer lock.
+      }
+    }
+
+    const fade = document.getElementById("fade");
+    const doorHint = document.getElementById("door-hint");
+    let crossing = false;
+
+    function goThroughDoor(door) {
+      crossing = true;
+      held.clear();
+      doorHint.hidden = true;
+      fade.classList.add("on");
+
+      setTimeout(() => {
+        showMap(door.to, door.arrive);
+        requestAnimationFrame(() => {
+          fade.classList.remove("on");
+          crossing = false;
+        });
+      }, 260);
+    }
+
+    // ---------------------------------------------------------------------
+    // Taking a book from its stand, and reading it
+    // ---------------------------------------------------------------------
+
+    const reader = document.getElementById("reader");
+    const dot = document.getElementById("dot");
+    const raycaster = new THREE.Raycaster();
+    const REACH = 4.6;
+    const CENTER = new THREE.Vector2(0, 0);
+
+    let reading = null;   // the book that is off its stand
+    let flight = null;    // its trip between the stand and your hands
+    let hovered = null;
+    let sheet = null;     // the note being read: { entry, page }
+
+    function bookAt(ndc) {
+      raycaster.setFromCamera(ndc, camera);
+      raycaster.far = REACH * (map.eye / 2.2);
+      const hit = raycaster.intersectObjects(map.books.map(book => book.mesh), false)[0];
+      return hit ? map.books.find(book => book.mesh === hit.object) : null;
+    }
+
+    function setHovered(book) {
+      if (hovered === book) return;
+      if (hovered) hovered.hovered = false;
+      hovered = book;
+      if (book) book.hovered = true;
+    }
+
+    function setLabel(text) {
+      if (text && doorHint.textContent !== text) doorHint.textContent = text;
+      if (doorHint.hidden === Boolean(text)) doorHint.hidden = !text;
+    }
+
+    function fly(mesh, toPosition, toRotation, done) {
+      flight = {
+        mesh,
+        fromPosition: mesh.getWorldPosition(new THREE.Vector3()),
+        fromRotation: mesh.getWorldQuaternion(new THREE.Quaternion()),
+        toPosition,
+        toRotation,
+        done,
+        time: 0,
+        length: reducedMotion ? 0.01 : 0.62
+      };
+    }
+
+    function updateFlight(dt) {
+      if (!flight) return;
+
+      flight.time = Math.min(flight.length, flight.time + dt);
+      const t = flight.time / flight.length;
+      const ease = t * t * (3 - 2 * t);
+
+      flight.mesh.position.lerpVectors(flight.fromPosition, flight.toPosition, ease);
+      flight.mesh.quaternion.slerpQuaternions(flight.fromRotation, flight.toRotation, ease);
+
+      if (t >= 1) {
+        const finished = flight.done;
+        flight = null;
+        finished();
+      }
+    }
+
+    function openBook(book) {
+      reading = book;
+      document.body.classList.add("reading");
+      held.clear();
+      setHovered(null);
+      setLabel(null);
+      dot.hidden = true;
+      if (document.pointerLockElement) document.exitPointerLock();
+
+      book.homePosition = book.mesh.getWorldPosition(new THREE.Vector3());
+      book.homeRotation = book.mesh.getWorldQuaternion(new THREE.Quaternion());
+      map.scene.attach(book.mesh);
+
+      const facing = camera.getWorldDirection(new THREE.Vector3());
+      const inHand = camera.position.clone().addScaledVector(facing, 1.15 * map.bookSize);
+      const flat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+
+      fly(book.mesh, inHand, camera.quaternion.clone().multiply(flat), () => showContents(book.data));
+    }
+
+    function closeBook() {
+      reader.hidden = true;
+      reader.textContent = "";
+      sheet = null;
+
+      const book = reading;
+      fly(book.mesh, book.homePosition, book.homeRotation, () => {
+        book.tray.attach(book.mesh);
+        reading = null;
+        document.body.classList.remove("reading");
+        canvas.focus({ preventScroll: true });
+      });
+    }
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function closeButton() {
+      const close = element("button", "pill close", "Close book");
+      close.type = "button";
+      close.addEventListener("click", closeBook);
+      return close;
+    }
+
+    function showContents(data) {
+      sheet = null;
+      reader.textContent = "";
+      reader.hidden = false;
+
+      const leaf = element("div", "leaf");
+      const about = element("div", "about");
+
+      if (data.ar) {
+        const script = element("p", "script", data.ar);
+        script.dir = "rtl";
+        about.append(script);
+      }
+      about.append(element("h2", "", data.title));
+      if (data.author) about.append(element("p", "by", data.author));
+      if (data.subject) about.append(element("p", "subject", data.subject));
+      if (data.link) {
+        const source = element("a", "", "These notes on GitHub");
+        source.href = data.link;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+        about.append(source);
+      }
+
+      const list = element("div", "list");
+      list.append(element("h3", "", "Contents"));
+
+      if (data.contents.length) {
+        const entries = element("ol");
+        data.contents.forEach(entry => {
+          const row = element("li");
+          const item = element(readable(entry) ? "button" : "div", readable(entry) ? "" : "plain");
+          item.append(element("span", "", entry.n), element("span", "", entry.title));
+          if (readable(entry)) {
+            item.type = "button";
+            item.addEventListener("click", () => showPage(data, entry, 0));
+          }
+          row.append(item);
+          entries.append(row);
+        });
+        list.append(entries);
+      } else {
+        list.append(element("p", "", "No notes in this book yet."));
+      }
+
+      leaf.append(about, list);
+      reader.append(leaf, closeButton());
+      reader.querySelector(".close").focus({ preventScroll: true });
+    }
+
+    async function showPage(data, entry, page) {
+      const request = sheet = { data, entry, page, count: 0 };
+      if (!reader.querySelector(".sheet")) {
+        reader.textContent = "";
+        reader.append(element("p", "waiting", "Opening your notes…"), closeButton());
+      }
+
+      let pages;
+      let src;
+
+      try {
+        pages = await pagesOf(entry);
+        src = await pages.src(page);
+      } catch {
+        if (sheet !== request) return;
+        reader.textContent = "";
+        const failed = element("p", "waiting", "These notes would not open. Check your connection and try again.");
+        const back = element("button", "pill", "Contents");
+        back.type = "button";
+        back.addEventListener("click", () => showContents(data));
+        reader.append(failed, back, closeButton());
+        return;
+      }
+
+      if (sheet !== request) return;
+      request.count = pages.count;
+      reader.textContent = "";
+
+      const view = element("div", "sheet");
+      const image = element("img");
+      image.src = src;
+      image.alt = `${entry.title}, page ${page + 1}`;
+
+      const turn = element("div", "turn");
+      const step = (label, target, enabled) => {
+        const button = element("button", "pill", label);
+        button.type = "button";
+        button.disabled = !enabled;
+        button.style.opacity = enabled ? "" : "0.4";
+        button.addEventListener("click", () => showPage(data, entry, target));
+        return button;
+      };
+
+      const back = element("button", "pill", "Contents");
+      back.type = "button";
+      back.addEventListener("click", () => showContents(data));
+
+      turn.append(
+        back,
+        step("Previous", page - 1, page > 0),
+        element("span", "", `${page + 1} of ${pages.count}`),
+        step("Next", page + 1, page < pages.count - 1)
+      );
+
+      view.append(image, turn);
+      reader.append(view, closeButton());
+
+      for (const near of [page - 1, page + 1]) {
+        if (near >= 0 && near < pages.count) {
+          Promise.resolve(pages.src(near)).then(url => { new Image().src = url; }, () => {});
+        }
+      }
+    }
+
+    function checkAim() {
+      if (crossing) return;
+
+      const locked = document.pointerLockElement === canvas;
+      if (dot.hidden === locked) dot.hidden = !locked;
+
+      const book = bookAt(CENTER);
+      setHovered(book);
+
+      if (book) setLabel(`Click to open ${book.data.title}`);
+      else checkDoor();
+    }
+
+    function checkDoor() {
+      const door = map.door;
+      const near = Math.abs(player.x) < door.halfWidth + 1.2 && player.z > door.edge - 2.2;
+      setLabel(near ? door.label : null);
+
+      if (Math.abs(player.x) < door.halfWidth && player.z >= door.edge && player.vz > 0.2) {
+        goThroughDoor(door);
+      }
+    }
+
+    function ndcFrom(event) {
+      return new THREE.Vector2(
+        event.clientX / window.innerWidth * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
+    }
+
+    function showMap(id, arrive) {
+      map = built[id] ??= builders[id]();
+      currentId = id;
+      renderer.toneMappingExposure = map.exposure;
+      renderer.shadowMap.needsUpdate = true;
+      camera.fov = map.fov;
+      camera.updateProjectionMatrix();
+      backToEntrance();
+
+      if (arrive) {
+        player.x = arrive.x;
+        player.z = arrive.z;
+        yaw = arrive.yaw;
+        pitch = arrive.pitch;
+      }
+
+      if (location.hash.slice(1) !== id) location.hash = id;
+      syncMusic(id);
+    }
+
+    document.addEventListener("pointerlockchange", () => {
+      hint.textContent = document.pointerLockElement === canvas
+        ? "W A S D to walk · Mouse to look · Shift to hurry · Esc frees the cursor"
+        : "W A S D to walk · Click or drag to look · Shift to hurry";
+    });
+
+    document.addEventListener("mousemove", event => {
+      if (document.pointerLockElement === canvas) {
+        look(event.movementX, event.movementY);
+      }
+    });
+
+    let dragPointer = null;
+    let tapX = 0;
+    let tapY = 0;
+    let lastX = 0;
+    let lastY = 0;
+
+    canvas.addEventListener("contextmenu", event => event.preventDefault());
+
+    canvas.addEventListener("pointerdown", event => {
+      canvas.focus({ preventScroll: true });
+
+      if (reading) return;
+
+      // Mouse: a click opens the book you aim at, or the one under the cursor.
+      if (event.pointerType === "mouse") {
+        const locked = document.pointerLockElement === canvas;
+        const book = bookAt(locked ? CENTER : ndcFrom(event));
+        if (book) {
+          openBook(book);
+          return;
+        }
+        if (!locked) lockPointer();
+      }
+
+      tapX = event.clientX;
+      tapY = event.clientY;
+      dragPointer = event.pointerId;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (event.pointerId !== dragPointer || document.pointerLockElement === canvas) return;
+
+      look(event.clientX - lastX, event.clientY - lastY);
+      lastX = event.clientX;
+      lastY = event.clientY;
+    });
+
+    const endDrag = event => {
+      if (event.pointerId === dragPointer) dragPointer = null;
+    };
+
+    // Touch: a tap that did not turn into a look-around opens a book.
+    canvas.addEventListener("pointerup", event => {
+      if (event.pointerType === "mouse" || reading) return;
+      if (Math.hypot(event.clientX - tapX, event.clientY - tapY) > 10) return;
+      const book = bookAt(ndcFrom(event));
+      if (book) openBook(book);
+    });
+
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointercancel", endDrag);
+
+    window.addEventListener("keydown", event => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      if (reading) {
+        if (flight) return;
+        if (sheet) {
+          const { data, entry, page, count } = sheet;
+          if (event.code === "ArrowRight" && page < count - 1) showPage(data, entry, page + 1);
+          if (event.code === "ArrowLeft" && page > 0) showPage(data, entry, page - 1);
+          if (event.code === "Escape") showContents(data);
+        } else if (event.code === "Escape") {
+          closeBook();
+        }
+        return;
+      }
+
+      if (event.code === "KeyN") {
+        toggleMusic();
+        return;
+      }
+
+      if (event.code === "KeyR") {
+        backToEntrance();
+        return;
+      }
+
+      const action = keyMap[event.code];
+      if (!action) return;
+
+      event.preventDefault();
+      held.add(action);
+    });
+
+    window.addEventListener("keyup", event => {
+      const action = keyMap[event.code];
+      if (action) held.delete(action);
+    });
+
+    // A key released in another window never sends keyup here.
+    window.addEventListener("blur", () => held.clear());
+
+    // On-screen pad for touch screens.
+    document.querySelectorAll("#pad button").forEach(button => {
+      const action = button.dataset.action;
+      const release = () => held.delete(action);
+
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        held.add(action);
+      });
+      button.addEventListener("pointerup", release);
+      button.addEventListener("pointercancel", release);
+    });
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // The walk starts in Cordoba; #reading-room opens the other hall directly.
+    function followHash() {
+      const id = location.hash.slice(1);
+      if (builders[id] && id !== currentId) showMap(id);
+    }
+
+    window.addEventListener("hashchange", followHash);
+    showMap(builders[location.hash.slice(1)] ? location.hash.slice(1) : "cordoba");
+    document.getElementById("loading").hidden = true;
+
+    // The controls and credit show for the first 30 seconds only.
+    setTimeout(() => {
+      document.querySelectorAll(".fades").forEach(item => item.classList.add("gone"));
+    }, 30000);
+
+    const clock = new THREE.Clock();
+
+    renderer.setAnimationLoop(() => {
+      const delta = clock.getDelta();
+      if (!map) return;
+
+      map.update(clock.elapsedTime);
+      updateFlight(Math.min(delta, 0.05));
+
+      if (!reading) {
+        updateWalk(Math.min(delta, 0.05));
+        checkAim();
+      }
+
+      renderer.render(map.scene, camera);
+    });
+  </script>
+
+</body>
+</html>
