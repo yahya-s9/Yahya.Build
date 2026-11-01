@@ -1,0 +1,103 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spine lab 2</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Inter:wght@500&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--wall:#33241a;--wall2:#2a1d14;--plank:#6b4a2e;--plank-top:#9a7149;--shade:rgba(0,0,0,.45);--ink:#e8d8bd}
+body.light{--wall:#efe4cf;--wall2:#e6d8bd;--plank:#9a7a55;--plank-top:#c7a77a;--shade:rgba(60,40,20,.18);--ink:#3a2a1c}
+body{margin:0;background:var(--wall);color:var(--ink);font-family:'EB Garamond',serif;padding:28px 36px;transition:background .3s}
+h1{font-size:13px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;margin:0 0 6px}
+p.n{margin:0 0 18px;opacity:.7;font-size:15px}
+button.tg{font:inherit;background:none;border:1px solid currentColor;color:inherit;padding:4px 12px;border-radius:999px;cursor:pointer;margin-bottom:22px}
+.case{max-width:1200px}
+.row{position:relative;display:flex;align-items:flex-end;gap:2px;padding:0 28px;min-height:290px;
+  background:linear-gradient(var(--wall2),var(--wall));}
+/* wall shade the books cast above the plank */
+.row:after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(to top,var(--shade),transparent);pointer-events:none}
+.plank{height:18px;border-radius:2px 2px 4px 4px;margin-bottom:34px;
+  background:linear-gradient(180deg,var(--plank-top) 0 6px,rgba(255,255,255,.2) 6px 7px,var(--plank) 7px 100%);
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.15),0 18px 24px -14px rgba(0,0,0,.55)}
+.name{font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.7;margin:0 0 4px 28px}
+.bk{position:relative;flex:none;border:0;padding:0;background:none;cursor:pointer;z-index:1}
+.spine{position:relative;display:flex;flex-direction:column;align-items:center;border-radius:2px 2px 1px 1px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.14),3px 0 6px -3px rgba(0,0,0,.5);user-select:none;
+  transition:transform .42s cubic-bezier(.34,1.5,.5,1),box-shadow .32s,filter .3s}
+.spine:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.24),rgba(255,255,255,.13) 15%,rgba(255,255,255,.04) 32%,transparent 58%,rgba(0,0,0,.2)),
+             repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
+.bk:hover{z-index:5}
+.bk:hover .spine{transform:translateY(-14px);filter:brightness(1.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),5px 10px 16px -8px rgba(0,0,0,.55)}
+.tw{position:relative;display:flex;flex:1;min-height:0;width:100%;align-items:center;justify-content:center;overflow:hidden;padding:30px 3px 8px}
+.title{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Noto Nastaliq Urdu',serif;line-height:1.75;white-space:nowrap;font-weight:400;max-height:100%}
+.author{position:relative;font-family:'Inter',sans-serif;font-weight:500;font-size:9px;letter-spacing:.06em;text-transform:uppercase;opacity:.8;
+  writing-mode:vertical-rl;transform:rotate(180deg);padding:0 0 4px;margin-bottom:10px;white-space:nowrap}
+/* styles */
+[data-s=label] .tw{flex:0 1 auto;width:calc(100% - 10px);max-height:60%;margin:30px 0 10px;padding:12px 2px;background:#f4ecda;color:#2a2520;
+  border-radius:1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14),inset 0 0 0 3px #f4ecda,inset 0 0 0 4px rgba(0,0,0,.1)}
+[data-s=label] .author{margin-top:auto}
+[data-s=foil] .title{color:#ecd391!important}
+[data-s=foil][data-light] .title{color:#5a3f12!important}
+[data-s=foil] .orn{position:absolute;top:11px;font-size:10px;color:#ecd391;opacity:.85}
+[data-s=foil][data-light] .orn{color:#5a3f12}
+.bands{position:absolute;left:0;right:0;height:7px;border-top:1.5px solid color-mix(in srgb,var(--fg) 55%,transparent);border-bottom:1.5px solid color-mix(in srgb,var(--fg) 55%,transparent)}
+.bands.t{top:13px}.bands.b{bottom:34px}
+[data-s=bands] .author{margin-bottom:46px}
+
+/* ---- printed-on-the-spine feel ---- */
+/* weave and light sit ABOVE the lettering, so text is part of the cloth */
+.spine:after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.09) 0 1px,transparent 1px 3px),
+             linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.06) 20%,transparent 60%,rgba(0,0,0,.16))}
+.title{font-weight:600;opacity:.94;
+  text-shadow:0 1px 0 rgba(0,0,0,.55),0 -.5px 0 rgba(255,255,255,.12),0 0 1.5px rgba(0,0,0,.35)}
+.spine[data-light] .title{text-shadow:0 1px 0 rgba(255,255,255,.28),0 0 1px rgba(0,0,0,.25)}
+.author{font-weight:600;opacity:.85;text-shadow:0 1px 0 rgba(0,0,0,.4)}
+.spine[data-light] .author{text-shadow:0 1px 0 rgba(255,255,255,.3)}
+/* foil: gold leaf pressed into the cloth */
+[data-s=foil] .title{color:transparent!important;opacity:1;
+  background:linear-gradient(100deg,#9c7a2e,#f4dd98 38%,#c9a24a 60%,#8f6d24);-webkit-background-clip:text;background-clip:text;
+  text-shadow:none;filter:drop-shadow(0 1px 0 rgba(0,0,0,.6)) drop-shadow(0 0 1px rgba(0,0,0,.4))}
+[data-s=foil][data-light] .title{background:linear-gradient(100deg,#6b4a12,#a9812f 40%,#5a3f12);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 rgba(255,255,255,.3))}
+/* label: ink printed on paper */
+[data-s=label] .tw{background:
+   radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.5),transparent 60%),
+   repeating-linear-gradient(0deg,rgba(120,90,50,.06) 0 1px,transparent 1px 2px),#f1e7d0;
+   box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),inset 0 0 0 3px #f1e7d0,inset 0 0 0 4px rgba(0,0,0,.12),inset 0 0 6px rgba(90,60,20,.25),0 1px 1px rgba(0,0,0,.35)}
+[data-s=label] .title{color:#241d17!important;opacity:.92;font-weight:600;text-shadow:0 0 .7px rgba(36,29,23,.85);mix-blend-mode:multiply}
+</style></head><body>
+<h1>Spine lab 2</h1>
+<p class="n">Restrained cloth · varied sizes · four spine styles. Hover a book.</p>
+<button class="tg" onclick="document.body.classList.toggle('light')">Toggle light / dark wall</button>
+<div class="case" id="case"></div>
+<script>
+const SHELVES={
+ "Seerah & Tazkiyah":[["السیرة النبویة","Qadhi",104],["تزکیة القلب","Yusuf",60]],
+ "Machine Learning & Math":[["ہاؤ ٹو اسکیل یور ماڈل","Austin",40],["نیورل نیٹ ورکس","3Blue1Brown",25],["ایسنس آف لینیئر الجبرا","3Blue1Brown",30]],
+ "Diwan & Poetry":[["دیوانِ حافظ","Shirazi",90],["گلستانِ سعدی","Sa'di",70],["بوستانِ سعدی","Sa'di",60],["شاہنامہ","Ferdowsi",160],["رباعیاتِ خیام","Khayyam",20],["مثنوی معنوی","Rumi",150],["منطق الطیر","Attar",50],["کتاب الشفاء","Ibn Sina",110],["مقدمة ابن خلدون","Ibn Khaldun",100]]
+};
+// muted cloth families, 4 shades each (base, light, deep, pale)
+const FAM=[["#8a2f35","#a8484d","#5e1d23","#d9a3a6"],["#2f4a7a","#4a679a","#1f3358","#a9b9d6"],["#2f6b52","#4a8a6f","#1d4a38","#a8cdbb"],["#b07a2a","#cf9a45","#7d5316","#ecd09c"],
+ ["#6a3a62","#8a587f","#472541","#cfaec9"],["#2f7378","#4a9298","#1d5156","#a7d0d3"],["#b5532f","#d17247","#823721","#ecb99f"],["#4e5a66","#6b7886","#34404b","#bcc5cf"]];
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(a){return()=>{a|=0;a=a+0x6d2b79f5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const lum=h=>{const n=parseInt(h.slice(1),16);return[n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4}).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0)};
+const STY=["bands","label","foil","bands","label","foil"];
+const root=document.getElementById('case');
+for(const [name,books] of Object.entries(SHELVES)){
+  root.insertAdjacentHTML('beforeend',`<div class="name">${name}</div>`);
+  const row=document.createElement('div');row.className='row';
+  for(const [title,author,pages] of books){
+    const r=rng(hash(title)), fam=FAM[Math.floor(r()*FAM.length)], p=r();
+    const color=fam[p<.38?0:p<.7?2:p<.88?1:3], light=lum(color)>.3, fg=light?'#2a2520':'#f6efe2';
+    const style=STY[Math.floor(r()*STY.length)];
+    const w=Math.round(Math.min(72,Math.max(34,26+Math.sqrt(pages)*4.4))), h=Math.round(214+r()*58);
+    const room=h-(style==='label'?150:style==='bands'?150:120);const size=Math.max(10,Math.min(19,w*.34,room/(title.length*.56)));
+    const el=document.createElement('button');el.className='bk';
+    el.innerHTML=`<div class="spine" data-s="${style}" ${light?'data-light':''} style="width:${w}px;height:${h}px;background:${color};color:${fg};--fg:${fg}">
+      ${style==='bands'?'<span class="bands t"></span><span class="bands b"></span>':''}
+      ${style==='foil'?'<span class="orn">◆</span>':''}
+      <span class="tw"><span class="title" style="font-size:${size}px">${title}</span></span>
+      <span class="author">${author}</span></div>`;
+    row.appendChild(el);
+  }
+  root.appendChild(row);root.insertAdjacentHTML('beforeend','<div class="plank"></div>');
+}
+</script></body></html>

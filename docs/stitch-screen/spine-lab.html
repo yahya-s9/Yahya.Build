@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spine lab</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1a100a;color:#c4a173;font-family:'EB Garamond',serif;padding:24px}
+h2{font-weight:500;letter-spacing:.25em;text-transform:uppercase;font-size:13px;margin:36px 0 8px}
+.shelf{position:relative;height:300px;background:linear-gradient(#1f130b,#160d07);border-bottom:26px solid #3a2616;box-shadow:inset 0 30px 50px rgba(0,0,0,.6);display:flex;align-items:flex-end;gap:3px;padding:0 40px}
+.shelf:after{content:"";position:absolute;left:0;right:0;bottom:-26px;height:6px;background:#5a3d24}
+.bk{position:relative;flex:none;border-radius:2px 2px 0 0}
+.t{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Noto Nastaliq Urdu',serif;line-height:1.9;white-space:nowrap}
+/* shared: contact shadow on the shelf */
+.bk:before{content:"";position:absolute;left:-2px;right:-6px;bottom:-5px;height:8px;background:radial-gradient(ellipse at 50% 0,rgba(0,0,0,.65),transparent 70%);z-index:-1}
+
+/* ---- 1. cloth + raised ribs + curvature ---- */
+.v1{background:
+ linear-gradient(90deg,rgba(0,0,0,.55) 0,rgba(255,255,255,.14) 18%,rgba(255,255,255,.05) 50%,rgba(0,0,0,.35) 100%),
+ var(--c);
+ box-shadow:inset 0 3px 0 rgba(255,255,255,.1),inset 0 -3px 0 rgba(0,0,0,.35),2px 0 0 rgba(0,0,0,.4);
+ display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:14px 0}
+.v1 .rib{width:100%;height:7px;background:linear-gradient(180deg,rgba(255,255,255,.35),var(--g) 40%,rgba(0,0,0,.45));box-shadow:0 2px 3px rgba(0,0,0,.5)}
+.v1 .t{color:var(--g);text-shadow:0 1px 0 rgba(0,0,0,.7),0 0 6px rgba(255,215,120,.25);font-size:17px}
+.v1 .grain,.v2 .grain,.v4 .grain{position:absolute;inset:0;opacity:.35;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");pointer-events:none}
+
+/* ---- 2. leather + gilded label panel ---- */
+.v2{background:
+ linear-gradient(90deg,rgba(0,0,0,.5),rgba(255,255,255,.12) 20%,rgba(0,0,0,.05) 55%,rgba(0,0,0,.4)),var(--c);
+ box-shadow:inset 0 0 0 1px rgba(0,0,0,.4),inset 0 4px 6px rgba(255,255,255,.08),inset 0 -6px 8px rgba(0,0,0,.4);
+ display:flex;flex-direction:column;align-items:center;justify-content:space-around;padding:10px 0}
+.v2 .band{width:100%;height:12px;border-top:2px solid var(--g);border-bottom:2px solid var(--g);opacity:.85;box-sizing:border-box;background:linear-gradient(rgba(0,0,0,.25),transparent)}
+.v2 .label{width:78%;padding:10px 0;background:linear-gradient(90deg,#120b07,#2a1a10 50%,#120b07);border:1px solid var(--g);box-shadow:inset 0 0 6px #000,0 0 0 2px rgba(0,0,0,.4),0 0 0 3px color-mix(in srgb,var(--g) 60%,transparent);display:flex;justify-content:center}
+.v2 .t{color:var(--g);font-size:15px;text-shadow:0 1px 1px #000}
+
+/* ---- 3. 3D: page block visible on top + shadowed side ---- */
+.v3{background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(255,255,255,.16) 20%,rgba(0,0,0,.1) 60%,rgba(0,0,0,.45)),var(--c);
+ box-shadow:inset 0 3px 0 rgba(255,255,255,.08),3px 0 0 #e8dcc2,4px 0 0 #b9a77f,6px 0 4px rgba(0,0,0,.5);
+ display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:14px 0;margin-right:6px}
+.v3:after{content:"";position:absolute;left:0;top:-9px;width:100%;height:9px;transform-origin:bottom;background:linear-gradient(90deg,#d9cba9,#f2e8cf 40%,#cdbd96);clip-path:polygon(4px 0,100% 0,calc(100% + 6px) 100%,0 100%);border-radius:1px}
+.v3 .rib{width:100%;height:6px;background:linear-gradient(180deg,rgba(255,255,255,.3),var(--g) 45%,rgba(0,0,0,.5));box-shadow:0 2px 2px rgba(0,0,0,.5)}
+.v3 .t{color:var(--g);font-size:17px;text-shadow:0 1px 0 #000}
+
+/* ---- 4. worn leather, uneven heights + leaning ---- */
+.v4{background:
+ radial-gradient(ellipse at 30% 10%,rgba(255,255,255,.12),transparent 50%),
+ linear-gradient(90deg,rgba(0,0,0,.6),rgba(255,255,255,.1) 22%,rgba(0,0,0,.1) 60%,rgba(0,0,0,.5)),var(--c);
+ box-shadow:inset 0 0 14px rgba(0,0,0,.6),2px 0 0 rgba(0,0,0,.5);
+ border-radius:3px 3px 0 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:16px 0}
+.v4 .rib{width:100%;height:5px;background:linear-gradient(180deg,rgba(0,0,0,.5),var(--g) 30%,rgba(0,0,0,.5));opacity:.9}
+.v4 .t{color:var(--g);font-size:16px;text-shadow:0 1px 0 #000;opacity:.92}
+.lean{transform-origin:bottom left;transform:rotate(6deg);margin-left:14px;margin-right:30px}
+</style></head><body>
+<h2>1 · Cloth with raised ribs, rounded spine, grain</h2>
+<div class="shelf">
+ <div class="bk v1" style="--c:#5a1a22;--g:#e5c46c;width:54px;height:250px"><div class="grain"></div><div class="rib"></div><span class="t">دیوانِ حافظ</span><div class="rib"></div></div>
+ <div class="bk v1" style="--c:#12305a;--g:#f0cf7a;width:46px;height:228px"><div class="grain"></div><div class="rib"></div><span class="t">گلستانِ سعدی</span><div class="rib"></div></div>
+ <div class="bk v1" style="--c:#124a36;--g:#e8c872;width:62px;height:262px"><div class="grain"></div><div class="rib"></div><span class="t">شاهنامه</span><div class="rib"></div></div>
+ <div class="bk v1" style="--c:#4a2a12;--g:#e2bf72;width:40px;height:214px"><div class="grain"></div><div class="rib"></div><span class="t">رباعیات</span><div class="rib"></div></div>
+</div>
+<h2>2 · Leather, gilded label panel</h2>
+<div class="shelf">
+ <div class="bk v2" style="--c:#5a1a22;--g:#e5c46c;width:54px;height:250px"><div class="grain"></div><div class="band"></div><div class="label"><span class="t">دیوانِ حافظ</span></div><div class="band"></div></div>
+ <div class="bk v2" style="--c:#12305a;--g:#f0cf7a;width:46px;height:228px"><div class="grain"></div><div class="band"></div><div class="label"><span class="t">گلستانِ سعدی</span></div><div class="band"></div></div>
+ <div class="bk v2" style="--c:#124a36;--g:#e8c872;width:62px;height:262px"><div class="grain"></div><div class="band"></div><div class="label"><span class="t">شاهنامه</span></div><div class="band"></div></div>
+ <div class="bk v2" style="--c:#4a2a12;--g:#e2bf72;width:40px;height:214px"><div class="grain"></div><div class="band"></div><div class="label"><span class="t">رباعیات</span></div><div class="band"></div></div>
+</div>
+<h2>3 · Page block and edge showing (3D feel)</h2>
+<div class="shelf">
+ <div class="bk v3" style="--c:#5a1a22;--g:#e5c46c;width:54px;height:250px"><div class="rib"></div><span class="t">دیوانِ حافظ</span><div class="rib"></div></div>
+ <div class="bk v3" style="--c:#12305a;--g:#f0cf7a;width:46px;height:228px"><div class="rib"></div><span class="t">گلستانِ سعدی</span><div class="rib"></div></div>
+ <div class="bk v3" style="--c:#124a36;--g:#e8c872;width:62px;height:262px"><div class="rib"></div><span class="t">شاهنامه</span><div class="rib"></div></div>
+ <div class="bk v3" style="--c:#4a2a12;--g:#e2bf72;width:40px;height:214px"><div class="rib"></div><span class="t">رباعیات</span><div class="rib"></div></div>
+</div>
+<h2>4 · Worn leather, one book leaning</h2>
+<div class="shelf">
+ <div class="bk v4" style="--c:#5a1a22;--g:#e5c46c;width:54px;height:250px"><div class="grain"></div><div class="rib"></div><span class="t">دیوانِ حافظ</span><div class="rib"></div></div>
+ <div class="bk v4" style="--c:#12305a;--g:#f0cf7a;width:46px;height:228px"><div class="grain"></div><div class="rib"></div><span class="t">گلستانِ سعدی</span><div class="rib"></div></div>
+ <div class="bk v4 lean" style="--c:#124a36;--g:#e8c872;width:62px;height:262px"><div class="grain"></div><div class="rib"></div><span class="t">شاهنامه</span><div class="rib"></div></div>
+ <div class="bk v4" style="--c:#4a2a12;--g:#e2bf72;width:40px;height:214px"><div class="grain"></div><div class="rib"></div><span class="t">رباعیات</span><div class="rib"></div></div>
+</div>
+</body></html>

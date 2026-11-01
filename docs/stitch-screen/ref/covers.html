@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en" style=""><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_blank" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;display=swap" rel="stylesheet"/><link class="" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:#f7edde;}::-webkit-scrollbar-thumb{background:#d2c4b8;border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:#7e5617;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-lowest":"#ffffff","secondary-container":"#ffc87e","background":"#fff8f2","on-secondary-container":"#795212","surface-container":"#f7edde","on-secondary":"#ffffff","secondary-fixed-dim":"#f2bd74","surface-container-highest":"#ebe1d2","surface":"#fff8f2","inverse-primary":"#d2c4b8","surface-container-high":"#f1e7d8","secondary-fixed":"#ffddb3","on-surface":"#1f1b12","surface-bright":"#fff8f2","on-primary":"#ffffff","tertiary-fixed":"#ffdbcf","tertiary":"#230500","on-primary-container":"#96897e","error-container":"#ffdad6","outline":"#7e756e","on-secondary-fixed-variant":"#633f00","on-primary-fixed":"#221a13","secondary":"#7e5617","inverse-surface":"#353026","tertiary-container":"#451402","surface-tint":"#675c53","on-secondary-fixed":"#291800","surface-container-low":"#fcf2e3","on-surface-variant":"#4d453f","outline-variant":"#d0c4bc","on-error-container":"#93000a","primary":"#150e07","on-primary-fixed-variant":"#4f453c","on-error":"#ffffff","on-tertiary-fixed-variant":"#72351f","primary-fixed":"#efe0d3","on-tertiary-fixed":"#380c00","tertiary-fixed-dim":"#ffb59c","on-tertiary":"#ffffff","primary-fixed-dim":"#d2c4b8","error":"#ba1a1a","surface-variant":"#ebe1d2","on-tertiary-container":"#c4785c","surface-dim":"#e2d9ca","inverse-on-surface":"#faefe0","on-background":"#1f1b12","primary-container":"#2b231b"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-md":"1rem","margin":"3rem","margin-mobile":"1.25rem","space-lg":"1.5rem","space-sm":"0.5rem","gutter-mobile":"1rem","space-xl":"2.5rem","space-xs":"0.25rem","gutter":"1.5rem"},"fontFamily":{"headline-xl-mobile":["EB Garamond"],"body-sm":["EB Garamond"],"headline-xl":["EB Garamond"],"headline-lg-mobile":["EB Garamond"],"label-md":["EB Garamond"],"headline-sm":["EB Garamond"],"body-md":["EB Garamond"],"headline-md":["EB Garamond"],"body-lg":["EB Garamond"],"label-sm":["EB Garamond"],"headline-lg":["EB Garamond"]},"fontSize":{"headline-xl-mobile":["30px",{"lineHeight":"38px","fontWeight":"600"}],"body-sm":["15px",{"lineHeight":"22px","fontWeight":"400"}],"headline-xl":["40px",{"lineHeight":"52px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"600"}],"label-md":["14px",{"lineHeight":"18px","letterSpacing":"0.06em","fontWeight":"600"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"500"}],"body-md":["17px",{"lineHeight":"26px","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"500"}],"body-lg":["19px",{"lineHeight":"30px","fontWeight":"400"}],"label-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.08em","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"42px","letterSpacing":"-0.005em","fontWeight":"600"}]}}}};</script></head><body class="min-h-screen bg-background text-on-surface antialiased overflow-x-hidden selection:bg-secondary-fixed selection:text-secondary"><main class="w-full flex flex-col bg-background relative"><div class="flex flex-col w-full">
+<!-- Subtle Manuscript Texture Overlay -->
+<div class="w-full relative px-4 sm:px-8 lg:px-12 py-10 lg:py-16">
+<!-- Hero / Exhibition Header -->
+<header class="max-w-6xl mx-auto text-center relative mb-12 sm:mb-16">
+<!-- Decorative Islamic Arch Ornament (SVG) -->
+<div class="flex justify-center items-center gap-3 mb-4 text-secondary">
+<svg class="w-8 h-8 opacity-75" fill="currentColor" viewbox="0 0 40 40">
+<path d="M20 2C16 10 10 16 2 20C10 24 16 30 20 38C24 30 30 24 38 20C30 16 24 10 20 2ZM20 9C22.5 14 26 17.5 31 20C26 22.5 22.5 26 20 31C17.5 26 14 22.5 9 20C14 17.5 17.5 14 20 9Z"></path>
+</svg>
+<span class="h-px w-20 bg-secondary/40"></span>
+<span class="font-label-sm text-label-sm tracking-widest uppercase text-secondary font-semibold">Tadhhib &amp; Saffahat Codicology Archive</span>
+<span class="h-px w-20 bg-secondary/40"></span>
+<svg class="w-8 h-8 opacity-75" fill="currentColor" viewbox="0 0 40 40">
+<path d="M20 2C16 10 10 16 2 20C10 24 16 30 20 38C24 30 30 24 38 20C30 16 24 10 20 2ZM20 9C22.5 14 26 17.5 31 20C26 22.5 22.5 26 20 31C17.5 26 14 22.5 9 20C14 17.5 17.5 14 20 9Z"></path>
+</svg>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary tracking-tight mb-2 sm:mb-3">
+        معرض الأغلفة المذهّبة
+      </h1>
+<p class="font-headline-md text-headline-md text-secondary italic mb-4">
+        Exhibition of Master Illuminated Codices
+      </p>
+<div class="max-w-2xl mx-auto bg-surface-container/70 p-4 sm:p-5 rounded-lg shadow-sm">
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          Ten master recensions bound in crushed Moroccan goatskin, hand-stamped with genuine 24-karat gold leaf, and inked in mineral pigments: Afghan lapis lazuli, vermilion cinnabar, Ural malachite, and Persian lampblack.
+        </p>
+</div>
+<!-- Historical Metadata Counters -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
+<div class="bg-surface-container-low p-4 rounded text-center">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">10 Volumes</div>
+<div class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mt-1">Unique Folios</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded text-center">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">24-Karat</div>
+<div class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mt-1">Illuminated Jadwal</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded text-center">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">VIII–XV C.</div>
+<div class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mt-1">Classical Era</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded text-center">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">Goatskin</div>
+<div class="font-label-sm text-label-sm text-secondary uppercase tracking-wider mt-1">Blind &amp; Gold Tooled</div>
+</div>
+</div>
+</header>
+<!-- Curated Filter Bar -->
+<div class="max-w-6xl mx-auto mb-10 overflow-x-auto pb-2 scrollbar-none">
+<div class="flex items-center justify-start lg:justify-center gap-2 min-w-max p-1.5 bg-surface-container-high/80 rounded-xl">
+<button class="filter-btn active-filter px-4 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-primary text-on-primary" onclick="filterCovers('all')">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed"></span>
+<span>All 10 Folios</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('crimson')">
+<span class="w-3 h-3 rounded-full bg-[#521118]"></span>
+<span>Crimson</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('lapis')">
+<span class="w-3 h-3 rounded-full bg-[#0a1e38]"></span>
+<span>Lapis Lazuli</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('emerald')">
+<span class="w-3 h-3 rounded-full bg-[#0d2818]"></span>
+<span>Malachite</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('amber')">
+<span class="w-3 h-3 rounded-full bg-[#704214]"></span>
+<span>Amber Saffron</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('onyx')">
+<span class="w-3 h-3 rounded-full bg-[#121212]"></span>
+<span>Onyx &amp; Gold</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('plum')">
+<span class="w-3 h-3 rounded-full bg-[#2d1226]"></span>
+<span>Damascene Plum</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('terracotta')">
+<span class="w-3 h-3 rounded-full bg-[#5c2717]"></span>
+<span>Terracotta</span>
+</button>
+<button class="filter-btn px-3 py-2 rounded text-label-md font-label-md transition-all flex items-center gap-2 bg-surface-container hover:bg-surface-container-highest text-on-surface" onclick="filterCovers('dual')">
+<span class="w-3 h-3 rounded-full bg-gradient-to-r from-[#173024] to-[#451402]"></span>
+<span>Bi-Color Panel</span>
+</button>
+</div>
+</div>
+<!-- Main 10-Book Exhibition Grid (5 cols x 2 rows on XL desktop) -->
+<div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-7" id="codexGrid">
+<!-- COVER 1: Cinnabar & Crimson Moroccan Goatskin -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="crimson">
+<!-- Visual Book Folio Preview -->
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 35%, #4a0f16 0%, #2b060b 80%, #150204 100%);">
+<!-- Spine shadow highlight -->
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<!-- Jadwal Compound Outer Border -->
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #d6a754, inset 0 0 0 3px #2b060b, inset 0 0 0 4px #9e7428;"></div>
+<!-- Upper Arch / Shamsa Cartouche -->
+<div class="relative z-0 mt-3 mx-1 text-center">
+<div class="py-1 px-2 mx-auto rounded-full max-w-[85%] bg-[#1a0306]/80 text-[#ffd580] shadow-sm flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm text-[#ffd580]">auto_stories</span>
+<span class="font-label-sm text-[10px] tracking-widest uppercase">Ghazaliyat</span>
+</div>
+</div>
+<!-- Central Gilded Polylobed Arch Medallion -->
+<div class="relative z-0 my-auto mx-2 py-4 px-2 rounded-t-[40px] rounded-b-lg bg-[#1f0508]/85 text-center flex flex-col items-center justify-center" style="box-shadow: inset 0 0 0 1px #e6ba68, 0 2px 10px rgba(0,0,0,0.6);">
+<div class="w-6 h-6 mb-1 text-[#e6ba68]">
+<svg fill="currentColor" viewbox="0 0 24 24"><path d="M12 2L15 9H22L16.5 13.5L18.5 20.5L12 16L5.5 20.5L7.5 13.5L2 9H9L12 2Z"></path></svg>
+</div>
+<h2 class="text-xl font-bold tracking-normal text-[#fff3db] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                دیوانِ حافظ
+              </h2>
+<span class="text-[11px] font-semibold text-[#f0caa0] tracking-wider uppercase font-body-sm">
+                Divan of Hafez
+              </span>
+<span class="text-[9px] text-[#e6ba68]/80 mt-1">Khwaja Hafez Shirazi</span>
+</div>
+<!-- Lower Colophon Cartouche -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#180306]/90 text-center" style="box-shadow: inset 0 0 0 1px #9e7428;">
+<span class="text-[9px] text-[#ebd5b3] tracking-widest uppercase font-semibold">Morocco • Shiraz 791 AH</span>
+</div>
+</div>
+</div>
+<!-- Book Meta & Actions -->
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. I • Crimson</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Ghazals</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Divan of Hafez</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Scalloped mihrab arch with 24k gold arabesque filigree and vermilion-dyed goatskin binding.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(1)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 2: Midnight Lapis Lazuli & Cobalt -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="lapis">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 30%, #0c2b54 0%, #07172e 75%, #02070e 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<!-- Outer Double Jadwal with Spandrel Foliage -->
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #dfb15b, inset 0 0 0 3px #081a33, inset 0 0 0 4px #aa8237;"></div>
+<!-- Top Corner Spandrels (SVG filigree) -->
+<div class="flex justify-between items-center relative z-0 mt-3 px-1">
+<span class="text-[#f5c76c] text-xs font-bold">❦</span>
+<div class="text-center px-2 py-0.5 rounded bg-[#051121]/80 text-[#ebd4a2] text-[10px] tracking-widest uppercase">
+                Adab &amp; Hikmah
+              </div>
+<span class="text-[#f5c76c] text-xs font-bold">❦</span>
+</div>
+<!-- Central Gilded Stepped Cartouche -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-xl bg-[#061427]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #f5ca75, 0 4px 15px rgba(0,0,0,0.7);">
+<svg class="w-6 h-6 text-[#f5ca75] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fff3dc] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                گلستانِ سعدی
+              </h2>
+<span class="text-[11px] font-semibold text-[#f5ca75] tracking-wider uppercase font-body-sm">
+                Gulistan of Sa'di
+              </span>
+<span class="text-[9px] text-[#cbd7e8] mt-1 italic">Sheikh Muslih-ud-Din Sa'di</span>
+</div>
+<!-- Base Inscription Panel -->
+<div class="relative z-0 mb-3 mx-2 p-1 rounded bg-[#051122] text-center" style="box-shadow: inset 0 0 0 1px #aa8237;">
+<span class="text-[9px] text-[#e3c794] tracking-wider uppercase font-semibold">Lapis Ultramarine • 656 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. II • Lapis</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Philosophy</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Gulistan of Sa'di</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Deep celestial cobalt leather embellished with Afghan lapis ground powder and leafy corner spandrels.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(2)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 3: Imperial Malachite & Emerald Velvet -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="emerald">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 30%, #0d3822 0%, #061c10 75%, #010804 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<!-- Outer Gold Tracery -->
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #e3bd68, inset 0 0 0 3px #061f12, inset 0 0 0 4px #9d7b31;"></div>
+<!-- Floral Header -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#03130a]/80 text-[#e3bd68] rounded text-[10px] tracking-widest uppercase">
+                ✦ Irfan &amp; Tasawwuf ✦
+              </span>
+</div>
+<!-- Center Ogee Arch Medallion -->
+<div class="relative z-0 my-auto mx-2 py-4 px-2 rounded-t-[50px] rounded-b-md bg-[#04170d]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #e3bd68, 0 3px 12px rgba(0,0,0,0.6);">
+<span class="material-symbols-outlined text-[#e3bd68] text-lg mb-0.5">spa</span>
+<h2 class="text-xl font-bold text-[#fff7e6] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                مثنوی معنوی
+              </h2>
+<span class="text-[11px] font-semibold text-[#e3bd68] tracking-wider uppercase font-body-sm">
+                Masnavi-ye Ma'navi
+              </span>
+<span class="text-[9px] text-[#9ed3b3] mt-1">Mawlana Jalal al-Din Rumi</span>
+</div>
+<!-- Base Plaque -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#03130a] text-center" style="box-shadow: inset 0 0 0 1px #9d7b31;">
+<span class="text-[9px] text-[#dbbe81] tracking-widest uppercase font-semibold">Konya Recension • 672 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. III • Malachite</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Sufism</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Masnavi of Rumi</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Deep Russian malachite calfskin featuring embossed vegetal scrolls and a classic radiating ogee medallion.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(3)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 4: Saffron Ochre & Burnished Amber -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="amber">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 35%, #7a4613 0%, #452405 75%, #241101 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #f1c765, inset 0 0 0 3px #3d1f04, inset 0 0 0 4px #a16f21;"></div>
+<!-- Top Header -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-2.5 bg-[#261202]/85 text-[#f1c765] rounded text-[10px] tracking-widest uppercase">
+                Allegorical Flight
+              </span>
+</div>
+<!-- Central Multi-Point Star Cartouche -->
+<div class="relative z-0 my-auto mx-2 py-4 px-2 rounded-2xl bg-[#291303]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1px #f1c765, 0 4px 12px rgba(0,0,0,0.6);">
+<svg class="w-6 h-6 text-[#f1c765] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L14.5 8.5L21 9L16 13.5L17.5 20L12 16.5L6.5 20L8 13.5L3 9L9.5 8.5L12 2Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fff6e0] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                منطق الطیر
+              </h2>
+<span class="text-[11px] font-semibold text-[#f1c765] tracking-wider uppercase font-body-sm">
+                Mantiq al-Tayr
+              </span>
+<span class="text-[9px] text-[#e0b784] mt-1">Farid ud-Din Attar</span>
+</div>
+<!-- Base Footer -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#210e01] text-center" style="box-shadow: inset 0 0 0 1px #a16f21;">
+<span class="text-[9px] text-[#f7dc99] tracking-widest uppercase font-semibold">Nishapur • 573 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. IV • Amber</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Allegory</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Conference of Birds</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Tanned saffron calfskin with burnt umber tracery and delicate geometric star cartouches.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(4)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 5: Onyx & Jet Black with 24k Gold Inlay -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="onyx">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 30%, #1c1c1c 0%, #0d0d0d 75%, #000000 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<!-- Heavy 24k Gilded Frame (like Reference 1) -->
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 2px #d4af37, inset 0 0 0 4px #000, inset 0 0 0 5px #b08d24;"></div>
+<!-- Intricate Gilded Crown -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#0a0a0a] text-[#ffd700] rounded text-[10px] tracking-widest uppercase" style="box-shadow: inset 0 0 0 1px #705814;">
+                Epic of Kings
+              </span>
+</div>
+<!-- Central Monumental Lobed Cartouche -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-3xl bg-[#080808] text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 2px #ffd700, 0 4px 15px rgba(212,175,55,0.15);">
+<svg class="w-7 h-7 text-[#ffd700] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fffdf5] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                شاهنامه فردوسی
+              </h2>
+<span class="text-[11px] font-semibold text-[#ffd700] tracking-wider uppercase font-body-sm">
+                Shahnameh
+              </span>
+<span class="text-[9px] text-[#dedede] mt-1 font-medium">Abul-Qasim Ferdowsi</span>
+</div>
+<!-- Bottom Panel -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#0a0a0a] text-center" style="box-shadow: inset 0 0 0 1px #d4af37;">
+<span class="text-[9px] text-[#ffd700] tracking-widest uppercase font-semibold">Tus Edition • 400 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. V • Onyx</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Heroic Epic</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Shahnameh</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              High-contrast jet black lacquer dyed leather bound with dense 24-karat golden strapwork.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(5)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 6: Damascene Plum & Aubergine Purple -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="plum">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 35%, #3d1633 0%, #20081a 75%, #0f020c 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #cca45b, inset 0 0 0 3px #23091c, inset 0 0 0 4px #8f6d30;"></div>
+<!-- Header Spandrels -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#170514]/90 text-[#ebd4a4] rounded text-[10px] tracking-widest uppercase">
+                Canon Medicinae
+              </span>
+</div>
+<!-- Central Dual-Arch Medallion (like Reference 2) -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-t-[42px] rounded-b-xl bg-[#1d071b]/95 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #cca45b, 0 3px 12px rgba(0,0,0,0.6);">
+<svg class="w-6 h-6 text-[#cca45b] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM11 6H13V10H17V12H13V18H11V12H7V10H11V6Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fff3e6] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                القانون في الطب
+              </h2>
+<span class="text-[11px] font-semibold text-[#e8c688] tracking-wider uppercase font-body-sm">
+                Canon of Medicine
+              </span>
+<span class="text-[9px] text-[#e0b8d5] mt-1">Abu Ali Ibn Sina (Avicenna)</span>
+</div>
+<!-- Bottom Panel -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#170514] text-center" style="box-shadow: inset 0 0 0 1px #8f6d30;">
+<span class="text-[9px] text-[#ebd4a4] tracking-widest uppercase font-semibold">Hamadan • 415 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. VI • Plum</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Unani Medicine</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Canon of Avicenna</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Regal Damascene aubergine purple with dual-level vegetal framing and gilded cartouches.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(6)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 7: Terracotta & Burnished Rust Siena -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="terracotta">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 35%, #592212 0%, #361208 75%, #1c0702 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #d69f51, inset 0 0 0 3px #331006, inset 0 0 0 4px #9e6d2b;"></div>
+<!-- Top Inscription -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#1e0903]/90 text-[#f5c782] rounded text-[10px] tracking-widest uppercase">
+                Philosophy of History
+              </span>
+</div>
+<!-- Central Medallion -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-xl bg-[#240a04]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #d69f51, 0 3px 12px rgba(0,0,0,0.6);">
+<svg class="w-6 h-6 text-[#d69f51] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fff3db] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                مقدمة ابن خلدون
+              </h2>
+<span class="text-[11px] font-semibold text-[#f5c782] tracking-wider uppercase font-body-sm">
+                Muqaddimah
+              </span>
+<span class="text-[9px] text-[#e0b9a8] mt-1">Abd al-Rahman Ibn Khaldun</span>
+</div>
+<!-- Base Strip -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#1e0903] text-center" style="box-shadow: inset 0 0 0 1px #9e6d2b;">
+<span class="text-[9px] text-[#ebd2aa] tracking-widest uppercase font-semibold">Tunis &amp; Cairo • 779 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. VII • Terracotta</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Historiography</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">The Muqaddimah</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Warm red clay and burnt sienna with gold rosettes marking the dawn of sociology.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(7)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 8: Forest Teal & Verdigris -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="teal">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 30%, #0d383b 0%, #062124 75%, #010d0e 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #d4a953, inset 0 0 0 3px #072224, inset 0 0 0 4px #916f2c;"></div>
+<!-- Top Knotwork Arch -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#031517]/90 text-[#d4a953] rounded text-[10px] tracking-widest uppercase">
+                Metaphysical Quatrains
+              </span>
+</div>
+<!-- Central Scalloped Medallion (like Reference 3) -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-t-[46px] rounded-b-lg bg-[#041a1c]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #d4a953, 0 3px 12px rgba(0,0,0,0.6);">
+<svg class="w-6 h-6 text-[#d4a953] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2ZM12 4C16.4 4 20 7.6 20 12C20 13.9 19.3 15.6 18.2 17L7 5.8C8.4 4.7 10.1 4 12 4ZM5.8 7L17 18.2C15.6 19.3 13.9 20 12 20C7.6 20 4 16.4 4 12C4 10.1 4.7 8.4 5.8 7Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#f5fffa] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                رباعیاتِ خیام
+              </h2>
+<span class="text-[11px] font-semibold text-[#d4a953] tracking-wider uppercase font-body-sm">
+                Rubaiyat of Khayyam
+              </span>
+<span class="text-[9px] text-[#9ed3cf] mt-1">Omar Khayyam of Nishapur</span>
+</div>
+<!-- Base Footer -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#031517] text-center" style="box-shadow: inset 0 0 0 1px #916f2c;">
+<span class="text-[9px] text-[#e0cb9d] tracking-widest uppercase font-semibold">Khurasan • 517 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. VIII • Verdigris</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Astronomy</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Rubaiyat of Khayyam</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Mineral verdigris teal goatskin with gold strapwork framing astronomy and mortal philosophy.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(8)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 9: Burnt Umber & Dark Walnut Leather -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="amber">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-3 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: radial-gradient(circle at 50% 35%, #382419 0%, #1f120a 75%, #0d0603 100%);">
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<div class="absolute inset-2 pointer-events-none rounded-[2px]" style="box-shadow: inset 0 0 0 1px #cca056, inset 0 0 0 3px #1d1008, inset 0 0 0 4px #876226;"></div>
+<!-- Header Spandrels -->
+<div class="relative z-0 mt-3 text-center">
+<span class="inline-block py-1 px-3 bg-[#120904]/90 text-[#cca056] rounded text-[10px] tracking-widest uppercase">
+                Revival of Sciences
+              </span>
+</div>
+<!-- Central Gilded Cartouche -->
+<div class="relative z-0 my-auto mx-1.5 py-4 px-2 rounded-2xl bg-[#140b05]/95 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #cca056, 0 3px 12px rgba(0,0,0,0.6);">
+<svg class="w-6 h-6 text-[#cca056] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z"></path>
+</svg>
+<h2 class="text-xl font-bold text-[#fff5e3] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                إحياء علوم الدين
+              </h2>
+<span class="text-[11px] font-semibold text-[#cca056] tracking-wider uppercase font-body-sm">
+                Ihya Ulum al-Din
+              </span>
+<span class="text-[9px] text-[#e0c29f] mt-1">Abu Hamid al-Ghazali</span>
+</div>
+<!-- Base Plaque -->
+<div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-[#120904] text-center" style="box-shadow: inset 0 0 0 1px #876226;">
+<span class="text-[9px] text-[#ecd8b5] tracking-widest uppercase font-semibold">Tus &amp; Damascus • 495 AH</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. IX • Umber</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Theology</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Ihya Ulum al-Din</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Rich vintage dark walnut goatskin with blind tooling and antique gold filigree clasps.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(9)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+<!-- COVER 10: Crimson & Olive Dual-Tone Leather (like Reference 4) -->
+<article class="codex-item group flex flex-col bg-surface-container-lowest rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden" data-category="dual">
+<div class="p-4 bg-surface-container-low flex justify-center items-center">
+<div class="w-full aspect-[1/1.52] rounded shadow-2xl relative overflow-hidden flex flex-row p-1.5 select-none transition-transform duration-300 group-hover:scale-[1.02]" style="background: #11261a;">
+<!-- Spine shadow highlight -->
+<div class="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none z-10"></div>
+<!-- Left Spandrel Olive Strapwork Column (Reference 4) -->
+<div class="w-1/4 h-full bg-[#173024] p-1 flex flex-col justify-between items-center relative overflow-hidden" style="box-shadow: inset 0 0 0 1px #d6a754;">
+<div class="text-[#e2b868] text-[9px] uppercase tracking-widest [writing-mode:vertical-rl] rotate-180 font-bold my-auto">
+                ARABESQUE MARGIN
+              </div>
+<div class="w-full h-8 border-t border-b border-[#e2b868]/40 flex items-center justify-center text-[#e2b868]">
+                ❖
+              </div>
+</div>
+<!-- Central Crimson Field -->
+<div class="w-3/4 h-full ml-1 p-2 flex flex-col justify-between" style="background: radial-gradient(circle at 50% 30%, #4a1318 0%, #29080b 80%); box-shadow: inset 0 0 0 1px #d6a754;">
+<!-- Top Ornamental Arch -->
+<div class="text-center mt-1">
+<span class="text-[9px] text-[#e8c37d] uppercase tracking-widest bg-[#1f0507] px-2 py-0.5 rounded">
+                  Fables of Bidpai
+                </span>
+</div>
+<!-- Center Oval Medallion -->
+<div class="my-auto py-3 px-1 rounded-xl bg-[#1c0407]/90 text-center flex flex-col items-center" style="box-shadow: inset 0 0 0 1.5px #e2b868;">
+<svg class="w-5 h-5 text-[#e2b868] mb-1" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20Z"></path>
+</svg>
+<h2 class="text-lg font-bold text-[#fff4e0] mb-0.5" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                  كليلة ودمنة
+                </h2>
+<span class="text-[10px] font-semibold text-[#e2b868] tracking-wider uppercase font-body-sm">
+                  Kalila wa Dimna
+                </span>
+<span class="text-[8px] text-[#f2cc96] mt-0.5">Abdullah Ibn al-Muqaffa</span>
+</div>
+<!-- Bottom Colophon -->
+<div class="text-center mb-1">
+<span class="text-[8px] text-[#dfbf83] uppercase tracking-wider font-semibold">Basra Recension • 142 AH</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-grow justify-between bg-surface-container-lowest">
+<div>
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-secondary font-bold">Vol. X • Dual-Tone</span>
+<span class="text-xs px-2 py-0.5 bg-surface-container-high rounded text-on-surface-variant font-medium">Wisdom Fables</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-1">Kalila wa Dimna</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+              Bi-color Moroccan binding with olive-green vertical panel and crimson core, inspired by classical Mamluk folios.
+            </p>
+</div>
+<button class="mt-4 w-full py-2 px-3 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" onclick="openModal(10)">
+<span class="material-symbols-outlined text-base">visibility</span>
+<span>Inspect Folio</span>
+</button>
+</div>
+</article>
+</div>
+<!-- Curator's Note & Material Science Section -->
+<section class="max-w-6xl mx-auto mt-16 sm:mt-24 p-6 sm:p-8 bg-surface-container rounded-xl relative overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+<!-- Visual Codicological Artifact Card -->
+<div class="flex flex-col items-center justify-center p-6 bg-surface-container-lowest rounded-lg shadow-sm text-center">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-secondary mb-3">
+<span class="material-symbols-outlined text-3xl">brush</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary mb-1">Authentic Pigments</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Lapis lazuli extracted from Badakhshan mines, cinnabar mercury sulfide from Almadén, and natural oak-gall ink.
+          </p>
+</div>
+<!-- Middle Column: Historical Jadwal Ruling -->
+<div class="flex flex-col items-center justify-center p-6 bg-surface-container-lowest rounded-lg shadow-sm text-center">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-secondary mb-3">
+<span class="material-symbols-outlined text-3xl">architecture</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary mb-1">Compound Jadwal</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Traditional multi-line framing rules: outer hairline ink borders enclosing an inner channel of burnished gold leaf.
+          </p>
+</div>
+<!-- Right Column: Leather Binding Craft -->
+<div class="flex flex-col items-center justify-center p-6 bg-surface-container-lowest rounded-lg shadow-sm text-center">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-secondary mb-3">
+<span class="material-symbols-outlined text-3xl">history_edu</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-primary mb-1">Blind &amp; Gold Tooling</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Heated brass dies hand-impressed into damp Moroccan goatskin, sealed with egg-white glair to anchor the gold leaf.
+          </p>
+</div>
+</div>
+</section>
+<!-- Interactive Codex Detail Modal Backdrop -->
+<div class="fixed inset-0 bg-primary/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300" id="codexModal">
+<div class="bg-surface-container-lowest max-w-3xl w-full rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[921px] transform scale-95 transition-transform duration-300" id="modalContainer">
+<!-- Left: Large High-Resolution Simulated Cover Preview -->
+<div class="w-full md:w-1/2 p-6 flex items-center justify-center relative select-none" id="modalCoverField">
+<!-- Dynamically populated cover markup -->
+</div>
+<!-- Right: Manuscript Archival Details -->
+<div class="w-full md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-surface-container-highest">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold" id="modalVolume">Vol. I • Codicology</span>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-highest flex items-center justify-center text-primary transition-colors" onclick="closeModal()">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<div class="mt-4">
+<div class="text-2xl text-primary font-bold mb-1" id="modalArabicTitle" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl;">
+                ديوان حافظ
+              </div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-1" id="modalEnglishTitle">
+                Divan of Hafez
+              </h3>
+<p class="font-body-md text-body-md text-secondary italic mb-4" id="modalAuthor">
+                Khwaja Shams-ud-Din Muhammad Hafez Shirazi
+              </p>
+<div class="space-y-3 bg-surface-container-low p-4 rounded text-left">
+<div>
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">Binding &amp; Skin</span>
+<span class="font-body-sm text-body-sm text-primary" id="modalBinding">Crushed Moroccan Crimson Goatskin</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">Illumination Method</span>
+<span class="font-body-sm text-body-sm text-primary" id="modalIllumination">24k Gold leaf stamped via hot brass dies, multi-lobed arch jadwal</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">Historical Recension</span>
+<span class="font-body-sm text-body-sm text-primary" id="modalEra">Shiraz, 791 AH (1389 CE)</span>
+</div>
+<div>
+<span class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold block">Subject &amp; Theme</span>
+<span class="font-body-sm text-body-sm text-primary" id="modalSubject">Mystic Ghazals, Allegorical Wine, &amp; Persian Lyricism</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-surface-container-highest flex gap-3">
+<button class="w-full py-2.5 px-4 rounded bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors" onclick="closeModal()">
+              Return to Gallery
+            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Data Store for 10 Illuminated Codices
+  const codexData = {
+    1: {
+      volume: "Vol. I • Crimson Recension",
+      arabic: "دیوانِ حافظ",
+      english: "Divan of Hafez",
+      author: "Khwaja Shams-ud-Din Muhammad Hafez Shirazi",
+      binding: "Crushed Moroccan Crimson Goatskin",
+      illumination: "24-Karat genuine gold leaf stamped via hot brass dies; lobed scalloped mihrab arch.",
+      era: "Shiraz, 791 AH (1389 CE)",
+      subject: "Mystic Ghazals, Persian Lyricism, Sufi allegories of love and spiritual drunkenness.",
+      bgGrad: "radial-gradient(circle at 50% 35%, #4a0f16 0%, #2b060b 80%, #150204 100%)",
+      accent: "#ffd580",
+      gold: "#d6a754"
+    },
+    2: {
+      volume: "Vol. II • Lapis Lazuli Recension",
+      arabic: "گلستانِ سعدی",
+      english: "Gulistan of Sa'di",
+      author: "Sheikh Muslih-ud-Din Sa'di Shirazi",
+      binding: "Deep Lapis-Dyed Calfskin with Ultramarine Wash",
+      illumination: "Badakhshan lapis ground pigment, gold foliate corner spandrels with triple jadwal ruling.",
+      era: "Shiraz, 656 AH (1258 CE)",
+      subject: "Moral Philosophy, Wit, Royal Ethics, and Adab Narrative Tales.",
+      bgGrad: "radial-gradient(circle at 50% 30%, #0c2b54 0%, #07172e 75%, #02070e 100%)",
+      accent: "#ebd4a2",
+      gold: "#dfb15b"
+    },
+    3: {
+      volume: "Vol. III • Imperial Malachite",
+      arabic: "مثنوی معنوی",
+      english: "Masnavi-ye Ma'navi",
+      author: "Mawlana Jalal al-Din Muhammad Rumi",
+      binding: "Deep Ural Malachite Velvet & Calfskin",
+      illumination: "Embossed vegetal vines, radiating central gold sunburst, and multi-layered ogee arch.",
+      era: "Konya, 672 AH (1273 CE)",
+      subject: "Spiritual Allegories, Neo-Platonic Mysticism, and the Quran in Pahlavi Verse.",
+      bgGrad: "radial-gradient(circle at 50% 30%, #0d3822 0%, #061c10 75%, #010804 100%)",
+      accent: "#e3bd68",
+      gold: "#e3bd68"
+    },
+    4: {
+      volume: "Vol. IV • Saffron & Burnished Amber",
+      arabic: "منطق الطیر",
+      english: "Mantiq al-Tayr",
+      author: "Farid ud-Din Attar of Nishapur",
+      binding: "Tanned Saffron Ochre Goatskin with Walnut Inlay",
+      illumination: "Burnished amber gold tracery, delicate eight-pointed central starburst cartouche.",
+      era: "Nishapur, 573 AH (1177 CE)",
+      subject: "The Conference of the Birds, the 7 Valleys of Quest, Simurgh allegory.",
+      bgGrad: "radial-gradient(circle at 50% 35%, #7a4613 0%, #452405 75%, #241101 100%)",
+      accent: "#f1c765",
+      gold: "#f1c765"
+    },
+    5: {
+      volume: "Vol. V • Onyx & Jet Black Recension",
+      arabic: "شاهنامه فردوسی",
+      english: "Shahnameh (Book of Kings)",
+      author: "Abul-Qasim Ferdowsi Tusi",
+      binding: "Black Lacquer & Dyed Goatskin",
+      illumination: "High-contrast dense golden geometric strapwork, monumental gilded arch cartouche.",
+      era: "Tus, 400 AH (1010 CE)",
+      subject: "Persian Mythological and Heroic Epics, Rostam, Sohrab, and ancient dynastic lore.",
+      bgGrad: "radial-gradient(circle at 50% 30%, #1c1c1c 0%, #0d0d0d 75%, #000000 100%)",
+      accent: "#ffd700",
+      gold: "#d4af37"
+    },
+    6: {
+      volume: "Vol. VI • Damascene Plum Recension",
+      arabic: "القانون في الطب",
+      english: "The Canon of Medicine",
+      author: "Abu Ali Ibn Sina (Avicenna)",
+      binding: "Aubergine Purple Dyed Moroccan Goatskin",
+      illumination: "Dual classical cartouches, ornate vegetal corner flourishes with 24k leaf overlay.",
+      era: "Hamadan / Isfahan, 415 AH (1025 CE)",
+      subject: "Unani Medicine, Pharmacology, Anatomy, and Systemic Pathological Classifications.",
+      bgGrad: "radial-gradient(circle at 50% 35%, #3d1633 0%, #20081a 75%, #0f020c 100%)",
+      accent: "#cca45b",
+      gold: "#cca45b"
+    },
+    7: {
+      volume: "Vol. VII • Terracotta & Rust Siena",
+      arabic: "مقدمة ابن خلدون",
+      english: "The Muqaddimah",
+      author: "Wali al-Din Abd al-Rahman Ibn Khaldun",
+      binding: "Warm Terracotta Clay & Rust Tanned Hide",
+      illumination: "Burnished rust siena tooling, geometric star rosettes, and Maghrebi cursive frame.",
+      era: "Qalat Ibn Salama, 779 AH (1377 CE)",
+      subject: "Asabiyyah (Social Cohesion), Philosophy of History, Economics, and Urbanization.",
+      bgGrad: "radial-gradient(circle at 50% 35%, #592212 0%, #361208 75%, #1c0702 100%)",
+      accent: "#d69f51",
+      gold: "#d69f51"
+    },
+    8: {
+      volume: "Vol. VIII • Verdigris & Forest Teal",
+      arabic: "رباعیاتِ خیام",
+      english: "Rubaiyat of Omar Khayyam",
+      author: "Ghiyath al-Din Omar Khayyam",
+      binding: "Ocean Teal Mineral Verdigris Dyed Goatskin",
+      illumination: "Intertwined gold Islamic knotwork, multi-layered lobed corner arches.",
+      era: "Nishapur / Samarkand, 517 AH (1123 CE)",
+      subject: "Philosophical Quatrains, Ephemeral Nature of Time, Astronomical Wisdom.",
+      bgGrad: "radial-gradient(circle at 50% 30%, #0d383b 0%, #062124 75%, #010d0e 100%)",
+      accent: "#d4a953",
+      gold: "#d4a953"
+    },
+    9: {
+      volume: "Vol. IX • Dark Walnut & Umber",
+      arabic: "إحياء علوم الدين",
+      english: "Ihya Ulum al-Din",
+      author: "Abu Hamid Muhammad al-Ghazali",
+      binding: "Dark Roast Umber Calfskin with Heavy Blind Tooling",
+      illumination: "Fine brass hot-stamping, antique gold corner strapwork and theological medallion.",
+      era: "Damascus & Baghdad, 495 AH (1102 CE)",
+      subject: "Revival of Religious Sciences, Spiritual Psychology, Worship and Moral Conduct.",
+      bgGrad: "radial-gradient(circle at 50% 35%, #382419 0%, #1f120a 75%, #0d0603 100%)",
+      accent: "#cca056",
+      gold: "#cca056"
+    },
+    10: {
+      volume: "Vol. X • Dual-Tone Mamluk Binding",
+      arabic: "كليلة ودمنة",
+      english: "Kalila wa Dimna",
+      author: "Abdullah Ibn al-Muqaffa (Bidpai)",
+      binding: "Olive Green Margin with Crimson Goatskin Core",
+      illumination: "Bi-color panel with vertical arabesque margins and stamped central gold medallion.",
+      era: "Basra & Baghdad, 142 AH (759 CE)",
+      subject: "Allegorical Animal Fables of Statecraft, Governance, Wit, and Friendship.",
+      bgGrad: "#4a1318",
+      accent: "#e2b868",
+      gold: "#d6a754"
+    }
+  };
+
+  // Filter Handler
+  function filterCovers(category) {
+    const items = document.querySelectorAll('.codex-item');
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    // Update active button state
+    buttons.forEach(btn => {
+      btn.classList.remove('bg-primary', 'text-on-primary');
+      btn.classList.add('bg-surface-container', 'text-on-surface');
+    });
+    event.currentTarget.classList.remove('bg-surface-container', 'text-on-surface');
+    event.currentTarget.classList.add('bg-primary', 'text-on-primary');
+
+    // Filter cards with smooth transition
+    items.forEach(item => {
+      if (category === 'all' || item.getAttribute('data-category') === category) {
+        item.style.display = 'flex';
+        setTimeout(() => {
+          item.style.opacity = '1';
+          item.style.transform = 'scale(1)';
+        }, 10);
+      } else {
+        item.style.opacity = '0';
+        item.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          item.style.display = 'none';
+        }, 200);
+      }
+    });
+  }
+
+  // Modal Open Handler
+  function openModal(id) {
+    const data = codexData[id];
+    if (!data) return;
+
+    // Fill textual content
+    document.getElementById('modalVolume').textContent = data.volume;
+    document.getElementById('modalArabicTitle').textContent = data.arabic;
+    document.getElementById('modalEnglishTitle').textContent = data.english;
+    document.getElementById('modalAuthor').textContent = data.author;
+    document.getElementById('modalBinding').textContent = data.binding;
+    document.getElementById('modalIllumination').textContent = data.illumination;
+    document.getElementById('modalEra').textContent = data.era;
+    document.getElementById('modalSubject').textContent = data.subject;
+
+    // Build the illuminated cover inside modal
+    const coverContainer = document.getElementById('modalCoverField');
+    coverContainer.innerHTML = `
+      <div class="w-full max-w-[280px] aspect-[1/1.55] rounded shadow-2xl relative overflow-hidden flex flex-col justify-between p-4 select-none"
+           style="background: ${data.bgGrad}; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        
+        <!-- Spine Shadow -->
+        <div class="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/50 via-white/10 to-transparent pointer-events-none z-10"></div>
+        
+        <!-- Jadwal border -->
+        <div class="absolute inset-3 pointer-events-none rounded-[2px]"
+             style="box-shadow: inset 0 0 0 1.5px ${data.gold}, inset 0 0 0 5px rgba(0,0,0,0.7), inset 0 0 0 6.5px ${data.gold};"></div>
+
+        <!-- Upper Arch -->
+        <div class="relative z-0 mt-3 text-center">
+          <span class="inline-block py-1 px-3 bg-black/60 text-[10px] tracking-widest uppercase rounded" style="color: ${data.accent};">
+            ★ Authentic Folio ★
+          </span>
+        </div>
+
+        <!-- Center Medallion -->
+        <div class="relative z-0 my-auto mx-1.5 py-6 px-3 rounded-2xl bg-black/70 text-center flex flex-col items-center"
+             style="box-shadow: inset 0 0 0 1.5px ${data.gold};">
+          <h2 class="text-2xl font-bold mb-1" style="font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; color: #fff;">
+            ${data.arabic}
+          </h2>
+          <span class="text-xs font-semibold tracking-wider uppercase font-body-sm" style="color: ${data.accent};">
+            ${data.english}
+          </span>
+          <span class="text-[10px] text-white/80 mt-1">${data.author}</span>
+        </div>
+
+        <!-- Lower Colophon -->
+        <div class="relative z-0 mb-3 mx-2 p-1.5 rounded bg-black/60 text-center" style="box-shadow: inset 0 0 0 1px ${data.gold};">
+          <span class="text-[9px] tracking-widest uppercase font-semibold" style="color: ${data.accent};">
+            ${data.era}
+          </span>
+        </div>
+      </div>
+    `;
+
+    // Show Modal
+    const modal = document.getElementById('codexModal');
+    const container = document.getElementById('modalContainer');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      container.classList.remove('scale-95');
+      container.classList.add('scale-100');
+    }, 10);
+  }
+
+  // Modal Close Handler
+  function closeModal() {
+    const modal = document.getElementById('codexModal');
+    const container = document.getElementById('modalContainer');
+    modal.classList.add('opacity-0');
+    container.classList.remove('scale-100');
+    container.classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
+
+  // Close modal on click backdrop
+  document.getElementById('codexModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+
+  // Close modal on ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+</script></main>
+</body></html>
