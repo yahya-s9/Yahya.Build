@@ -1322,49 +1322,384 @@
     torus(scene, materials.stone, 18.35, 0.34, 0, 14.0, 0, Math.PI / 2);
 
     // ---------------------------------------------------------------------
-    // Domed ceiling and structural ribs
+    // Andalusian dome: a drum of pierced horseshoe windows, a honeycomb of
+    // muqarnas, then a lapis vault of gold stars crossed by interlaced ribs,
+    // after the domes of Cordoba's Great Mosque and the Alhambra's Comares hall
     // ---------------------------------------------------------------------
 
-    const dome = new THREE.Mesh(
-      new THREE.SphereGeometry(18.5, 96, 40, 0, TAU, 0, Math.PI / 2),
-      materials.dome
-    );
-    dome.position.y = 14;
-    dome.receiveShadow = true;
-    scene.add(dome);
+    const DRUM_BASE = 14;
+    const DRUM_TOP = 17.85;
+    const VAULT_BASE = 20.3;
+    const VAULT_RADIUS = 16.2;
+    const VAULT_RISE = 11.9;
+    const CROWN_RADIUS = 2.3;
+    const CROWN_Y = 31.9;       // the chandelier chain ends here
 
-    for (let i = 0; i < 16; i++) {
-      const angle = i * TAU / 16;
-      const start = new THREE.Vector3(
-        Math.sin(angle) * 18.25,
-        14.0,
-        Math.cos(angle) * 18.25
-      );
-      const control = new THREE.Vector3(
-        Math.sin(angle) * 10.0,
-        28.0,
-        Math.cos(angle) * 10.0
-      );
-      const end = new THREE.Vector3(0, 32.25, 0);
-
-      const curve = new THREE.QuadraticBezierCurve3(start, control, end);
-      const rib = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, 42, 0.14, 8, false),
-        materials.rib
-      );
-      rib.castShadow = true;
-      scene.add(rib);
-    }
-
-    [17.3, 21.0, 25.0].forEach(height => {
-      const radius = Math.sqrt(
-        18.5 * 18.5 - (height - 14) * (height - 14)
-      );
-      torus(scene, materials.rib, radius, 0.075, 0, height, 0, Math.PI / 2);
+    const domeGold = new THREE.MeshStandardMaterial({
+      color: 0xd9a441,
+      emissive: 0x6a4312,
+      emissiveIntensity: 0.7,
+      metalness: 0.45,
+      roughness: 0.4
     });
 
-    cylinder(scene, materials.darkBrass, 0.7, 0.12, 0, 32.43, 0);
-    torus(scene, materials.brass, 0.78, 0.09, 0, 32.42, 0, Math.PI / 2);
+    function domeTexture(width, height, paint) {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      paint(canvas.getContext("2d"));
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      return texture;
+    }
+
+    function starOutline(radius, points = 8, waist = 0.62) {
+      const outline = [];
+      for (let i = 0; i < points * 2; i++) {
+        const angle = i * Math.PI / points;
+        const r = i % 2 ? radius * waist : radius;
+        outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+      }
+      return outline;
+    }
+
+    function traceOutline(ctx, outline) {
+      outline.forEach(([x, y], index) => (index ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+    }
+
+    // The lapis vault, painted in latitude and longitude so the rows of stars
+    // keep their shape as they close towards the crown.
+    const vaultTexture = domeTexture(4096, 1536, ctx => {
+      const W = ctx.canvas.width;
+      const H = ctx.canvas.height;
+
+      const ground = ctx.createLinearGradient(0, 0, 0, H);
+      ground.addColorStop(0, "#102a5c");
+      ground.addColorStop(1, "#1c4385");
+      ctx.fillStyle = ground;
+      ctx.fillRect(0, 0, W, H);
+
+      const place = (lon, lat, outline) => outline.map(([x, y]) => [
+        W * (lon + x / Math.max(Math.cos(lat), 0.14)) / TAU,
+        H * (1 - (lat + y) / (Math.PI / 2))
+      ]);
+
+      const step = 0.17;
+      ctx.lineJoin = "round";
+
+      for (let row = 0; row * step < 1.34; row++) {
+        const lat = 0.08 + row * step;
+        const count = 4 * Math.round(TAU * Math.cos(lat) / step / 4);
+
+        for (let i = 0; i < count; i++) {
+          const lon = (i + (row % 2 ? 0.5 : 0)) * TAU / count;
+
+          for (const wrap of [-TAU, 0, TAU]) {
+            ctx.beginPath();
+            traceOutline(ctx, place(lon + wrap, lat, starOutline(step * 0.42)));
+            ctx.fillStyle = "#e3b04f";
+            ctx.fill();
+
+            ctx.beginPath();
+            traceOutline(ctx, place(lon + wrap, lat, starOutline(step * 0.2, 8, 0.7)));
+            ctx.fillStyle = (i + row) % 3 ? "#16346b" : "#8a2b2a";
+            ctx.fill();
+
+            ctx.beginPath();
+            traceOutline(ctx, place(lon + wrap + TAU / count / 2, lat, starOutline(step * 0.07, 4, 0.4)));
+            ctx.fillStyle = "#f4d58a";
+            ctx.fill();
+          }
+        }
+      }
+    });
+
+    // Sebka: the lozenge net carved into Andalusian plaster.
+    const sebkaTexture = domeTexture(256, 256, ctx => {
+      ctx.fillStyle = "#c9ab7a";
+      ctx.fillRect(0, 0, 256, 256);
+      ctx.strokeStyle = "#7c5a34";
+      ctx.lineWidth = 9;
+      for (const [x, y] of [[128, 0], [0, 128], [256, 128], [128, 256]]) {
+        ctx.beginPath();
+        ctx.moveTo(x - 128, y);
+        ctx.quadraticCurveTo(x - 40, y + 26, x, y + 128);
+        ctx.quadraticCurveTo(x + 40, y + 26, x + 128, y);
+        ctx.quadraticCurveTo(x + 40, y - 26, x, y - 128);
+        ctx.quadraticCurveTo(x - 40, y - 26, x - 128, y);
+        ctx.stroke();
+      }
+    });
+    sebkaTexture.repeat.set(64, 7);
+
+    // A pierced stone screen with the dusk showing through its stars.
+    const screenTexture = domeTexture(512, 768, ctx => {
+      const sky = ctx.createLinearGradient(0, 0, 0, 768);
+      sky.addColorStop(0, "#10122e");
+      sky.addColorStop(0.55, "#5b2f5e");
+      sky.addColorStop(1, "#e0763a");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, 512, 768);
+
+      ctx.beginPath();
+      ctx.rect(0, 0, 512, 768);
+      for (let y = 0; y <= 768; y += 64) {
+        for (let x = (y / 64) % 2 ? 0 : 64; x <= 512; x += 128) {
+          const outline = starOutline(56).map(([px, py]) => [px + x, py + y]);
+          outline.forEach(([px, py], index) => (index ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+          ctx.closePath();
+        }
+      }
+      ctx.fillStyle = "#2c1b12";
+      ctx.fill("evenodd");
+    });
+
+    // ---- Drum ------------------------------------------------------------
+
+    const drum = new THREE.Mesh(
+      new THREE.CylinderGeometry(18.5, 18.5, DRUM_TOP - DRUM_BASE, 96, 1, true),
+      new THREE.MeshStandardMaterial({
+        map: sebkaTexture,
+        emissive: 0x4a3620,
+        emissiveMap: sebkaTexture,
+        roughness: 0.85,
+        side: THREE.BackSide
+      })
+    );
+    drum.position.y = (DRUM_BASE + DRUM_TOP) / 2;
+    scene.add(drum);
+
+    // A horseshoe: the circle runs thirty degrees past its widest point.
+    function horseshoe(path, radius, straight) {
+      const lean = Math.PI / 6;
+      const across = radius * Math.cos(lean);
+      path.moveTo(-across, 0);
+      path.lineTo(-across, straight);
+      path.absarc(0, straight + radius * Math.sin(lean), radius, Math.PI + lean, -lean, true);
+      path.lineTo(across, 0);
+      path.closePath();
+      return path;
+    }
+
+    const paneGeometry = new THREE.ShapeGeometry(horseshoe(new THREE.Shape(), 1.5, 1), 24);
+    const paneBounds = new THREE.Box3().setFromBufferAttribute(paneGeometry.attributes.position);
+    const paneUv = paneGeometry.attributes.uv;
+    const panePosition = paneGeometry.attributes.position;
+    for (let i = 0; i < paneUv.count; i++) {
+      paneUv.setXY(
+        i,
+        (panePosition.getX(i) - paneBounds.min.x) / (paneBounds.max.x - paneBounds.min.x),
+        (panePosition.getY(i) - paneBounds.min.y) / (paneBounds.max.y - paneBounds.min.y)
+      );
+    }
+    const paneMaterial = new THREE.MeshBasicMaterial({ map: screenTexture });
+
+    const frameShape = horseshoe(new THREE.Shape(), 1.72, 1);
+    frameShape.holes.push(horseshoe(new THREE.Path(), 1.5, 1));
+    const frameGeometry = new THREE.ExtrudeGeometry(frameShape, {
+      depth: 0.16,
+      bevelEnabled: false,
+      curveSegments: 24
+    });
+
+    for (let i = 0; i < 16; i++) {
+      const angle = (i + 0.5) * TAU / 16;
+      const bay = new THREE.Group();
+      bay.position.set(Math.sin(angle) * 18.28, DRUM_BASE + 0.16, Math.cos(angle) * 18.28);
+      bay.rotation.y = angle + Math.PI;
+      scene.add(bay);
+
+      const pane = new THREE.Mesh(paneGeometry, paneMaterial);
+      pane.position.z = 0.02;
+      bay.add(pane, new THREE.Mesh(frameGeometry, domeGold));
+    }
+
+    torus(scene, domeGold, 18.3, 0.16, 0, DRUM_TOP, 0, Math.PI / 2);
+
+    // ---- Muqarnas --------------------------------------------------------
+
+    // One honeycomb cell: a quarter sphere drawn up to a point, open towards
+    // the middle of the room.
+    const cellGeometry = new THREE.SphereGeometry(1, 12, 7, 0, Math.PI, 0, Math.PI / 2);
+    const cellPosition = cellGeometry.attributes.position;
+    for (let i = 0; i < cellPosition.count; i++) {
+      const edge = 1 - Math.abs(cellPosition.getX(i));
+      cellPosition.setY(i, cellPosition.getY(i) * (0.72 + 0.5 * edge * edge));
+    }
+    // Shading is painted on: each cell darkens into its recess, so the band
+    // reads the same however far it sits from the candles.
+    const cellShade = new Float32Array(cellPosition.count * 3);
+    for (let i = 0; i < cellPosition.count; i++) {
+      const shade = 0.66 - 0.46 * cellPosition.getZ(i);
+      cellShade.fill(shade, i * 3, i * 3 + 3);
+    }
+    cellGeometry.setAttribute("color", new THREE.BufferAttribute(cellShade, 3));
+
+    const pendantGeometry = new THREE.ConeGeometry(1, 1, 6);
+    pendantGeometry.rotateX(Math.PI);
+
+    const cellColors = [0xe6d2a8, 0x1f4a8c, 0xe6d2a8, 0x9a2f2c, 0xe6d2a8, 0xd9a441];
+
+    function addMuqarnas(tiers, count, width, height, depth) {
+      const total = tiers.length * count;
+      const cells = new THREE.InstancedMesh(
+        cellGeometry,
+        new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }),
+        total
+      );
+      const pendants = new THREE.InstancedMesh(pendantGeometry, domeGold, total);
+      const place = new THREE.Matrix4();
+      const turn = new THREE.Quaternion();
+      const color = new THREE.Color();
+
+      tiers.forEach(([radius, y], tier) => {
+        for (let i = 0; i < count; i++) {
+          const index = tier * count + i;
+          const angle = (i + (tier % 2 ? 0.5 : 0)) * TAU / count;
+          const edge = angle + Math.PI / count;
+
+          place.compose(
+            new THREE.Vector3(Math.sin(angle) * radius, y, Math.cos(angle) * radius),
+            turn.setFromAxisAngle(Y_AXIS, angle),
+            new THREE.Vector3(width / 2, height, depth)
+          );
+          cells.setMatrixAt(index, place);
+          cells.setColorAt(index, color.setHex(cellColors[(i + tier * 2) % cellColors.length]));
+
+          place.compose(
+            new THREE.Vector3(Math.sin(edge) * radius, y - height * 0.14, Math.cos(edge) * radius),
+            turn.identity(),
+            new THREE.Vector3(width * 0.07, height * 0.3, width * 0.07)
+          );
+          pendants.setMatrixAt(index, place);
+        }
+      });
+
+      scene.add(cells, pendants);
+    }
+
+    const honeycombBack = new THREE.Mesh(
+      new THREE.LatheGeometry(
+        [
+          new THREE.Vector2(18.6, DRUM_TOP),
+          new THREE.Vector2(18.6, VAULT_BASE + 0.1),
+          new THREE.Vector2(VAULT_RADIUS, VAULT_BASE + 0.1)
+        ],
+        96
+      ),
+      new THREE.MeshStandardMaterial({
+        color: 0x4d3a26,
+        roughness: 0.8,
+        side: THREE.DoubleSide
+      })
+    );
+    scene.add(honeycombBack);
+
+    addMuqarnas(
+      [[18.1, 17.92], [17.4, 18.52], [16.75, 19.12], [16.2, 19.72]],
+      48, 2.3, 0.72, 0.5
+    );
+    addMuqarnas([[3.35, 30.85], [2.8, 31.3]], 18, 0.98, 0.62, 0.26);
+
+    // ---- Vault -----------------------------------------------------------
+
+    const vaultProfile = [];
+    const VAULT_STEPS = 48;
+    for (let i = 0; i <= VAULT_STEPS; i++) {
+      const lat = i / VAULT_STEPS * Math.PI / 2;
+      vaultProfile.push(new THREE.Vector2(
+        Math.max(Math.cos(lat) * VAULT_RADIUS, 0.01),
+        VAULT_BASE + Math.sin(lat) * VAULT_RISE
+      ));
+    }
+
+    const vault = new THREE.Mesh(
+      new THREE.LatheGeometry(vaultProfile, 128),
+      new THREE.MeshStandardMaterial({
+        map: vaultTexture,
+        emissive: 0x8f8478,
+        emissiveMap: vaultTexture,
+        emissiveIntensity: 0.72,
+        metalness: 0.2,
+        roughness: 0.5,
+        side: THREE.DoubleSide
+      })
+    );
+    scene.add(vault);
+
+    // Sixteen ribs, each a straight line on the plan lifted onto the vault.
+    // Skipping seven bases leaves a sixteen-sided eye around the crown.
+    const RIB_SKIP = 7;
+    for (let i = 0; i < 16; i++) {
+      const from = i * TAU / 16;
+      const to = (i + RIB_SKIP) * TAU / 16;
+      const points = [];
+
+      for (let j = 0; j <= 48; j++) {
+        const along = (1 - Math.cos(j / 48 * Math.PI)) / 2;
+        const x = THREE.MathUtils.lerp(Math.sin(from), Math.sin(to), along);
+        const z = THREE.MathUtils.lerp(Math.cos(from), Math.cos(to), along);
+        const lift = Math.sqrt(Math.max(0, 1 - x * x - z * z));
+        const inset = 0.985;
+        points.push(new THREE.Vector3(
+          x * VAULT_RADIUS * inset,
+          VAULT_BASE + lift * VAULT_RISE * inset,
+          z * VAULT_RADIUS * inset
+        ));
+      }
+
+      scene.add(new THREE.Mesh(
+        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 90, 0.17, 6, false),
+        domeGold
+      ));
+    }
+
+    torus(scene, domeGold, VAULT_RADIUS, 0.2, 0, VAULT_BASE, 0, Math.PI / 2);
+    torus(scene, domeGold, 3.45, 0.11, 0, 30.85, 0, Math.PI / 2);
+
+    // Sixteen-pointed star closing the crown.
+    const crownStar = domeTexture(512, 512, ctx => {
+      ctx.fillStyle = "#102a5c";
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.translate(256, 256);
+      ctx.lineJoin = "round";
+      for (const [radius, fill] of [
+        [250, "#e3b04f"],
+        [190, "#8a2b2a"],
+        [125, "#16346b"],
+        [58, "#ffe29a"]
+      ]) {
+        ctx.beginPath();
+        traceOutline(ctx, starOutline(radius, 16, 0.76));
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.strokeStyle = "#ffe29a";
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
+    });
+
+    const crown = new THREE.Mesh(
+      new THREE.CircleGeometry(CROWN_RADIUS, 48),
+      new THREE.MeshStandardMaterial({
+        map: crownStar,
+        emissive: 0xa8987f,
+        emissiveMap: crownStar,
+        roughness: 0.45
+      })
+    );
+    crown.rotation.x = Math.PI / 2;
+    crown.position.y = CROWN_Y;
+    scene.add(crown);
+    torus(scene, domeGold, CROWN_RADIUS, 0.1, 0, CROWN_Y, 0, Math.PI / 2);
+
+    // Candlelight carries up into the vault.
+    const vaultGlow = new THREE.PointLight(0xffc27a, 70, 30, 2);
+    vaultGlow.position.set(0, 21, 0);
+    scene.add(vaultGlow);
 
     // ---------------------------------------------------------------------
     // Clerestory windows
@@ -1496,96 +1831,307 @@
     torus(scene, materials.shelf, 17.15, 0.18, 0, 10.67, 0, Math.PI / 2);
 
     // ---------------------------------------------------------------------
-    // Central circular catalog cabinet
+    // The centre of the room: a low stepped dais and a carved wooden stand
+    // holding an open Quran, at its opening spread
     // ---------------------------------------------------------------------
 
-    const catalog = new THREE.Group();
-    scene.add(catalog);
+    const DAIS_LOW = 0.22;
+    const DAIS_HIGH = 0.44;
+    const DAIS_OUTER = 3.6;
+    const DAIS_INNER = 3.0;
 
-    cylinder(catalog, materials.stone, 2.82, 0.28, 0, 0.14, 0);
-    cylinder(catalog, materials.polishedWood, 2.3, 3.2, 0, 1.88, 0);
-    cylinder(catalog, materials.brass, 2.36, 0.1, 0, 0.43, 0);
-    cylinder(catalog, materials.brass, 2.36, 0.1, 0, 3.42, 0);
-    cylinder(catalog, materials.polishedWood, 2.68, 0.24, 0, 3.65, 0);
+    const daisGold = new THREE.MeshStandardMaterial({
+      color: 0xd9a441,
+      emissive: 0x6a4312,
+      emissiveIntensity: 0.6,
+      metalness: 0.45,
+      roughness: 0.4
+    });
 
-    for (let row = 0; row < 3; row++) {
-      for (let i = 0; i < 12; i++) {
-        const angle = i * TAU / 12;
-        const y = 0.9 + row * 0.86;
-
-        box(
-          catalog,
-          materials.wood,
-          Math.sin(angle) * 2.34,
-          y,
-          Math.cos(angle) * 2.34,
-          0.91,
-          0.72,
-          0.16,
-          angle
-        );
-
-        box(
-          catalog,
-          materials.paper,
-          Math.sin(angle) * 2.225,
-          y + 0.12,
-          Math.cos(angle) * 2.225,
-          0.24,
-          0.09,
-          0.025,
-          angle
-        );
-
-        sphere(
-          catalog,
-          materials.brass,
-          0.065,
-          Math.sin(angle) * 2.19,
-          y - 0.1,
-          Math.cos(angle) * 2.19
-        );
+    function daisStar(radius, points = 8, waist = 0.62) {
+      const outline = [];
+      for (let i = 0; i < points * 2; i++) {
+        const angle = i * Math.PI / points;
+        const r = i % 2 ? radius * waist : radius;
+        outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
       }
+      return outline;
     }
 
-    // Glass vitrine and armillary catalog globe.
-    cylinder(catalog, materials.brass, 1.48, 0.16, 0, 3.84, 0);
-    cylinder(catalog, materials.glass, 1.34, 1.35, 0, 4.58, 0);
+    function fillStar(ctx, x, y, outline, fill) {
+      ctx.beginPath();
+      outline.forEach(([px, py], index) => (
+        index ? ctx.lineTo(x + px, y + py) : ctx.moveTo(x + px, y + py)
+      ));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
 
-    const glassDome = new THREE.Mesh(
-      new THREE.SphereGeometry(1.34, 40, 20, 0, TAU, 0, Math.PI / 2),
-      materials.glass
+    cylinder(scene, materials.stone, DAIS_OUTER, DAIS_LOW, 0, DAIS_LOW / 2, 0);
+    cylinder(scene, materials.stone, DAIS_INNER, DAIS_HIGH, 0, DAIS_HIGH / 2, 0);
+    torus(scene, daisGold, DAIS_OUTER, 0.035, 0, DAIS_LOW, 0, Math.PI / 2);
+    torus(scene, daisGold, DAIS_INNER, 0.035, 0, DAIS_HIGH, 0, Math.PI / 2);
+
+    // Inlaid top: one great star in lapis, oxblood and gold.
+    const daisCanvas = document.createElement("canvas");
+    daisCanvas.width = daisCanvas.height = 1024;
+    {
+      const ctx = daisCanvas.getContext("2d");
+      ctx.fillStyle = "#c9ab7a";
+      ctx.fillRect(0, 0, 1024, 1024);
+      fillStar(ctx, 512, 512, daisStar(506, 16, 0.8), "#16346b");
+      fillStar(ctx, 512, 512, daisStar(470, 16, 0.8), "#e3b04f");
+      fillStar(ctx, 512, 512, daisStar(448, 16, 0.8), "#7a2230");
+      fillStar(ctx, 512, 512, daisStar(330, 8), "#e3b04f");
+      fillStar(ctx, 512, 512, daisStar(310, 8), "#16346b");
+    }
+    const daisTexture = new THREE.CanvasTexture(daisCanvas);
+    daisTexture.colorSpace = THREE.SRGBColorSpace;
+    daisTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    const daisTop = new THREE.Mesh(
+      new THREE.CircleGeometry(DAIS_INNER - 0.04, 96),
+      new THREE.MeshStandardMaterial({ map: daisTexture, roughness: 0.42 })
     );
-    glassDome.position.y = 5.255;
-    catalog.add(glassDome);
+    daisTop.rotation.x = -Math.PI / 2;
+    daisTop.position.y = DAIS_HIGH + 0.004;
+    daisTop.receiveShadow = true;
+    scene.add(daisTop);
 
-    for (let i = 0; i < 8; i++) {
-      const angle = i * TAU / 8;
-      box(
-        catalog,
-        materials.brass,
-        Math.sin(angle) * 1.33,
-        4.58,
-        Math.cos(angle) * 1.33,
-        0.035,
-        1.35,
-        0.035,
-        angle
+    // ---- The stand -------------------------------------------------------
+
+    const stand = new THREE.Group();
+    stand.position.y = DAIS_HIGH;
+    scene.add(stand);
+
+    const STAND_SIDES = 8;
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.72, 1.02, 1.5, STAND_SIDES),
+      materials.polishedWood
+    );
+    body.position.y = 0.95;
+    body.rotation.y = Math.PI / STAND_SIDES;
+    body.castShadow = true;
+    stand.add(body);
+
+    const foot = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.16, 1.24, 0.2, STAND_SIDES),
+      materials.wood
+    );
+    foot.position.y = 0.1;
+    foot.rotation.y = Math.PI / STAND_SIDES;
+    foot.castShadow = true;
+    stand.add(foot);
+
+    for (const [radius, y] of [[1.04, 0.22], [0.74, 1.68]]) {
+      const band = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius, radius, 0.06, STAND_SIDES),
+        daisGold
       );
+      band.position.y = y;
+      band.rotation.y = Math.PI / STAND_SIDES;
+      stand.add(band);
     }
 
-    sphere(catalog, materials.paper, 0.48, 0, 4.62, 0);
-    const ringA = torus(catalog, materials.brass, 0.68, 0.026, 0, 4.62, 0);
-    const ringB = torus(catalog, materials.brass, 0.68, 0.026, 0, 4.62, 0, Math.PI / 2);
-    const ringC = torus(catalog, materials.brass, 0.78, 0.024, 0, 4.62, 0, 0, Math.PI / 2);
+    // The sloped top that the book rests on, tilted towards the door.
+    const BOOK_TILT = 0.66;
+    const cradle = new THREE.Group();
+    cradle.position.set(0, 2.08, 0);
+    cradle.rotation.x = BOOK_TILT;
+    stand.add(cradle);
 
-    ringA.rotation.x = 0.28;
-    ringB.rotation.z = 0.22;
-    ringC.rotation.x = 0.5;
+    box(cradle, materials.polishedWood, 0, -0.1, 0, 3.3, 0.12, 2.3);
+    box(cradle, daisGold, 0, -0.03, 1.1, 3.3, 0.05, 0.1);    // the lip the book sits on
+    box(cradle, materials.polishedWood, 0, 0.02, 1.22, 3.3, 0.2, 0.08);
 
-    const catalogLight = new THREE.PointLight(0xffc96e, 38, 9, 2);
-    catalogLight.position.set(0, 4.6, 0);
-    scene.add(catalogLight);
+    // ---- The book --------------------------------------------------------
+
+    const PAGE_WIDTH = 1.5;
+    const PAGE_DEPTH = 2.05;
+
+    const coverMaterial = new THREE.MeshStandardMaterial({ color: 0x5a1c22, roughness: 0.5 });
+    box(cradle, coverMaterial, -PAGE_WIDTH / 2 - 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
+    box(cradle, coverMaterial, PAGE_WIDTH / 2 + 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
+    box(cradle, materials.paper, -PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
+    box(cradle, materials.paper, PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
+
+    // Text from the Uthmani script. 1:3 repeats the last two words of 1:1.
+    const FATIHA = [
+      "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+      "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+      "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+      "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+      "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ"
+    ];
+    const BAQARAH = [
+      "الٓمٓ",
+      "ذَٰلِكَ ٱلْكِتَـٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
+      "ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَـٰهُمْ يُنفِقُونَ",
+      "وَٱلَّذِينَ يُؤْمِنُونَ بِمَآ أُنزِلَ إِلَيْكَ وَمَآ أُنزِلَ مِن قَبْلِكَ وَبِٱلْـَٔاخِرَةِ هُمْ يُوقِنُونَ",
+      "أُو۟لَـٰٓئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُو۟لَـٰٓئِكَ هُمُ ٱلْمُفْلِحُونَ"
+    ];
+    const BISMILLAH = FATIHA[0];
+    const INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+    const ayahMark = number => "۝" + String(number).replace(/\d/g, digit => INDIC_DIGITS[digit]);
+
+    // One page at a time: frame, title panel, then the verses, centred line
+    // by line and flowing on from one verse to the next.
+    function paintPage(canvas, title, bismillah, verses) {
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const FONT = '"Amiri", "Noto Naskh Arabic", "Geeza Pro", serif';
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.direction = "rtl";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+
+      ctx.fillStyle = "#f2e6c9";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = "#b5862c";
+      ctx.lineWidth = 12;
+      ctx.strokeRect(46, 46, W - 92, H - 92);
+      ctx.strokeStyle = "#16346b";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(66, 66, W - 132, H - 132);
+      ctx.strokeStyle = "#b5862c";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(78, 78, W - 156, H - 156);
+
+      for (const [x, y] of [[62, 62], [W - 62, 62], [62, H - 62], [W - 62, H - 62]]) {
+        fillStar(ctx, x, y, daisStar(30), "#b5862c");
+        fillStar(ctx, x, y, daisStar(14, 8, 0.7), "#16346b");
+      }
+
+      // Title panel.
+      const panel = ctx.createLinearGradient(0, 110, 0, 240);
+      panel.addColorStop(0, "#1c4385");
+      panel.addColorStop(1, "#102a5c");
+      ctx.fillStyle = panel;
+      ctx.fillRect(112, 110, W - 224, 130);
+      ctx.strokeStyle = "#e3b04f";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(112, 110, W - 224, 130);
+      fillStar(ctx, 172, 175, daisStar(34), "#e3b04f");
+      fillStar(ctx, W - 172, 175, daisStar(34), "#e3b04f");
+      ctx.fillStyle = "#f4d58a";
+      ctx.font = `64px ${FONT}`;
+      ctx.fillText(title, W / 2, 196);
+
+      const left = 118;
+      const width = W - left * 2;
+      let y = 310;
+      let size = 72;
+
+      // Wrap the verses at this size; returns the lines.
+      const lay = () => {
+        ctx.font = `${size}px ${FONT}`;
+        const lines = [];
+        let line = "";
+        verses.forEach((verse, index) => {
+          // Pause marks sit on the word before them, so they wrap with it.
+          const words = [
+            ...verse.replace(/ ([\u06D6-\u06DC])/g, "\u00A0$1").split(" "),
+            ayahMark(index + 1)
+          ];
+          for (const word of words) {
+            const next = line ? `${line} ${word}` : word;
+            if (line && ctx.measureText(next).width > width) {
+              lines.push(line);
+              line = word;
+            } else {
+              line = next;
+            }
+          }
+        });
+        if (line) lines.push(line);
+        return lines;
+      };
+
+      const room = H - 120 - (bismillah ? 410 : 310);
+      let lines = lay();
+      while (size > 40 && lines.length * size * 1.72 > room) {
+        size -= 2;
+        lines = lay();
+      }
+      const leading = Math.min(size * 2.5, room / lines.length);
+
+      if (bismillah) {
+        ctx.fillStyle = "#16346b";
+        ctx.font = `66px ${FONT}`;
+        ctx.fillText(bismillah, W / 2, y + 30);
+        y += 100;
+      }
+
+      y += (room - leading * lines.length) / 2;
+      ctx.fillStyle = "#1c1410";
+      ctx.font = `${size}px ${FONT}`;
+      lines.forEach((text, index) => {
+        ctx.fillText(text, W / 2, y + leading * (index + 0.72));
+      });
+    }
+
+    function makePage(side, title, bismillah, verses) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1400;
+      const paint = () => paintPage(canvas, title, bismillah, verses);
+      paint();
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      // Canvas text uses a web font only once it has loaded.
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load('64px "Amiri"', "ب").then(() => {
+          paint();
+          texture.needsUpdate = true;
+        }).catch(() => {});
+      }
+
+      // The leaf swells from the gutter and flattens towards the fore-edge.
+      const geometry = new THREE.PlaneGeometry(PAGE_WIDTH, PAGE_DEPTH, 24, 1);
+      geometry.rotateX(-Math.PI / 2);
+      const position = geometry.attributes.position;
+      for (let i = 0; i < position.count; i++) {
+        const fromGutter = (position.getX(i) + PAGE_WIDTH / 2) / PAGE_WIDTH;
+        const across = side > 0 ? fromGutter : 1 - fromGutter;
+        position.setY(i, Math.sin(Math.min(across * 2.4, Math.PI / 2)) * 0.11 - across * 0.05);
+      }
+      geometry.computeVertexNormals();
+
+      const page = new THREE.Mesh(
+        geometry,
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          emissive: 0x8a7a60,
+          emissiveMap: texture,
+          emissiveIntensity: 0.55,
+          roughness: 0.82
+        })
+      );
+      page.position.set(side * PAGE_WIDTH / 2, 0.135, 0);
+      page.receiveShadow = true;
+      cradle.add(page);
+    }
+
+    // Read from the right, so the book's first page lies on the right.
+    makePage(1, "سورة الفاتحة", null, FATIHA);
+    makePage(-1, "سورة البقرة", BISMILLAH, BAQARAH);
+
+    // A green silk marker falling from the gutter.
+    box(cradle, new THREE.MeshStandardMaterial({ color: 0x123f30, roughness: 0.6 }),
+      0, 0.16, 0.08, 0.03, 0.01, PAGE_DEPTH + 0.16);
+
+    const standLight = new THREE.PointLight(0xffd59a, 12, 9, 2);
+    standLight.position.set(0, 4.6, 1.4);
+    scene.add(standLight);
 
     // ---------------------------------------------------------------------
     // Reading furniture
@@ -1848,10 +2394,10 @@
 
       const candleSpots = [];
 
-      // Around the top of the catalog.
+      // Around the lower step of the dais.
       for (let i = 0; i < 16; i++) {
-        const angle = i * TAU / 16;
-        candleSpots.push([Math.sin(angle) * 2.5, 3.77, Math.cos(angle) * 2.5]);
+        const angle = (i + 0.5) * TAU / 16;
+        candleSpots.push([Math.sin(angle) * 3.3, DAIS_LOW, Math.cos(angle) * 3.3]);
       }
 
       // A pair at the head of each desk.
@@ -1885,14 +2431,14 @@
       });
       const books = placeBooks(scene, "reading-room", bookSpots, 1.28);
 
-      // Candle fill low in the room, so the catalog and desks stay readable.
+      // Candle fill low in the room, so the dais and desks stay readable.
       for (const z of [-6.5, 6.5]) {
         const fill = new THREE.PointLight(0xffb066, 34, 16, 2);
         fill.position.set(0, 2.6, z);
         scene.add(fill);
       }
 
-      const CATALOG_RADIUS = 2.82;
+      const STAND_RADIUS = 1.5;   // the dais itself can be walked on
       const SHELF_LIMIT = 16.2;
       const BODY_RADIUS = 0.45;
       const DESK_HALF_WIDTH = 1.66;
@@ -1957,7 +2503,7 @@
         }
 
         const distance = Math.hypot(player.x, player.z) || 0.0001;
-        const inner = CATALOG_RADIUS + BODY_RADIUS;
+        const inner = STAND_RADIUS + BODY_RADIUS;
 
         if (distance > SHELF_LIMIT) {
           player.x *= SHELF_LIMIT / distance;
@@ -1986,10 +2532,15 @@
           arrive: { x: 0.8, z: 7.1, yaw: -0.3, pitch: 0.06 }
         },
         collide,
+        ground(x, z) {
+          const distance = Math.hypot(x, z);
+          if (distance < DAIS_INNER) return DAIS_HIGH;
+          return distance < DAIS_OUTER ? DAIS_LOW : 0;
+        },
         update(elapsed) {
           dust.rotation.y = elapsed * 0.009;
           materials.bulb.emissiveIntensity = 3.0 + Math.sin(elapsed * 1.4) * 0.12;
-          catalogLight.intensity = 62 + Math.sin(elapsed * 7.3) * 4 + Math.sin(elapsed * 13.1) * 2;
+          standLight.intensity = 12 + Math.sin(elapsed * 7.3) * 0.8 + Math.sin(elapsed * 13.1) * 0.4;
           moveCandles(elapsed);
           pulseBooks(books, elapsed);
         }
@@ -3470,7 +4021,7 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     let currentId = null;
     let map = null;
 
-    const player = { x: 0, z: 0, vx: 0, vz: 0, step: 0 };
+    const player = { x: 0, z: 0, vx: 0, vz: 0, step: 0, rise: 0 };
     let yaw = 0;
     let pitch = 0;
 
@@ -3547,7 +4098,11 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         ? 0
         : Math.sin(player.step) * 0.035 * Math.min(moving / map.walk, 1);
 
-      camera.position.set(player.x, map.eye + bob, player.z);
+      // Ease up and down steps instead of jumping to the new height.
+      const ground = map.ground ? map.ground(player.x, player.z) : 0;
+      player.rise += (ground - player.rise) * (1 - Math.exp(-10 * dt));
+
+      camera.position.set(player.x, map.eye + player.rise + bob, player.z);
       camera.rotation.set(pitch, yaw, 0);
     }
 
