@@ -1212,13 +1212,6 @@
         depthWrite: false,
         side: THREE.DoubleSide
       }),
-      lamp: new THREE.MeshStandardMaterial({
-        color: 0x174d3c,
-        emissive: 0x153b2c,
-        emissiveIntensity: 0.45,
-        roughness: 0.38,
-        metalness: 0.08
-      }),
       bulb: new THREE.MeshStandardMaterial({
         color: 0xffe1a0,
         emissive: 0xffbf58,
@@ -1663,27 +1656,6 @@
       return book;
     }
 
-    function createLamp(parent, x, z) {
-      const lamp = new THREE.Group();
-      lamp.position.set(x, 1.44, z);
-      parent.add(lamp);
-
-      cylinder(lamp, materials.brass, 0.22, 0.07, 0, 0.035, 0);
-      cylinder(lamp, materials.brass, 0.035, 0.58, 0, 0.33, 0);
-
-      const shade = new THREE.Mesh(
-        new THREE.SphereGeometry(0.34, 24, 12, 0, TAU, 0, Math.PI / 2),
-        materials.lamp
-      );
-      shade.position.y = 0.61;
-      shade.scale.y = 0.62;
-      shade.castShadow = true;
-      lamp.add(shade);
-
-      sphere(lamp, materials.bulb, 0.09, 0, 0.57, 0);
-      return lamp;
-    }
-
     for (let i = 0; i < 8; i++) {
       const angle = i * TAU / 8 + Math.PI / 8;
       const desk = new THREE.Group();
@@ -1714,7 +1686,6 @@
       createChair(desk, -1.22, 1.02, Math.PI / 2);
       createChair(desk, -1.22, -1.02, Math.PI / 2);
 
-      createLamp(desk, 0.43, 1.35);
       createOpenBook(desk, -0.04, 0.38, 1.48, rand(-0.12, 0.12));
 
       box(
