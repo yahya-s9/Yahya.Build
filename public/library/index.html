@@ -1322,8 +1322,8 @@
     torus(scene, materials.stone, 18.35, 0.34, 0, 14.0, 0, Math.PI / 2);
 
     // ---------------------------------------------------------------------
-    // Andalusian dome: a drum of pierced horseshoe windows, a honeycomb of
-    // muqarnas, then a lapis vault of gold stars crossed by interlaced ribs,
+    // Andalusian dome: a drum of pierced horseshoe windows, a plain stone band,
+    // then a lapis vault of gold stars crossed by interlaced ribs,
     // after the domes of Cordoba's Great Mosque and the Alhambra's Comares hall
     // ---------------------------------------------------------------------
 
@@ -1519,90 +1519,20 @@
 
     torus(scene, domeGold, 18.3, 0.16, 0, DRUM_TOP, 0, Math.PI / 2);
 
-    // ---- Muqarnas --------------------------------------------------------
+    // ---- Stone band ------------------------------------------------------
 
-    // One honeycomb cell: a quarter sphere drawn up to a point, open towards
-    // the middle of the room.
-    const cellGeometry = new THREE.SphereGeometry(1, 12, 7, 0, Math.PI, 0, Math.PI / 2);
-    const cellPosition = cellGeometry.attributes.position;
-    for (let i = 0; i < cellPosition.count; i++) {
-      const edge = 1 - Math.abs(cellPosition.getX(i));
-      cellPosition.setY(i, cellPosition.getY(i) * (0.72 + 0.5 * edge * edge));
-    }
-    // Shading is painted on: each cell darkens into its recess, so the band
-    // reads the same however far it sits from the candles.
-    const cellShade = new Float32Array(cellPosition.count * 3);
-    for (let i = 0; i < cellPosition.count; i++) {
-      const shade = 0.66 - 0.46 * cellPosition.getZ(i);
-      cellShade.fill(shade, i * 3, i * 3 + 3);
-    }
-    cellGeometry.setAttribute("color", new THREE.BufferAttribute(cellShade, 3));
+    const stoneBandMaterial = materials.stone.clone();
+    stoneBandMaterial.side = THREE.DoubleSide;
+    stoneBandMaterial.emissive = new THREE.Color(0x3a2c1c);
 
-    const pendantGeometry = new THREE.ConeGeometry(1, 1, 6);
-    pendantGeometry.rotateX(Math.PI);
-
-    const cellColors = [0xe6d2a8, 0x1f4a8c, 0xe6d2a8, 0x9a2f2c, 0xe6d2a8, 0xd9a441];
-
-    function addMuqarnas(tiers, count, width, height, depth) {
-      const total = tiers.length * count;
-      const cells = new THREE.InstancedMesh(
-        cellGeometry,
-        new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }),
-        total
-      );
-      const pendants = new THREE.InstancedMesh(pendantGeometry, domeGold, total);
-      const place = new THREE.Matrix4();
-      const turn = new THREE.Quaternion();
-      const color = new THREE.Color();
-
-      tiers.forEach(([radius, y], tier) => {
-        for (let i = 0; i < count; i++) {
-          const index = tier * count + i;
-          const angle = (i + (tier % 2 ? 0.5 : 0)) * TAU / count;
-          const edge = angle + Math.PI / count;
-
-          place.compose(
-            new THREE.Vector3(Math.sin(angle) * radius, y, Math.cos(angle) * radius),
-            turn.setFromAxisAngle(Y_AXIS, angle),
-            new THREE.Vector3(width / 2, height, depth)
-          );
-          cells.setMatrixAt(index, place);
-          cells.setColorAt(index, color.setHex(cellColors[(i + tier * 2) % cellColors.length]));
-
-          place.compose(
-            new THREE.Vector3(Math.sin(edge) * radius, y - height * 0.14, Math.cos(edge) * radius),
-            turn.identity(),
-            new THREE.Vector3(width * 0.07, height * 0.3, width * 0.07)
-          );
-          pendants.setMatrixAt(index, place);
-        }
-      });
-
-      scene.add(cells, pendants);
-    }
-
-    const honeycombBack = new THREE.Mesh(
+    const stoneBand = new THREE.Mesh(
       new THREE.LatheGeometry(
-        [
-          new THREE.Vector2(18.6, DRUM_TOP),
-          new THREE.Vector2(18.6, VAULT_BASE + 0.1),
-          new THREE.Vector2(VAULT_RADIUS, VAULT_BASE + 0.1)
-        ],
+        [new THREE.Vector2(18.5, DRUM_TOP), new THREE.Vector2(VAULT_RADIUS, VAULT_BASE)],
         96
       ),
-      new THREE.MeshStandardMaterial({
-        color: 0x4d3a26,
-        roughness: 0.8,
-        side: THREE.DoubleSide
-      })
+      stoneBandMaterial
     );
-    scene.add(honeycombBack);
-
-    addMuqarnas(
-      [[18.1, 17.92], [17.4, 18.52], [16.75, 19.12], [16.2, 19.72]],
-      48, 2.3, 0.72, 0.5
-    );
-    addMuqarnas([[3.35, 30.85], [2.8, 31.3]], 18, 0.98, 0.62, 0.26);
+    scene.add(stoneBand);
 
     // ---- Vault -----------------------------------------------------------
 
@@ -1658,7 +1588,6 @@
     }
 
     torus(scene, domeGold, VAULT_RADIUS, 0.2, 0, VAULT_BASE, 0, Math.PI / 2);
-    torus(scene, domeGold, 3.45, 0.11, 0, 30.85, 0, Math.PI / 2);
 
     // Sixteen-pointed star closing the crown.
     const crownStar = domeTexture(512, 512, ctx => {
