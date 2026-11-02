@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Walk the Libraries</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Noto+Nastaliq+Urdu&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Amiri+Quran&family=Noto+Nastaliq+Urdu&display=swap">
 <style>
     /* Layout: full-bleed WebGL hall with a few quiet controls over it. */
     :root {
@@ -195,6 +195,94 @@
 
     @keyframes reader-in {
       from { opacity: 0; }
+    }
+
+    .qr-shell {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      width: min(100%, calc((100dvh - 150px) * 2048 / 1400));
+    }
+
+    .qr-book {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      perspective: 2400px;
+      cursor: pointer;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+    }
+
+    .qr-page {
+      position: static;
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: inherit;
+    }
+
+    .qr-turn {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .qr-turn.from-right {
+      left: 50%;
+      transform-origin: left center;
+    }
+
+    .qr-turn.from-left {
+      left: 0;
+      transform-origin: right center;
+    }
+
+    .qr-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+    }
+
+    .qr-back {
+      transform: rotateY(180deg);
+    }
+
+    .qr-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #f2e6c9;
+    }
+
+    .qr-surah {
+      max-width: 200px;
+      padding: 6px 10px;
+      border: 1px solid var(--gold);
+      border-radius: 4px;
+      background: #1a140e;
+      color: #f2e6c9;
+      font: 18px "Amiri", serif;
+    }
+
+    .qr-status {
+      min-width: 76px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .qr-note {
+      margin: 0;
+      color: #bfae8c;
+      font-size: 12px;
+      text-align: center;
     }
 
     .leaf {
@@ -670,7 +758,8 @@
     // The horseshoe door shared by both halls; its face looks towards -z
     // ---------------------------------------------------------------------
 
-    function addHorseshoeDoor(scene, z, size, flip = false) {
+    // `wall` stands the door on the room's edge at that angle, `z` from the middle.
+    function addHorseshoeDoor(scene, z, size, flip = false, wall = null) {
       const RADIUS = 1.25;
       const OVERSHOOT = Math.PI / 6;
       const IMPOST = 2.9;
@@ -692,6 +781,10 @@
       door.position.set(0, 0, z);
       door.scale.setScalar(size);
       if (flip) door.rotation.y = Math.PI;
+      if (wall !== null) {
+        door.position.set(Math.sin(wall) * z, 0, Math.cos(wall) * z);
+        door.rotation.y = wall;
+      }
       scene.add(door);
 
       const part = (geometry, mat, x = 0, y = 0, depth = 0) => {
@@ -1761,309 +1854,6 @@
     torus(scene, materials.shelf, 17.15, 0.18, 0, 10.67, 0, Math.PI / 2);
 
     // ---------------------------------------------------------------------
-    // The centre of the room: a low stepped dais and a carved wooden stand
-    // holding an open Quran, at its opening spread
-    // ---------------------------------------------------------------------
-
-    const DAIS_LOW = 0.22;
-    const DAIS_HIGH = 0.44;
-    const DAIS_OUTER = 3.6;
-    const DAIS_INNER = 3.0;
-
-    const daisGold = new THREE.MeshStandardMaterial({
-      color: 0xd9a441,
-      emissive: 0x6a4312,
-      emissiveIntensity: 0.6,
-      metalness: 0.45,
-      roughness: 0.4
-    });
-
-    function daisStar(radius, points = 8, waist = 0.62) {
-      const outline = [];
-      for (let i = 0; i < points * 2; i++) {
-        const angle = i * Math.PI / points;
-        const r = i % 2 ? radius * waist : radius;
-        outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
-      }
-      return outline;
-    }
-
-    function fillStar(ctx, x, y, outline, fill) {
-      ctx.beginPath();
-      outline.forEach(([px, py], index) => (
-        index ? ctx.lineTo(x + px, y + py) : ctx.moveTo(x + px, y + py)
-      ));
-      ctx.closePath();
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
-
-    cylinder(scene, materials.stone, DAIS_OUTER, DAIS_LOW, 0, DAIS_LOW / 2, 0);
-    cylinder(scene, materials.stone, DAIS_INNER, DAIS_HIGH, 0, DAIS_HIGH / 2, 0);
-    torus(scene, daisGold, DAIS_OUTER, 0.035, 0, DAIS_LOW, 0, Math.PI / 2);
-    torus(scene, daisGold, DAIS_INNER, 0.035, 0, DAIS_HIGH, 0, Math.PI / 2);
-
-    // Inlaid top: one great star in lapis, oxblood and gold.
-    const daisCanvas = document.createElement("canvas");
-    daisCanvas.width = daisCanvas.height = 1024;
-    {
-      const ctx = daisCanvas.getContext("2d");
-      ctx.fillStyle = "#c9ab7a";
-      ctx.fillRect(0, 0, 1024, 1024);
-      fillStar(ctx, 512, 512, daisStar(506, 16, 0.8), "#16346b");
-      fillStar(ctx, 512, 512, daisStar(470, 16, 0.8), "#e3b04f");
-      fillStar(ctx, 512, 512, daisStar(448, 16, 0.8), "#7a2230");
-      fillStar(ctx, 512, 512, daisStar(330, 8), "#e3b04f");
-      fillStar(ctx, 512, 512, daisStar(310, 8), "#16346b");
-    }
-    const daisTexture = new THREE.CanvasTexture(daisCanvas);
-    daisTexture.colorSpace = THREE.SRGBColorSpace;
-    daisTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
-    const daisTop = new THREE.Mesh(
-      new THREE.CircleGeometry(DAIS_INNER - 0.04, 96),
-      new THREE.MeshStandardMaterial({ map: daisTexture, roughness: 0.42 })
-    );
-    daisTop.rotation.x = -Math.PI / 2;
-    daisTop.position.y = DAIS_HIGH + 0.004;
-    daisTop.receiveShadow = true;
-    scene.add(daisTop);
-
-    // ---- The stand -------------------------------------------------------
-
-    const stand = new THREE.Group();
-    stand.position.y = DAIS_HIGH;
-    scene.add(stand);
-
-    const STAND_SIDES = 8;
-    const body = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.72, 1.02, 1.5, STAND_SIDES),
-      materials.polishedWood
-    );
-    body.position.y = 0.95;
-    body.rotation.y = Math.PI / STAND_SIDES;
-    body.castShadow = true;
-    stand.add(body);
-
-    const foot = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.16, 1.24, 0.2, STAND_SIDES),
-      materials.wood
-    );
-    foot.position.y = 0.1;
-    foot.rotation.y = Math.PI / STAND_SIDES;
-    foot.castShadow = true;
-    stand.add(foot);
-
-    for (const [radius, y] of [[1.04, 0.22], [0.74, 1.68]]) {
-      const band = new THREE.Mesh(
-        new THREE.CylinderGeometry(radius, radius, 0.06, STAND_SIDES),
-        daisGold
-      );
-      band.position.y = y;
-      band.rotation.y = Math.PI / STAND_SIDES;
-      stand.add(band);
-    }
-
-    // The sloped top that the book rests on, tilted towards the door.
-    const BOOK_TILT = 0.66;
-    const cradle = new THREE.Group();
-    cradle.position.set(0, 2.08, 0);
-    cradle.rotation.x = BOOK_TILT;
-    stand.add(cradle);
-
-    box(cradle, materials.polishedWood, 0, -0.1, 0, 3.3, 0.12, 2.3);
-    box(cradle, daisGold, 0, -0.03, 1.1, 3.3, 0.05, 0.1);    // the lip the book sits on
-    box(cradle, materials.polishedWood, 0, 0.02, 1.22, 3.3, 0.2, 0.08);
-
-    // ---- The book --------------------------------------------------------
-
-    const PAGE_WIDTH = 1.5;
-    const PAGE_DEPTH = 2.05;
-
-    const coverMaterial = new THREE.MeshStandardMaterial({ color: 0x5a1c22, roughness: 0.5 });
-    box(cradle, coverMaterial, -PAGE_WIDTH / 2 - 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
-    box(cradle, coverMaterial, PAGE_WIDTH / 2 + 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
-    box(cradle, materials.paper, -PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
-    box(cradle, materials.paper, PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
-
-    // Text from the Uthmani script. 1:3 repeats the last two words of 1:1.
-    const FATIHA = [
-      "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
-      "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
-      "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
-      "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
-      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-      "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
-      "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ"
-    ];
-    const BAQARAH = [
-      "الٓمٓ",
-      "ذَٰلِكَ ٱلْكِتَـٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
-      "ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَـٰهُمْ يُنفِقُونَ",
-      "وَٱلَّذِينَ يُؤْمِنُونَ بِمَآ أُنزِلَ إِلَيْكَ وَمَآ أُنزِلَ مِن قَبْلِكَ وَبِٱلْـَٔاخِرَةِ هُمْ يُوقِنُونَ",
-      "أُو۟لَـٰٓئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُو۟لَـٰٓئِكَ هُمُ ٱلْمُفْلِحُونَ"
-    ];
-    const BISMILLAH = FATIHA[0];
-    const INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
-    const ayahMark = number => "۝" + String(number).replace(/\d/g, digit => INDIC_DIGITS[digit]);
-
-    // One page at a time: frame, title panel, then the verses, centred line
-    // by line and flowing on from one verse to the next.
-    function paintPage(canvas, title, bismillah, verses) {
-      const ctx = canvas.getContext("2d");
-      const W = canvas.width;
-      const H = canvas.height;
-      const FONT = '"Amiri", "Noto Naskh Arabic", "Geeza Pro", serif';
-
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.direction = "rtl";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "alphabetic";
-
-      ctx.fillStyle = "#f2e6c9";
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.strokeStyle = "#b5862c";
-      ctx.lineWidth = 12;
-      ctx.strokeRect(46, 46, W - 92, H - 92);
-      ctx.strokeStyle = "#16346b";
-      ctx.lineWidth = 4;
-      ctx.strokeRect(66, 66, W - 132, H - 132);
-      ctx.strokeStyle = "#b5862c";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(78, 78, W - 156, H - 156);
-
-      for (const [x, y] of [[62, 62], [W - 62, 62], [62, H - 62], [W - 62, H - 62]]) {
-        fillStar(ctx, x, y, daisStar(30), "#b5862c");
-        fillStar(ctx, x, y, daisStar(14, 8, 0.7), "#16346b");
-      }
-
-      // Title panel.
-      const panel = ctx.createLinearGradient(0, 110, 0, 240);
-      panel.addColorStop(0, "#1c4385");
-      panel.addColorStop(1, "#102a5c");
-      ctx.fillStyle = panel;
-      ctx.fillRect(112, 110, W - 224, 130);
-      ctx.strokeStyle = "#e3b04f";
-      ctx.lineWidth = 6;
-      ctx.strokeRect(112, 110, W - 224, 130);
-      fillStar(ctx, 172, 175, daisStar(34), "#e3b04f");
-      fillStar(ctx, W - 172, 175, daisStar(34), "#e3b04f");
-      ctx.fillStyle = "#f4d58a";
-      ctx.font = `64px ${FONT}`;
-      ctx.fillText(title, W / 2, 196);
-
-      const left = 118;
-      const width = W - left * 2;
-      let y = 310;
-      let size = 72;
-
-      // Wrap the verses at this size; returns the lines.
-      const lay = () => {
-        ctx.font = `${size}px ${FONT}`;
-        const lines = [];
-        let line = "";
-        verses.forEach((verse, index) => {
-          // Pause marks sit on the word before them, so they wrap with it.
-          const words = [
-            ...verse.replace(/ ([\u06D6-\u06DC])/g, "\u00A0$1").split(" "),
-            ayahMark(index + 1)
-          ];
-          for (const word of words) {
-            const next = line ? `${line} ${word}` : word;
-            if (line && ctx.measureText(next).width > width) {
-              lines.push(line);
-              line = word;
-            } else {
-              line = next;
-            }
-          }
-        });
-        if (line) lines.push(line);
-        return lines;
-      };
-
-      const room = H - 120 - (bismillah ? 410 : 310);
-      let lines = lay();
-      while (size > 40 && lines.length * size * 1.72 > room) {
-        size -= 2;
-        lines = lay();
-      }
-      const leading = Math.min(size * 2.5, room / lines.length);
-
-      if (bismillah) {
-        ctx.fillStyle = "#16346b";
-        ctx.font = `66px ${FONT}`;
-        ctx.fillText(bismillah, W / 2, y + 30);
-        y += 100;
-      }
-
-      y += (room - leading * lines.length) / 2;
-      ctx.fillStyle = "#1c1410";
-      ctx.font = `${size}px ${FONT}`;
-      lines.forEach((text, index) => {
-        ctx.fillText(text, W / 2, y + leading * (index + 0.72));
-      });
-    }
-
-    function makePage(side, title, bismillah, verses) {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1400;
-      const paint = () => paintPage(canvas, title, bismillah, verses);
-      paint();
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
-      // Canvas text uses a web font only once it has loaded.
-      if (document.fonts && document.fonts.load) {
-        document.fonts.load('64px "Amiri"', "ب").then(() => {
-          paint();
-          texture.needsUpdate = true;
-        }).catch(() => {});
-      }
-
-      // The leaf swells from the gutter and flattens towards the fore-edge.
-      const geometry = new THREE.PlaneGeometry(PAGE_WIDTH, PAGE_DEPTH, 24, 1);
-      geometry.rotateX(-Math.PI / 2);
-      const position = geometry.attributes.position;
-      for (let i = 0; i < position.count; i++) {
-        const fromGutter = (position.getX(i) + PAGE_WIDTH / 2) / PAGE_WIDTH;
-        const across = side > 0 ? fromGutter : 1 - fromGutter;
-        position.setY(i, Math.sin(Math.min(across * 2.4, Math.PI / 2)) * 0.11 - across * 0.05);
-      }
-      geometry.computeVertexNormals();
-
-      const page = new THREE.Mesh(
-        geometry,
-        new THREE.MeshStandardMaterial({
-          map: texture,
-          emissive: 0x8a7a60,
-          emissiveMap: texture,
-          emissiveIntensity: 0.55,
-          roughness: 0.82
-        })
-      );
-      page.position.set(side * PAGE_WIDTH / 2, 0.135, 0);
-      page.receiveShadow = true;
-      cradle.add(page);
-    }
-
-    // Read from the right, so the book's first page lies on the right.
-    makePage(1, "سورة الفاتحة", null, FATIHA);
-    makePage(-1, "سورة البقرة", BISMILLAH, BAQARAH);
-
-    // A green silk marker falling from the gutter.
-    box(cradle, new THREE.MeshStandardMaterial({ color: 0x123f30, roughness: 0.6 }),
-      0, 0.16, 0.08, 0.03, 0.01, PAGE_DEPTH + 0.16);
-
-    const standLight = new THREE.PointLight(0xffd59a, 12, 9, 2);
-    standLight.position.set(0, 4.6, 1.4);
-    scene.add(standLight);
-
-    // ---------------------------------------------------------------------
     // Reading furniture
     // ---------------------------------------------------------------------
 
@@ -2309,14 +2099,9 @@
 
       addHorseshoeDoor(scene, 16.5, 1.2);
       addHorseshoeDoor(scene, -16.5, 1.2, true);
+      addHorseshoeDoor(scene, 16.5, 1.2, false, Math.PI / 2);
 
       const candleSpots = [];
-
-      // Around the lower step of the dais.
-      for (let i = 0; i < 16; i++) {
-        const angle = (i + 0.5) * TAU / 16;
-        candleSpots.push([Math.sin(angle) * 3.3, DAIS_LOW, Math.cos(angle) * 3.3]);
-      }
 
       // A pair at the head of each desk.
       for (let i = 0; i < 8; i++) {
@@ -2356,7 +2141,6 @@
         scene.add(fill);
       }
 
-      const STAND_RADIUS = 1.5;   // the dais itself can be walked on
       const SHELF_LIMIT = 16.2;
       const BODY_RADIUS = 0.45;
       const DESK_HALF_WIDTH = 1.66;
@@ -2421,14 +2205,10 @@
         }
 
         const distance = Math.hypot(player.x, player.z) || 0.0001;
-        const inner = STAND_RADIUS + BODY_RADIUS;
 
         if (distance > SHELF_LIMIT) {
           player.x *= SHELF_LIMIT / distance;
           player.z *= SHELF_LIMIT / distance;
-        } else if (distance < inner) {
-          player.x *= inner / distance;
-          player.z *= inner / distance;
         }
       }
 
@@ -2456,18 +2236,19 @@
             halfWidth: 1.2,
             to: "house-of-wisdom",
             label: "Door to the House of Wisdom: walk into it"
+          },
+          {
+            axis: "x",
+            edge: 16.1,
+            halfWidth: 1.2,
+            to: "quran-hall",
+            label: "Door to the Hall of the Quran: walk into it"
           }
         ],
         collide,
-        ground(x, z) {
-          const distance = Math.hypot(x, z);
-          if (distance < DAIS_INNER) return DAIS_HIGH;
-          return distance < DAIS_OUTER ? DAIS_LOW : 0;
-        },
         update(elapsed) {
           dust.rotation.y = elapsed * 0.009;
           materials.bulb.emissiveIntensity = 3.0 + Math.sin(elapsed * 1.4) * 0.12;
-          standLight.intensity = 12 + Math.sin(elapsed * 7.3) * 0.8 + Math.sin(elapsed * 13.1) * 0.4;
           moveCandles(elapsed);
           pulseBooks(books, elapsed);
         }
@@ -3363,15 +3144,8 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     crown.position.y = DRUM_TOP;
     scene.add(crown);
 
-    // A great brass ring of candles hanging from the crown of the dome.
+    // Unseen candlelight under the dome.
     const CANDLE_RING = 6.75;
-    addCylinder(0.03, 0.03, 15.05 - CANDLE_RING, materials.brass, 0, (15.05 + CANDLE_RING) / 2, 0, scene, 8);
-    addTorus(3.1, 0.07, materials.brass, 0, CANDLE_RING, 0).rotation.x = Math.PI / 2;
-    addTorus(2.0, 0.05, materials.brass, 0, CANDLE_RING, 0).rotation.x = Math.PI / 2;
-    for (let i = 0; i < 4; i++) {
-      addBox(6.2, 0.05, 0.07, materials.brass, 0, CANDLE_RING, 0).rotation.y = i * Math.PI / 4;
-    }
-
     const domeGlow = new THREE.PointLight(0xffc27a, 165, 34, 2);
     domeGlow.position.set(0, CANDLE_RING - 1.5, 0);
     scene.add(domeGlow);
@@ -3758,19 +3532,10 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     makeLantern(5, 5, 7.45);
 
     // ---------------------------------------------------------------------
-    // Candles: the hanging ring, the fountain, the desks and the colonnade
+    // Candles: the fountain, the desks and the colonnade
     // ---------------------------------------------------------------------
 
     const candleSpots = [];
-
-    for (let i = 0; i < 32; i++) {
-      const angle = i * TAU / 32;
-      candleSpots.push([Math.sin(angle) * 3.1, CANDLE_RING + 0.07, Math.cos(angle) * 3.1]);
-    }
-    for (let i = 0; i < 16; i++) {
-      const angle = (i + 0.5) * TAU / 16;
-      candleSpots.push([Math.sin(angle) * 2, CANDLE_RING + 0.05, Math.cos(angle) * 2]);
-    }
 
     for (let i = 0; i < 12; i++) {
       const angle = i * TAU / 12;
@@ -3936,6 +3701,645 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     // ---------------------------------------------------------------------
     // Map: The House of Wisdom
     // ---------------------------------------------------------------------
+
+    function buildQuranHall() {
+    // ---------------------------------------------------------------------
+    // The endless hall: a forest of striped arches, after the prayer hall of
+    // Cordoba's Great Mosque, with the Quran alone at its centre. The forest
+    // follows the visitor by whole bays, so it never runs out, and walking far
+    // enough in any direction loops back to the Quran.
+    // ---------------------------------------------------------------------
+
+    const scene = new THREE.Scene();
+    const HALL_DARK = 0x0b0705;
+    scene.background = new THREE.Color(HALL_DARK);
+    scene.fog = new THREE.FogExp2(HALL_DARK, 0.055);
+
+    const TAU = Math.PI * 2;
+    const Y_AXIS = new THREE.Vector3(0, 1, 0);
+    const BAY = 5.2;
+    const REACH_BAYS = 7;           // columns drawn on each side of the visitor
+    const LOOP = BAY * 8;           // far enough that the fog hides the jump back
+    const COLUMN_RADIUS = 0.27;
+    const COLUMN_HEIGHT = 2.9;
+    const LOWER_SPRING = 3.2;       // top of the capitals
+    const UPPER_SPRING = 6.6;
+    const CEILING = 9.6;
+
+    const materials = {
+      stone: new THREE.MeshStandardMaterial({ color: 0xc9b596, roughness: 0.62 }),
+      wood: new THREE.MeshStandardMaterial({ color: 0x5b2f1d, roughness: 0.55 }),
+      polishedWood: new THREE.MeshStandardMaterial({ color: 0x713c25, roughness: 0.36 }),
+      paper: new THREE.MeshStandardMaterial({ color: 0xf0e6cf, roughness: 0.86 }),
+      brass: new THREE.MeshStandardMaterial({ color: 0xb98d3f, roughness: 0.34, metalness: 0.72 })
+    };
+
+    const unitBox = new THREE.BoxGeometry(1, 1, 1);
+    const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 48);
+
+    function box(parent, material, x, y, z, sx, sy, sz, ry = 0) {
+      const mesh = new THREE.Mesh(unitBox, material);
+      mesh.position.set(x, y, z);
+      mesh.scale.set(sx, sy, sz);
+      mesh.rotation.y = ry;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function cylinder(parent, material, radius, height, x, y, z) {
+      const mesh = new THREE.Mesh(unitCylinder, material);
+      mesh.position.set(x, y, z);
+      mesh.scale.set(radius, height, radius);
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function torus(parent, material, radius, tube, x, y, z, rx = 0) {
+      const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 10, 96), material);
+      mesh.position.set(x, y, z);
+      mesh.rotation.x = rx;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    // Everything here moves with the visitor, always by a whole number of bays.
+    const forest = new THREE.Group();
+    scene.add(forest);
+
+    // ---- Floor and ceiling -----------------------------------------------
+
+    const SPAN = BAY * (REACH_BAYS * 2 + 2);
+
+    function tiled(paint) {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 512;
+      paint(canvas.getContext("2d"));
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(SPAN / BAY, SPAN / BAY);
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      return texture;
+    }
+
+    const stoneFloor = new THREE.Mesh(
+      new THREE.PlaneGeometry(SPAN, SPAN),
+      new THREE.MeshStandardMaterial({
+        map: tiled(ctx => {
+          ctx.fillStyle = "#b9a380";
+          ctx.fillRect(0, 0, 512, 512);
+          ctx.strokeStyle = "#8d7757";
+          ctx.lineWidth = 4;
+          for (let i = 0; i <= 4; i++) {
+            const at = i * 128;
+            ctx.beginPath();
+            ctx.moveTo(at, 0);
+            ctx.lineTo(at, 512);
+            ctx.moveTo(0, at);
+            ctx.lineTo(512, at);
+            ctx.stroke();
+          }
+        }),
+        roughness: 0.42
+      })
+    );
+    stoneFloor.rotation.x = -Math.PI / 2;
+    forest.add(stoneFloor);
+
+    const woodCeiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(SPAN, SPAN),
+      new THREE.MeshStandardMaterial({
+        map: tiled(ctx => {
+          ctx.fillStyle = "#3b2013";
+          ctx.fillRect(0, 0, 512, 512);
+          ctx.strokeStyle = "#a9823f";
+          ctx.lineWidth = 8;
+          ctx.strokeRect(0, 0, 512, 512);
+        }),
+        roughness: 0.7
+      })
+    );
+    woodCeiling.rotation.x = Math.PI / 2;
+    woodCeiling.position.y = CEILING;
+    forest.add(woodCeiling);
+
+    // ---- Arches ----------------------------------------------------------
+
+    // One ring of alternating red and cream stones, drawn in a single mesh.
+    function archGeometry(radius, ring, from, to, stones, depth) {
+      const positions = [];
+      const colors = [];
+      const red = new THREE.Color(0x8e2f35);
+      const cream = new THREE.Color(0xeee1c6);
+
+      const point = (angle, r, z) => [Math.cos(angle) * r, Math.sin(angle) * r, z];
+
+      for (let i = 0; i < stones; i++) {
+        const a = from + (to - from) * i / stones;
+        const b = from + (to - from) * (i + 1) / stones;
+        const tint = i % 2 ? red : cream;
+
+        const corners = {
+          ai: point(a, radius, depth), bi: point(b, radius, depth),
+          ao: point(a, radius + ring, depth), bo: point(b, radius + ring, depth),
+          aI: point(a, radius, -depth), bI: point(b, radius, -depth),
+          aO: point(a, radius + ring, -depth), bO: point(b, radius + ring, -depth)
+        };
+
+        const quad = (p, q, r, s) => {
+          for (const vertex of [p, q, r, p, r, s]) {
+            positions.push(...vertex);
+            colors.push(tint.r, tint.g, tint.b);
+          }
+        };
+
+        quad(corners.ai, corners.ao, corners.bo, corners.bi);
+        quad(corners.aI, corners.bI, corners.bO, corners.aO);
+        quad(corners.ai, corners.bi, corners.bI, corners.aI);
+        quad(corners.ao, corners.aO, corners.bO, corners.bo);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      geometry.computeVertexNormals();
+      return geometry;
+    }
+
+    const LOWER_RADIUS = 2.2;
+    const UPPER_RADIUS = 2.3;
+    const LEAN = Math.PI / 6;       // the horseshoe runs thirty degrees past the semicircle
+    const lowerCentre = LOWER_SPRING + LOWER_RADIUS * Math.sin(LEAN);
+
+    const archMaterial = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 0.66,
+      side: THREE.DoubleSide
+    });
+
+    const COUNT_LINE = REACH_BAYS * 2;
+    const COLUMNS = COUNT_LINE * COUNT_LINE;
+
+    const columns = new THREE.InstancedMesh(
+      new THREE.CylinderGeometry(COLUMN_RADIUS * 0.92, COLUMN_RADIUS, COLUMN_HEIGHT, 12),
+      new THREE.MeshStandardMaterial({ color: 0x9a7a5a, roughness: 0.38 }),
+      COLUMNS
+    );
+    const capitals = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(0.8, 0.3, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0xd8c7a4, roughness: 0.6 }),
+      COLUMNS
+    );
+    const piers = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(0.62, UPPER_SPRING - LOWER_SPRING, 0.62),
+      new THREE.MeshStandardMaterial({ color: 0xd8c7a4, roughness: 0.7 }),
+      COLUMNS
+    );
+    const lowerArches = new THREE.InstancedMesh(
+      archGeometry(LOWER_RADIUS, 0.42, -LEAN, Math.PI + LEAN, 15, 0.2),
+      archMaterial,
+      COLUMNS * 2
+    );
+    const upperArches = new THREE.InstancedMesh(
+      archGeometry(UPPER_RADIUS, 0.42, 0, Math.PI, 13, 0.2),
+      archMaterial,
+      COLUMNS * 2
+    );
+    const lamps = new THREE.InstancedMesh(
+      new THREE.SphereGeometry(0.16, 10, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffb25e, fog: true, toneMapped: false }),
+      COLUMNS
+    );
+
+    {
+      const place = new THREE.Matrix4();
+      const turned = new THREE.Quaternion().setFromAxisAngle(Y_AXIS, Math.PI / 2);
+      const straight = new THREE.Quaternion();
+      const scale = new THREE.Vector3(1, 1, 1);
+      const at = new THREE.Vector3();
+      let index = 0;
+
+      for (let i = -REACH_BAYS; i < REACH_BAYS; i++) {
+        for (let j = -REACH_BAYS; j < REACH_BAYS; j++) {
+          const x = (i + 0.5) * BAY;
+          const z = (j + 0.5) * BAY;
+
+          columns.setMatrixAt(index, place.compose(at.set(x, COLUMN_HEIGHT / 2, z), straight, scale));
+          capitals.setMatrixAt(index, place.compose(at.set(x, LOWER_SPRING - 0.15, z), straight, scale));
+          piers.setMatrixAt(index, place.compose(at.set(x, (LOWER_SPRING + UPPER_SPRING) / 2, z), straight, scale));
+
+          // Arches run both ways from each column, so every aisle has them.
+          lowerArches.setMatrixAt(index * 2, place.compose(at.set(x + BAY / 2, lowerCentre, z), straight, scale));
+          lowerArches.setMatrixAt(index * 2 + 1, place.compose(at.set(x, lowerCentre, z + BAY / 2), turned, scale));
+          upperArches.setMatrixAt(index * 2, place.compose(at.set(x + BAY / 2, UPPER_SPRING, z), straight, scale));
+          upperArches.setMatrixAt(index * 2 + 1, place.compose(at.set(x, UPPER_SPRING, z + BAY / 2), turned, scale));
+
+          // A small oil lamp in the middle of every bay.
+          lamps.setMatrixAt(index, place.compose(at.set(x + BAY / 2, 5.4, z + BAY / 2), straight, scale));
+
+          index++;
+        }
+      }
+    }
+
+    forest.add(columns, capitals, piers, lowerArches, upperArches, lamps);
+
+    // ---- Light -----------------------------------------------------------
+
+    scene.add(new THREE.AmbientLight(0xffd9a8, 0.55));
+    scene.add(new THREE.HemisphereLight(0xffcf9a, 0x2c1a10, 0.9));
+
+    // Candlelight that keeps pace with the visitor, so the near arches glow.
+    const walkingGlow = new THREE.PointLight(0xffb066, 46, 22, 2);
+    walkingGlow.position.y = 5.4;
+    scene.add(walkingGlow);
+
+    addHorseshoeDoor(scene, BAY * 1.5, 0.85);
+
+    // ---------------------------------------------------------------------
+    // A low stepped dais and a carved wooden stand holding an open Quran,
+    // at its opening spread
+    // ---------------------------------------------------------------------
+
+    const DAIS_LOW = 0.22;
+    const DAIS_HIGH = 0.44;
+    const DAIS_OUTER = 1.68;
+    const DAIS_INNER = 1.4;
+
+    const daisGold = new THREE.MeshStandardMaterial({
+      color: 0xd9a441,
+      emissive: 0x6a4312,
+      emissiveIntensity: 0.6,
+      metalness: 0.45,
+      roughness: 0.4
+    });
+
+    function daisStar(radius, points = 8, waist = 0.62) {
+      const outline = [];
+      for (let i = 0; i < points * 2; i++) {
+        const angle = i * Math.PI / points;
+        const r = i % 2 ? radius * waist : radius;
+        outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+      }
+      return outline;
+    }
+
+    function fillStar(ctx, x, y, outline, fill) {
+      ctx.beginPath();
+      outline.forEach(([px, py], index) => (
+        index ? ctx.lineTo(x + px, y + py) : ctx.moveTo(x + px, y + py)
+      ));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    cylinder(scene, materials.stone, DAIS_OUTER, DAIS_LOW, 0, DAIS_LOW / 2, 0);
+    cylinder(scene, materials.stone, DAIS_INNER, DAIS_HIGH, 0, DAIS_HIGH / 2, 0);
+    torus(scene, daisGold, DAIS_OUTER, 0.035, 0, DAIS_LOW, 0, Math.PI / 2);
+    torus(scene, daisGold, DAIS_INNER, 0.035, 0, DAIS_HIGH, 0, Math.PI / 2);
+
+    // Inlaid top: one great star in lapis, oxblood and gold.
+    const daisCanvas = document.createElement("canvas");
+    daisCanvas.width = daisCanvas.height = 1024;
+    {
+      const ctx = daisCanvas.getContext("2d");
+      ctx.fillStyle = "#c9ab7a";
+      ctx.fillRect(0, 0, 1024, 1024);
+      fillStar(ctx, 512, 512, daisStar(506, 16, 0.8), "#16346b");
+      fillStar(ctx, 512, 512, daisStar(470, 16, 0.8), "#e3b04f");
+      fillStar(ctx, 512, 512, daisStar(448, 16, 0.8), "#7a2230");
+      fillStar(ctx, 512, 512, daisStar(330, 8), "#e3b04f");
+      fillStar(ctx, 512, 512, daisStar(310, 8), "#16346b");
+    }
+    const daisTexture = new THREE.CanvasTexture(daisCanvas);
+    daisTexture.colorSpace = THREE.SRGBColorSpace;
+    daisTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    const daisTop = new THREE.Mesh(
+      new THREE.CircleGeometry(DAIS_INNER - 0.04, 96),
+      new THREE.MeshStandardMaterial({ map: daisTexture, roughness: 0.42 })
+    );
+    daisTop.rotation.x = -Math.PI / 2;
+    daisTop.position.y = DAIS_HIGH + 0.004;
+    daisTop.receiveShadow = true;
+    scene.add(daisTop);
+
+    // ---- The stand -------------------------------------------------------
+
+    const stand = new THREE.Group();
+    stand.position.y = DAIS_HIGH;
+    scene.add(stand);
+
+    const STAND_SIDES = 8;
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.72, 1.02, 1.5, STAND_SIDES),
+      materials.polishedWood
+    );
+    body.position.y = 0.95;
+    body.rotation.y = Math.PI / STAND_SIDES;
+    body.castShadow = true;
+    stand.add(body);
+
+    const foot = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.16, 1.24, 0.2, STAND_SIDES),
+      materials.wood
+    );
+    foot.position.y = 0.1;
+    foot.rotation.y = Math.PI / STAND_SIDES;
+    foot.castShadow = true;
+    stand.add(foot);
+
+    for (const [radius, y] of [[1.04, 0.22], [0.74, 1.68]]) {
+      const band = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius, radius, 0.06, STAND_SIDES),
+        daisGold
+      );
+      band.position.y = y;
+      band.rotation.y = Math.PI / STAND_SIDES;
+      stand.add(band);
+    }
+
+    // The sloped top that the book rests on, tilted towards the door.
+    const BOOK_TILT = 0.66;
+    const cradle = new THREE.Group();
+    cradle.position.set(0, 2.08, 0);
+    cradle.rotation.x = BOOK_TILT;
+    stand.add(cradle);
+
+    box(cradle, materials.polishedWood, 0, -0.1, 0, 3.3, 0.12, 2.3);
+    box(cradle, daisGold, 0, -0.03, 1.1, 3.3, 0.05, 0.1);    // the lip the book sits on
+    box(cradle, materials.polishedWood, 0, 0.02, 1.22, 3.3, 0.2, 0.08);
+
+    // ---- The book --------------------------------------------------------
+
+    const PAGE_WIDTH = 1.5;
+    const PAGE_DEPTH = 2.05;
+
+    const coverMaterial = new THREE.MeshStandardMaterial({ color: 0x5a1c22, roughness: 0.5 });
+    box(cradle, coverMaterial, -PAGE_WIDTH / 2 - 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
+    box(cradle, coverMaterial, PAGE_WIDTH / 2 + 0.02, 0.01, 0, PAGE_WIDTH + 0.1, 0.05, PAGE_DEPTH + 0.1);
+    box(cradle, materials.paper, -PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
+    box(cradle, materials.paper, PAGE_WIDTH / 2, 0.08, 0, PAGE_WIDTH - 0.02, 0.1, PAGE_DEPTH - 0.02);
+
+    // Text from the Uthmani script. 1:3 repeats the last two words of 1:1.
+    const FATIHA = [
+      "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+      "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+      "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+      "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+      "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ"
+    ];
+    const BAQARAH = [
+      "الٓمٓ",
+      "ذَٰلِكَ ٱلْكِتَـٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
+      "ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَـٰهُمْ يُنفِقُونَ",
+      "وَٱلَّذِينَ يُؤْمِنُونَ بِمَآ أُنزِلَ إِلَيْكَ وَمَآ أُنزِلَ مِن قَبْلِكَ وَبِٱلْـَٔاخِرَةِ هُمْ يُوقِنُونَ",
+      "أُو۟لَـٰٓئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُو۟لَـٰٓئِكَ هُمُ ٱلْمُفْلِحُونَ"
+    ];
+    const BISMILLAH = FATIHA[0];
+    const INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+    const ayahMark = number => "۝" + String(number).replace(/\d/g, digit => INDIC_DIGITS[digit]);
+
+    // One page at a time: frame, title panel, then the verses, centred line
+    // by line and flowing on from one verse to the next.
+    function paintPage(canvas, title, bismillah, verses) {
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const FONT = '"Amiri", "Noto Naskh Arabic", "Geeza Pro", serif';
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.direction = "rtl";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+
+      ctx.fillStyle = "#f2e6c9";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = "#b5862c";
+      ctx.lineWidth = 12;
+      ctx.strokeRect(46, 46, W - 92, H - 92);
+      ctx.strokeStyle = "#16346b";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(66, 66, W - 132, H - 132);
+      ctx.strokeStyle = "#b5862c";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(78, 78, W - 156, H - 156);
+
+      for (const [x, y] of [[62, 62], [W - 62, 62], [62, H - 62], [W - 62, H - 62]]) {
+        fillStar(ctx, x, y, daisStar(30), "#b5862c");
+        fillStar(ctx, x, y, daisStar(14, 8, 0.7), "#16346b");
+      }
+
+      // Title panel.
+      const panel = ctx.createLinearGradient(0, 110, 0, 240);
+      panel.addColorStop(0, "#1c4385");
+      panel.addColorStop(1, "#102a5c");
+      ctx.fillStyle = panel;
+      ctx.fillRect(112, 110, W - 224, 130);
+      ctx.strokeStyle = "#e3b04f";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(112, 110, W - 224, 130);
+      fillStar(ctx, 172, 175, daisStar(34), "#e3b04f");
+      fillStar(ctx, W - 172, 175, daisStar(34), "#e3b04f");
+      ctx.fillStyle = "#f4d58a";
+      ctx.font = `64px ${FONT}`;
+      ctx.fillText(title, W / 2, 196);
+
+      const left = 118;
+      const width = W - left * 2;
+      let y = 310;
+      let size = 72;
+
+      // Wrap the verses at this size; returns the lines.
+      const lay = () => {
+        ctx.font = `${size}px ${FONT}`;
+        const lines = [];
+        let line = "";
+        verses.forEach((verse, index) => {
+          // Pause marks sit on the word before them, so they wrap with it.
+          const words = [
+            ...verse.replace(/ ([\u06D6-\u06DC])/g, "\u00A0$1").split(" "),
+            ayahMark(index + 1)
+          ];
+          for (const word of words) {
+            const next = line ? `${line} ${word}` : word;
+            if (line && ctx.measureText(next).width > width) {
+              lines.push(line);
+              line = word;
+            } else {
+              line = next;
+            }
+          }
+        });
+        if (line) lines.push(line);
+        return lines;
+      };
+
+      const room = H - 120 - (bismillah ? 410 : 310);
+      let lines = lay();
+      while (size > 40 && lines.length * size * 1.72 > room) {
+        size -= 2;
+        lines = lay();
+      }
+      const leading = Math.min(size * 2.5, room / lines.length);
+
+      if (bismillah) {
+        ctx.fillStyle = "#16346b";
+        ctx.font = `66px ${FONT}`;
+        ctx.fillText(bismillah, W / 2, y + 30);
+        y += 100;
+      }
+
+      y += (room - leading * lines.length) / 2;
+      ctx.fillStyle = "#1c1410";
+      ctx.font = `${size}px ${FONT}`;
+      lines.forEach((text, index) => {
+        ctx.fillText(text, W / 2, y + leading * (index + 0.72));
+      });
+    }
+
+    let quranLive = false;   // once the full text arrives, it owns these pages
+
+    function makePage(side, title, bismillah, verses) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1400;
+      const paint = () => {
+        if (!quranLive) paintPage(canvas, title, bismillah, verses);
+      };
+      paint();
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      // Canvas text uses a web font only once it has loaded.
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load('64px "Amiri"', "ب").then(() => {
+          paint();
+          texture.needsUpdate = true;
+        }).catch(() => {});
+      }
+
+      // The leaf swells from the gutter and flattens towards the fore-edge.
+      const geometry = new THREE.PlaneGeometry(PAGE_WIDTH, PAGE_DEPTH, 24, 1);
+      geometry.rotateX(-Math.PI / 2);
+      const position = geometry.attributes.position;
+      for (let i = 0; i < position.count; i++) {
+        const fromGutter = (position.getX(i) + PAGE_WIDTH / 2) / PAGE_WIDTH;
+        const across = side > 0 ? fromGutter : 1 - fromGutter;
+        position.setY(i, Math.sin(Math.min(across * 2.4, Math.PI / 2)) * 0.11 - across * 0.05);
+      }
+      geometry.computeVertexNormals();
+
+      const page = new THREE.Mesh(
+        geometry,
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          emissive: 0x8a7a60,
+          emissiveMap: texture,
+          emissiveIntensity: 0.55,
+          roughness: 0.82
+        })
+      );
+      page.position.set(side * PAGE_WIDTH / 2, 0.135, 0);
+      page.receiveShadow = true;
+      cradle.add(page);
+      return { canvas, texture, mesh: page };
+    }
+
+    // Read from the right, so the book's first page lies on the right.
+    const openingPages = [
+      makePage(1, "سورة الفاتحة", null, FATIHA),
+      makePage(-1, "سورة البقرة", BISMILLAH, BAQARAH)
+    ];
+
+    // One unseen target over both pages, so aiming at the gutter still counts.
+    const bookTarget = new THREE.Mesh(
+      new THREE.PlaneGeometry(PAGE_WIDTH * 2, PAGE_DEPTH).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial()
+    );
+    bookTarget.position.y = 0.2;
+    bookTarget.visible = false;
+    cradle.add(bookTarget);
+
+    attachQuran({
+      sheets: openingPages,
+      hit: [bookTarget],
+      markLive() {
+        quranLive = true;
+      }
+    });
+
+    // A green silk marker falling from the gutter.
+    box(cradle, new THREE.MeshStandardMaterial({ color: 0x123f30, roughness: 0.6 }),
+      0, 0.16, 0.08, 0.03, 0.01, PAGE_DEPTH + 0.16);
+
+    const standLight = new THREE.PointLight(0xffd59a, 12, 9, 2);
+    standLight.position.set(0, 4.6, 1.4);
+    scene.add(standLight);
+
+
+      const PANEL_HALF = 1.72;
+      const PANEL_Z = BAY * 1.5;
+
+      function collideHall(p) {
+        // Walk off one edge of the loop and you come back in from the other.
+        if (p.x > LOOP) p.x -= LOOP * 2;
+        if (p.x < -LOOP) p.x += LOOP * 2;
+        if (p.z > LOOP) p.z -= LOOP * 2;
+        if (p.z < -LOOP) p.z += LOOP * 2;
+
+        const nearX = (Math.floor(p.x / BAY) + 0.5) * BAY;
+        const nearZ = (Math.floor(p.z / BAY) + 0.5) * BAY;
+        for (const [cx, cz, reach] of [[nearX, nearZ, 0.85], [0, 0, 1.95]]) {
+          const dx = p.x - cx;
+          const dz = p.z - cz;
+          const gap = Math.hypot(dx, dz) || 0.0001;
+          if (gap < reach) {
+            p.x = cx + dx / gap * reach;
+            p.z = cz + dz / gap * reach;
+          }
+        }
+
+        // The door's panel fills one arch, so it stops you from either side.
+        if (Math.abs(p.x) < PANEL_HALF && Math.abs(p.z - PANEL_Z) < 0.5) {
+          p.z = PANEL_Z + (p.z < PANEL_Z ? -0.5 : 0.5);
+        }
+      }
+
+      return {
+        scene,
+        exposure: 1.05,
+        fov: 52,
+        eye: 2.75,
+        walk: 5.5,
+        run: 10,
+        entrance: { x: 0, z: 5.6, yaw: 0, pitch: 0.06 },
+        doors: [{
+          edge: PANEL_Z - 0.55,
+          depth: 0.2,
+          halfWidth: 1.1,
+          to: "reading-room",
+          label: "Door to the Grand Reading Room: walk into it",
+          arrive: { x: 14.2, z: 0, yaw: Math.PI / 2, pitch: 0.08 }
+        }],
+        books: [],
+        bookSize: 1,
+        collide: collideHall,
+        update(elapsed) {
+          forest.position.x = Math.round(player.x / BAY) * BAY;
+          forest.position.z = Math.round(player.z / BAY) * BAY;
+          walkingGlow.position.x = player.x;
+          walkingGlow.position.z = player.z;
+          standLight.intensity = 12 + Math.sin(elapsed * 7.3) * 0.8 + Math.sin(elapsed * 13.1) * 0.4;
+        }
+      };
+    }
 
     function buildHouseOfWisdom() {
 const scene = new THREE.Scene();
@@ -5189,7 +5593,8 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
     const builders = {
       "reading-room": buildReadingRoom,
       cordoba: buildCordoba,
-      "house-of-wisdom": buildHouseOfWisdom
+      "house-of-wisdom": buildHouseOfWisdom,
+      "quran-hall": buildQuranHall
     };
     const built = {};
     let currentId = null;
@@ -5548,6 +5953,411 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
       }
     }
 
+    // ---------------------------------------------------------------------
+    // The Quran on the stand: every verse, read a spread at a time
+    // ---------------------------------------------------------------------
+
+    const QURAN_URL = "";
+    const QURAN_FONT = '"Amiri Quran", "Amiri", "Noto Naskh Arabic", serif';
+    const PAGE_W = 1024;
+    const PAGE_H = 1400;
+    const TEXT_LEFT = 112;
+    const TEXT_WIDTH = PAGE_W - TEXT_LEFT * 2;
+    const TEXT_TOP = 164;
+    const ROW_HEIGHT = 86;
+    const PAGE_ROWS = 13;
+    const VERSE_SIZE = 40;
+    const TURN_TIME = 520;
+    const MOST_STRETCH = 22;   // pixels between words, past which a line stays centred
+    const WESTERN_TO_INDIC = "٠١٢٣٤٥٦٧٨٩";
+
+    const indic = number => String(number).replace(/\d/g, digit => WESTERN_TO_INDIC[digit]);
+    const quranReading = { quran: true };
+
+    let quranPages = null;     // each page: { surah, number, rows: [{ kind, text, full }] }
+    let quranSheets = null;    // the two canvases and textures on the 3D book
+    let quranHit = [];         // meshes that open the book
+    let quranSpread = 0;
+    let quranStart = [];       // first page of each surah
+    let quranTurning = false;
+    let quranView = null;
+
+    const measure = document.createElement("canvas").getContext("2d");
+
+    // Pause marks sit on a no-break space so they wrap with the word before.
+    // This changes how a line breaks, never the letters of the text.
+    const tokensOf = (verse, number) => [
+      ...verse.replace(/\s+([ۖ-ۜ])/g, " $1").split(/\s+/).filter(Boolean),
+      `۝${indic(number)}`
+    ];
+
+    function paginateQuran(surahs) {
+      measure.font = `${VERSE_SIZE}px ${QURAN_FONT}`;
+      measure.direction = "rtl";
+      const widths = new Map();
+      const widthOf = token => {
+        if (!widths.has(token)) widths.set(token, measure.measureText(token).width);
+        return widths.get(token);
+      };
+      const space = measure.measureText(" ").width;
+
+      const pages = [];
+      const starts = [];
+      let page = null;
+      let used = 0;
+
+      const open = surah => {
+        page = { surah, number: pages.length + 1, rows: [] };
+        pages.push(page);
+        used = 0;
+      };
+      const add = (row, height = 1) => {
+        page.rows.push(row);
+        used += height;
+      };
+
+      surahs.forEach((surah, index) => {
+        const opensWithBismillah = index !== 0 && index !== 8;
+        const heading = opensWithBismillah ? 3 : 2;
+
+        // Al-Fatiha has the first page to itself, and a title never ends a page.
+        if (!page || index === 1 || used + heading + 1 > PAGE_ROWS) open(index);
+        page.surah = page.rows.length ? page.surah : index;
+        starts.push(pages.length - 1);
+
+        add({ kind: "surah", text: `سورة ${surah.name}` }, 2);
+        if (opensWithBismillah) add({ kind: "bismillah" });
+
+        let line = [];
+        let width = 0;
+        const flush = full => {
+          if (!line.length) return;
+          if (used + 1 > PAGE_ROWS) open(index);
+          add({ kind: "verse", text: line.join(" "), full });
+          line = [];
+          width = 0;
+        };
+
+        surah.verses.forEach((verse, position) => {
+          const tokens = tokensOf(verse, position + 1);
+          tokens.forEach((token, tokenIndex) => {
+            // The verse number never starts a line on its own.
+            const last = tokenIndex === tokens.length - 1;
+            const glued = last && line.length;
+            const next = width + (line.length ? space : 0) + widthOf(token);
+            if (line.length && next > TEXT_WIDTH) {
+              if (glued) {
+                const carried = line.pop();
+                flush(true);
+                line.push(carried);
+                width = widthOf(carried);
+                width += space + widthOf(token);
+                line.push(token);
+                return;
+              }
+              flush(true);
+              line.push(token);
+              width = widthOf(token);
+              return;
+            }
+            line.push(token);
+            width = next;
+          });
+        });
+        flush(false);
+      });
+
+      quranStart = starts;
+      return pages;
+    }
+
+    function star(ctx, x, y, radius, fill) {
+      ctx.beginPath();
+      for (let i = 0; i < 16; i++) {
+        const angle = i * Math.PI / 8;
+        const r = i % 2 ? radius * 0.62 : radius;
+        ctx[i ? "lineTo" : "moveTo"](x + Math.cos(angle) * r, y + Math.sin(angle) * r);
+      }
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    function paintQuranPage(canvas, index, surahs) {
+      const ctx = canvas.getContext("2d");
+      const W = PAGE_W;
+      const H = PAGE_H;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = "#f2e6c9";
+      ctx.fillRect(0, 0, W, H);
+
+      const page = quranPages[index];
+      if (!page) return;
+
+      ctx.strokeStyle = "#b5862c";
+      ctx.lineWidth = 10;
+      ctx.strokeRect(46, 46, W - 92, H - 92);
+      ctx.strokeStyle = "#16346b";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(64, 64, W - 128, H - 128);
+
+      ctx.direction = "rtl";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+
+      // Running head and page number.
+      ctx.fillStyle = "#7c5a24";
+      ctx.font = `34px ${QURAN_FONT}`;
+      ctx.fillText(surahs[page.surah].name, W / 2, 128);
+      ctx.fillText(indic(page.number), W / 2, H - 80);
+
+      const rowCount = page.rows.reduce((sum, row) => sum + (row.kind === "surah" ? 2 : 1), 0);
+      let y = TEXT_TOP + (rowCount < 8 ? (PAGE_ROWS - rowCount) * ROW_HEIGHT / 2 : 0);
+
+      for (const row of page.rows) {
+        if (row.kind === "surah") {
+          const top = y + 14;
+          const band = ctx.createLinearGradient(0, top, 0, top + 112);
+          band.addColorStop(0, "#1c4385");
+          band.addColorStop(1, "#102a5c");
+          ctx.fillStyle = band;
+          ctx.fillRect(TEXT_LEFT, top, TEXT_WIDTH, 112);
+          ctx.strokeStyle = "#e3b04f";
+          ctx.lineWidth = 5;
+          ctx.strokeRect(TEXT_LEFT, top, TEXT_WIDTH, 112);
+          star(ctx, TEXT_LEFT + 58, top + 56, 28, "#e3b04f");
+          star(ctx, TEXT_LEFT + TEXT_WIDTH - 58, top + 56, 28, "#e3b04f");
+          ctx.fillStyle = "#f4d58a";
+          ctx.font = `46px ${QURAN_FONT}`;
+          ctx.wordSpacing = "0px";
+          ctx.fillText(row.text, W / 2, top + 74);
+          y += ROW_HEIGHT * 2;
+          continue;
+        }
+
+        if (row.kind === "bismillah") {
+          ctx.fillStyle = "#16346b";
+          ctx.font = `${VERSE_SIZE}px ${QURAN_FONT}`;
+          ctx.wordSpacing = "0px";
+          ctx.fillText(surahs[0].verses[0], W / 2, y + ROW_HEIGHT - 20);
+          y += ROW_HEIGHT;
+          continue;
+        }
+
+        ctx.fillStyle = "#1c1410";
+        ctx.font = `${VERSE_SIZE}px ${QURAN_FONT}`;
+        ctx.wordSpacing = "0px";
+
+        if (row.full && "wordSpacing" in ctx) {
+          const gaps = row.text.split(" ").length - 1;
+          const stretch = gaps ? (TEXT_WIDTH - ctx.measureText(row.text).width) / gaps : 0;
+          if (stretch > 0 && stretch <= MOST_STRETCH) ctx.wordSpacing = `${stretch}px`;
+        }
+
+        ctx.fillText(row.text, W / 2, y + ROW_HEIGHT - 20);
+        y += ROW_HEIGHT;
+      }
+
+      ctx.wordSpacing = "0px";
+    }
+
+    let quranData = null;
+
+    function showSpreadOnStand() {
+      if (!quranSheets) return;
+      quranSheets.forEach((sheet, side) => {
+        paintQuranPage(sheet.canvas, quranSpread * 2 + side, quranData.surahs);
+        sheet.texture.needsUpdate = true;
+      });
+    }
+
+    // Called by the reading room once its book exists. On the public site
+    // QURAN_URL is empty and the book keeps its opening spread.
+    async function attachQuran(book) {
+      if (!QURAN_URL) return;
+
+      try {
+        const response = await fetch(QURAN_URL);
+        if (!response.ok) return;
+        quranData = await response.json();
+        await document.fonts.load(`${VERSE_SIZE}px "Amiri Quran"`, "ب");
+      } catch {
+        return;
+      }
+
+      quranPages = paginateQuran(quranData.surahs);
+      quranSheets = book.sheets;
+      book.markLive();
+      showSpreadOnStand();
+      quranHit = book.hit;
+    }
+
+    function quranAt(ndc) {
+      if (!quranHit.length) return false;
+      raycaster.setFromCamera(ndc, camera);
+      raycaster.far = REACH * (map.eye / 2.2);
+      return raycaster.intersectObjects(quranHit, false).length > 0;
+    }
+
+    function pageCanvas(className) {
+      const canvas = document.createElement("canvas");
+      canvas.width = PAGE_W;
+      canvas.height = PAGE_H;
+      canvas.className = className;
+      return canvas;
+    }
+
+    const lastSpread = () => Math.ceil(quranPages.length / 2) - 1;
+
+    function paintView() {
+      const { left, right, status, surah } = quranView;
+      const first = quranSpread * 2;
+      paintQuranPage(right, first, quranData.surahs);
+      paintQuranPage(left, first + 1, quranData.surahs);
+      const page = quranPages[first];
+      status.textContent = `${first + 1} / ${quranPages.length}`;
+      surah.value = String(page.surah);
+    }
+
+    function turnTo(spread) {
+      const target = Math.max(0, Math.min(lastSpread(), spread));
+      if (quranTurning || target === quranSpread) return;
+
+      const forward = target > quranSpread;
+      const step = Math.abs(target - quranSpread) === 1;
+      const { left, right, book } = quranView;
+
+      if (!step || reducedMotion) {
+        quranSpread = target;
+        paintView();
+        return;
+      }
+
+      // The book reads right to left, so going forward the left leaf lifts and
+      // lands on the right: its front is the page leaving, its back the new one.
+      const leaf = element("div", `qr-turn ${forward ? "from-left" : "from-right"}`);
+      const front = pageCanvas("qr-face");
+      const back = pageCanvas("qr-face qr-back");
+      leaf.append(front, back);
+
+      const old = quranSpread * 2;
+      const fresh = target * 2;
+      const data = quranData.surahs;
+      paintQuranPage(front, forward ? old + 1 : old, data);
+      paintQuranPage(back, forward ? fresh : fresh + 1, data);
+
+      quranTurning = true;
+      if (forward) paintQuranPage(left, fresh + 1, data);
+      else paintQuranPage(right, fresh, data);
+      book.append(leaf);
+
+      leaf.animate(
+        [
+          { transform: "rotateY(0deg)" },
+          { transform: `rotateY(${forward ? 180 : -180}deg)` }
+        ],
+        { duration: TURN_TIME, easing: "ease-in-out", fill: "forwards" }
+      );
+
+      // A timer, since an animation in a hidden tab may never finish.
+      setTimeout(() => {
+        leaf.remove();
+        quranSpread = target;
+        if (quranView) paintView();
+        quranTurning = false;
+      }, TURN_TIME + 20);
+    }
+
+    function closeQuran() {
+      showSpreadOnStand();
+      reader.hidden = true;
+      reader.textContent = "";
+      reader.classList.remove("qr");
+      quranView = null;
+      reading = null;
+      document.body.classList.remove("reading");
+      canvas.focus({ preventScroll: true });
+    }
+
+    function openQuran() {
+      reading = quranReading;
+      document.body.classList.add("reading");
+      held.clear();
+      setHovered(null);
+      setLabel(null);
+      dot.hidden = true;
+      if (document.pointerLockElement) document.exitPointerLock();
+
+      reader.textContent = "";
+      reader.classList.add("qr");
+
+      const shell = element("div", "qr-shell");
+      const book = element("div", "qr-book");
+      const left = pageCanvas("qr-page");
+      const right = pageCanvas("qr-page");
+      book.append(left, right);
+
+      book.addEventListener("click", event => {
+        const box = book.getBoundingClientRect();
+        const onLeft = event.clientX < box.left + box.width / 2;
+        turnTo(quranSpread + (onLeft ? 1 : -1));
+      });
+
+      const bar = element("div", "qr-bar");
+
+      const onward = element("button", "pill", "Next page");
+      onward.type = "button";
+      onward.addEventListener("click", () => turnTo(quranSpread + 1));
+
+      const back = element("button", "pill", "Previous page");
+      back.type = "button";
+      back.addEventListener("click", () => turnTo(quranSpread - 1));
+
+      const surah = document.createElement("select");
+      surah.className = "qr-surah";
+      surah.setAttribute("aria-label", "Go to surah");
+      quranData.surahs.forEach((entry, index) => {
+        const option = element("option", "", `${indic(index + 1)}. ${entry.name}`);
+        option.value = String(index);
+        surah.append(option);
+      });
+      surah.addEventListener("change", () => {
+        const chosen = surah.value;
+        turnTo(Math.floor(quranStart[Number(chosen)] / 2));
+        surah.value = chosen;   // the spread may open on the surah before it
+        surah.blur();
+      });
+
+      const status = element("span", "qr-status");
+
+      const close = element("button", "pill", "Close");
+      close.type = "button";
+      close.addEventListener("click", closeQuran);
+
+      bar.append(onward, surah, status, back, close);
+
+      const note = element(
+        "p",
+        "qr-note",
+        "Text: Quranic Universal Library (Tarteel), Uthmani script, with three spelling corrections at 5:52, 11:13 and 80:25. Not a certified mushaf."
+      );
+
+      shell.append(book, bar, note);
+      reader.append(shell);
+      reader.hidden = false;
+
+      quranView = { left, right, book, status, surah };
+      paintView();
+    }
+
+    function quranKey(event) {
+      if (event.code === "ArrowLeft") turnTo(quranSpread + 1);
+      if (event.code === "ArrowRight") turnTo(quranSpread - 1);
+      if (event.code === "Escape") closeQuran();
+    }
+
+
     function checkAim() {
       if (crossing) return;
 
@@ -5558,20 +6368,25 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
       setHovered(book);
 
       if (book) setLabel(`Click to open ${book.data.title}`);
+      else if (quranAt(CENTER)) setLabel("Click to read the Quran");
       else checkDoor();
     }
 
     function checkDoor() {
-      // A door stands on the +z or -z side of a map; `side` is that sign.
+      // A door stands on a map's z or x edge; `side` is the sign of that edge.
       let label = null;
 
       for (const door of map.doors) {
         const side = door.side ?? 1;
-        const reach = player.z * side;
+        const sideways = door.axis === "x";
+        const across = sideways ? player.z : player.x;
+        const speed = sideways ? player.vx : player.vz;
+        const reach = (sideways ? player.x : player.z) * side;
+        const pastDoor = door.depth !== undefined && reach > door.edge + door.depth;
 
-        if (Math.abs(player.x) < door.halfWidth + 1.2 && reach > door.edge - 2.2) label = door.label;
+        if (Math.abs(across) < door.halfWidth + 1.2 && reach > door.edge - 2.2 && !pastDoor) label = door.label;
 
-        if (Math.abs(player.x) < door.halfWidth && reach >= door.edge && player.vz * side > 0.2) {
+        if (Math.abs(across) < door.halfWidth && reach >= door.edge && speed * side > 0.2 && !pastDoor) {
           goThroughDoor(door);
           break;
         }
@@ -5640,6 +6455,10 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
           openBook(book);
           return;
         }
+        if (quranAt(locked ? CENTER : ndcFrom(event))) {
+          openQuran();
+          return;
+        }
         if (!locked) lockPointer();
       }
 
@@ -5669,6 +6488,7 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
       if (Math.hypot(event.clientX - tapX, event.clientY - tapY) > 10) return;
       const book = bookAt(ndcFrom(event));
       if (book) openBook(book);
+      else if (quranAt(ndcFrom(event))) openQuran();
     });
 
     canvas.addEventListener("pointerup", endDrag);
@@ -5676,6 +6496,11 @@ scene.fog = new THREE.FogExp2(0x111827, 0.012);
 
     window.addEventListener("keydown", event => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      if (reading === quranReading) {
+        quranKey(event);
+        return;
+      }
 
       if (reading) {
         if (flight) return;
