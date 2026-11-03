@@ -3956,6 +3956,33 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
     addHorseshoeDoor(scene, BAY * 1.5, 0.85);
 
+    // ---- The wall behind the door ---------------------------------------
+    // A plain stone wall closes the hall on the door's side. The arcade on
+    // its line stands proud of it as a blind arcade, and the door is set into
+    // one bay. The wall runs with the forest, so it never ends either, and a
+    // copy one loop away shows its back to anyone who walks round the long way.
+
+    const WALL_FRONT = BAY * 1.5 + 0.1;
+    const WALL_DEPTH = 0.6;
+
+    const wallStone = new THREE.MeshStandardMaterial({ color: 0xd6c4a2, roughness: 0.84 });
+    const wallBase = new THREE.MeshStandardMaterial({ color: 0x7e2b31, roughness: 0.7 });
+    const wallTrim = new THREE.MeshStandardMaterial({ color: 0xb59a6c, roughness: 0.6 });
+
+    const hallWall = new THREE.Group();
+    scene.add(hallWall);
+
+    for (const offset of [0, -LOOP * 2, LOOP * 2]) {
+      const back = WALL_FRONT + WALL_DEPTH;
+      box(hallWall, wallStone, 0, CEILING / 2, offset + WALL_FRONT + WALL_DEPTH / 2, SPAN, CEILING, WALL_DEPTH);
+      // A low red dado and a moulding under the ceiling, on both faces.
+      for (const [face, sign] of [[WALL_FRONT, -1], [back, 1]]) {
+        box(hallWall, wallBase, 0, 0.45, offset + face + sign * 0.03, SPAN, 0.9, 0.06);
+        box(hallWall, wallTrim, 0, 0.93, offset + face + sign * 0.05, SPAN, 0.08, 0.1);
+        box(hallWall, wallTrim, 0, CEILING - 0.25, offset + face + sign * 0.08, SPAN, 0.22, 0.16);
+      }
+    }
+
     // ---------------------------------------------------------------------
     // A low stepped dais and a carved wooden stand holding an open Quran,
     // at its opening spread
@@ -4284,7 +4311,6 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
     scene.add(standLight);
 
 
-      const PANEL_HALF = 1.72;
       const PANEL_Z = BAY * 1.5;
 
       function collideHall(p) {
@@ -4306,9 +4332,11 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
           }
         }
 
-        // The door's panel fills one arch, so it stops you from either side.
-        if (Math.abs(p.x) < PANEL_HALF && Math.abs(p.z - PANEL_Z) < 0.5) {
-          p.z = PANEL_Z + (p.z < PANEL_Z ? -0.5 : 0.5);
+        // The wall behind the door stops you from either side.
+        const wallStop = PANEL_Z - 0.5;
+        const backStop = WALL_FRONT + WALL_DEPTH + 0.5;
+        if (p.z > wallStop && p.z < backStop) {
+          p.z = p.z - wallStop < backStop - p.z ? wallStop : backStop;
         }
       }
 
@@ -4334,6 +4362,7 @@ const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         update(elapsed) {
           forest.position.x = Math.round(player.x / BAY) * BAY;
           forest.position.z = Math.round(player.z / BAY) * BAY;
+          hallWall.position.x = forest.position.x;
           walkingGlow.position.x = player.x;
           walkingGlow.position.z = player.z;
           standLight.intensity = 12 + Math.sin(elapsed * 7.3) * 0.8 + Math.sin(elapsed * 13.1) * 0.4;
