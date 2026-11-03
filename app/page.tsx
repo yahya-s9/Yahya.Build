@@ -68,6 +68,15 @@ export default async function Home() {
 <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(circle_at_50%_0%,_#fffdfa_0%,_#ebdcc8_100%)]"></div>
 <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-color-burn bg-[radial-gradient(circle_at_80%_30%,_#ffddb3_0%,_transparent_50%),radial-gradient(circle_at_20%_80%,_#f2bd74_0%,_transparent_60%)]"></div>
 <div className="relative z-10 max-w-6xl mx-auto flex flex-col items-center">
+{/* Title over the bookcase */}
+<div className="flex flex-col items-center text-center mb-10 md:mb-14">
+<h2 className="text-primary font-headline-xl text-headline-xl-mobile md:text-headline-xl text-balance">Yahya&apos;s Bookshelf</h2>
+<div className="flex items-center justify-center gap-4 mt-4 opacity-75">
+<div className="w-12 h-px bg-secondary-fixed-dim"></div>
+<div className="w-2 h-2 rotate-45 bg-secondary"></div>
+<div className="w-12 h-px bg-secondary-fixed-dim"></div>
+</div>
+</div>
 {/* BOOKCASE STRUCTURE */}
 <div className="w-full relative">
 <Bookcase shelves={shelves} />
