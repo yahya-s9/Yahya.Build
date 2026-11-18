@@ -45,44 +45,16 @@
   .sky img.on { opacity: 1; }
 
   .ui { position: relative; z-index: 1; color: var(--ui-text); transition: color 2s ease; }
-  header.ui { display: flex; justify-content: space-between; align-items: center; }
-  button, a { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: none; }
-  button:focus-visible, a:focus-visible { outline: 1px solid var(--ui-text); outline-offset: 4px; }
-
-  .cycle {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 11px; font-weight: 300; text-transform: uppercase; letter-spacing: .35em;
-    opacity: .75; transition: opacity .3s;
-  }
-  .cycle:hover { opacity: 1; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
-  .paused .dot { animation: none; opacity: .3; }
-  @keyframes pulse { 50% { opacity: .5; } }
-  .cycle-label { display: none; }
-  @media (min-width: 640px) { .cycle-label { display: inline; } }
+  header.ui { display: flex; justify-content: flex-end; align-items: center; }
+  a { font: inherit; color: inherit; text-decoration: none; }
+  a:focus-visible { outline: 1px solid var(--ui-text); outline-offset: 4px; }
 
   .links { display: flex; gap: 28px; font-size: 12px; text-transform: uppercase; letter-spacing: .26em; }
   .links a { opacity: .8; transition: opacity .3s, text-shadow .3s; }
   .links a:hover { opacity: 1; text-shadow: 0 0 12px var(--ui-glow); }
 
-  footer.ui { display: flex; justify-content: center; padding-bottom: 8px; }
-  .prayers {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 20px; border-radius: 999px;
-    background: rgba(0, 0, 0, .1); border: 1px solid rgba(255, 255, 255, .1);
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -4px rgba(0, 0, 0, .1);
-    font-size: 11px; text-transform: uppercase; letter-spacing: .28em;
-  }
-  @media (min-width: 640px) { .prayers { gap: 24px; font-size: 12px; } }
-  .prayers button { padding: 0 4px; opacity: .6; transition: opacity .5s, text-shadow .5s; }
-  .prayers button:hover { opacity: 1; }
-  .prayers button[aria-pressed="true"] { opacity: 1; font-weight: 500; text-shadow: 0 0 12px var(--ui-glow); }
-  .sep { opacity: .3; font-size: 9px; }
-
   @media (prefers-reduced-motion: reduce) {
     .sky img { transition-duration: .8s; }
-    .dot { animation: none; }
   }
 </style>
 </head>
@@ -97,63 +69,26 @@
   </div>
 
   <header class="ui">
-    <button class="cycle" id="cycle" type="button" aria-label="Pause the cycle">
-      <span class="dot"></span><span class="cycle-label" id="cycle-label">Ambient Cycle · Active</span>
-    </button>
     <nav class="links" aria-label="Site">
       <a href="/bookshelf">Bookshelf</a>
       <a href="/library">Library</a>
     </nav>
   </header>
 
-  <footer class="ui">
-    <nav class="prayers" aria-label="Prayer times">
-      <button type="button" data-prayer="fajr" aria-pressed="true">Fajr</button><span class="sep" aria-hidden="true">·</span>
-      <button type="button" data-prayer="dhuhr" aria-pressed="false">Dhuhr</button><span class="sep" aria-hidden="true">·</span>
-      <button type="button" data-prayer="asr" aria-pressed="false">Asr</button><span class="sep" aria-hidden="true">·</span>
-      <button type="button" data-prayer="maghrib" aria-pressed="false">Maghrib</button><span class="sep" aria-hidden="true">·</span>
-      <button type="button" data-prayer="isha" aria-pressed="false">Isha</button>
-    </nav>
-  </footer>
 </main>
 
 <script>
   // Each prayer holds for STEP ms, then crossfades to the next, looping Isha back to Fajr.
   var PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
   var STEP = 7000;
-  var current = 0, timer = null;
+  var current = 0;
   var layers = document.querySelectorAll(".sky img");
-  var buttons = document.querySelectorAll(".prayers button");
-  var toggle = document.getElementById("cycle");
-  var label = document.getElementById("cycle-label");
-
-  function show(i) {
-    current = i;
-    var p = PRAYERS[i];
+  setInterval(function () {
+    current = (current + 1) % PRAYERS.length;
+    var p = PRAYERS[current];
     layers.forEach(function (l) { l.classList.toggle("on", l.dataset.prayer === p); });
-    buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.prayer === p)); });
     document.body.className = p;
-  }
-  function play() {
-    clearInterval(timer);
-    timer = setInterval(function () { show((current + 1) % PRAYERS.length); }, STEP);
-    toggle.classList.remove("paused");
-    toggle.setAttribute("aria-label", "Pause the cycle");
-    label.textContent = "Ambient Cycle · Active";
-  }
-  function pause() {
-    clearInterval(timer); timer = null;
-    toggle.classList.add("paused");
-    toggle.setAttribute("aria-label", "Resume the cycle");
-    label.textContent = "Ambient Cycle · Paused";
-  }
-
-  // Clicking a prayer shows it and restarts the clock, so it gets a full STEP on screen.
-  buttons.forEach(function (b) {
-    b.addEventListener("click", function () { show(PRAYERS.indexOf(b.dataset.prayer)); play(); });
-  });
-  toggle.addEventListener("click", function () { timer ? pause() : play(); });
-  play();
+  }, STEP);
 </script>
 </body>
 </html>
