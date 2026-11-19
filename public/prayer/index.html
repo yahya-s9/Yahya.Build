@@ -62,9 +62,8 @@
  *
  * The five paintings (Fajr, Dhuhr, Asr, Maghrib, Isha) come from the Stitch project with their sun or
  * moon removed, and dissolve slowly into one another. The sun and moon are drawn on top so they can
- * actually move: the sun rises from behind the far dune at Fajr, arcs over noon, drops through Asr and
- * sets into the dune gap at Maghrib; the moon rises after sunset, passes where Isha painted it, and fades
- * before dawn.
+ * move: the sun rises from behind the far dune at Fajr, arcs over noon, drops through Asr and sets into
+ * the dune gap at Maghrib; the moon fades in where Isha painted it after sunset and fades out before dawn.
  *
  * Everything is placed in one frame, 1376 x 768 (the Fajr/Isha painting size). The 1200 x 896 paintings
  * are the same composition scaled by 1376/1200 and centred; Asr sits 39px lower to line its figure up.
@@ -156,13 +155,9 @@
   }
 
   function moonAt(t) {
-    // Rises from behind the left dune after sunset, passes the painted Isha moon at t .8, fades by .93.
-    if (t < .63 || t > .93) return null;
-    var p;
-    if (t <= .8) { var a = smooth((t - .63) / .17); p = { x: lerp(230, 332, a), y: lerp(530, 115, a) }; }
-    else { var b = (t - .8) / .13; p = { x: lerp(332, 420, b), y: lerp(115, 40, b) }; }
-    p.alpha = smooth((t - .64) / .04) * (1 - smooth((t - .84) / .09));
-    return p;
+    // Stays where Isha painted it: fades in as the sky darkens after sunset, fades out before dawn.
+    if (t < .64 || t > .93) return null;
+    return { x: 332, y: 115, alpha: smooth((t - .64) / .1) * (1 - smooth((t - .85) / .08)) };
   }
 
   function clipTo(ridge) {
