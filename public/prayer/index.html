@@ -8,23 +8,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap">
-<link rel="preload" as="image" href="/prayer/fajr.jpg">
+<link rel="preload" as="image" href="/prayer/fajr-sky.jpg">
 <style>
   /* Designed in Stitch: "Minimal Desert Sanctuary - Celestial Prayer Cycle" */
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: #0f1420;
+    /* Shown until the canvas paints, and if scripts are off. */
+    background: #0f1420 url(/prayer/fajr-sky.jpg) 54% center / cover no-repeat;
     font-family: "Cormorant Garamond", Georgia, serif;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     --ui-text: #F3EFE6; --ui-glow: rgba(243, 239, 230, .55);
   }
-  body.fajr    { --ui-text: #F3EFE6; --ui-glow: rgba(243, 239, 230, .55); }
-  body.dhuhr   { --ui-text: #172B4D; --ui-glow: rgba(255, 255, 255, .7); }
-  body.asr     { --ui-text: #2D251C; --ui-glow: rgba(255, 240, 215, .85); }
-  body.maghrib { --ui-text: #FBEAD2; --ui-glow: rgba(251, 169, 76, .55); }
-  body.isha    { --ui-text: #E8DFCE; --ui-glow: rgba(220, 235, 255, .65); }
+  body.dark  { --ui-text: #F3EFE6; --ui-glow: rgba(243, 239, 230, .55); }
+  body.light { --ui-text: #1d2a40; --ui-glow: rgba(255, 255, 255, .7); }
+
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
   .sanctuary {
     position: relative; height: 100vh; height: 100dvh; width: 100%;
@@ -35,16 +35,7 @@
   @media (min-width: 768px)  { .sanctuary { padding: 56px; } }
   @media (min-width: 1024px) { .sanctuary { padding: 64px; } }
 
-  .sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-  .sky img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    /* The figure kneels right of center; bias the crop so phones keep him and the sun in frame. */
-    object-fit: cover; object-position: 54% center;
-    opacity: 0; transition: opacity 2.5s cubic-bezier(.4, 0, .2, 1); will-change: opacity;
-  }
-  .sky img.on { opacity: 1; }
-
-  .ui { position: relative; z-index: 1; color: var(--ui-text); transition: color 2s ease; }
+  .ui { position: relative; z-index: 1; color: var(--ui-text); transition: color 3s ease; }
   header.ui { display: flex; justify-content: flex-end; align-items: center; }
   a { font: inherit; color: inherit; text-decoration: none; }
   a:focus-visible { outline: 1px solid var(--ui-text); outline-offset: 4px; }
@@ -52,43 +43,214 @@
   .links { display: flex; gap: 28px; font-size: 12px; text-transform: uppercase; letter-spacing: .26em; }
   .links a { opacity: .8; transition: opacity .3s, text-shadow .3s; }
   .links a:hover { opacity: 1; text-shadow: 0 0 12px var(--ui-glow); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .sky img { transition-duration: .8s; }
-  }
 </style>
 </head>
-<body class="fajr">
+<body class="dark">
+<canvas id="sky" aria-hidden="true"></canvas>
 <main class="sanctuary">
-  <div class="sky" aria-hidden="true">
-    <img class="on" data-prayer="fajr" src="/prayer/fajr.jpg" alt="">
-    <img data-prayer="dhuhr" src="/prayer/dhuhr.jpg" alt="">
-    <img data-prayer="asr" src="/prayer/asr.jpg" alt="">
-    <img data-prayer="maghrib" src="/prayer/maghrib.jpg" alt="">
-    <img data-prayer="isha" src="/prayer/isha.jpg" alt="">
-  </div>
-
   <header class="ui">
     <nav class="links" aria-label="Site">
       <a href="/bookshelf">Bookshelf</a>
       <a href="/library">Library</a>
     </nav>
   </header>
-
 </main>
 
 <script>
-  // Each prayer holds for STEP ms, then crossfades to the next, looping Isha back to Fajr.
-  var PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
-  var STEP = 7000;
-  var current = 0;
-  var layers = document.querySelectorAll(".sky img");
-  setInterval(function () {
-    current = (current + 1) % PRAYERS.length;
-    var p = PRAYERS[current];
-    layers.forEach(function (l) { l.classList.toggle("on", l.dataset.prayer === p); });
-    document.body.className = p;
-  }, STEP);
+/*
+ * One continuous day over the desert, drawn on a canvas.
+ *
+ * The five paintings (Fajr, Dhuhr, Asr, Maghrib, Isha) come from the Stitch project with their sun or
+ * moon removed, and dissolve slowly into one another. The sun and moon are drawn on top so they can
+ * actually move: the sun rises from behind the far dune at Fajr, arcs over noon, drops through Asr and
+ * sets into the dune gap at Maghrib; the moon rises after sunset, passes where Isha painted it, and fades
+ * before dawn.
+ *
+ * Everything is placed in one frame, 1376 x 768 (the Fajr/Isha painting size). The 1200 x 896 paintings
+ * are the same composition scaled by 1376/1200 and centred; Asr sits 39px lower to line its figure up.
+ */
+(function () {
+  var FRAME_W = 1376, FRAME_H = 768;
+  var LOOP = 60000;                 // one full day, ms
+  var CROP_X = .54;                 // on narrow screens keep the figure (right of centre) in view
+  var FPS = 30;
+
+  var s = 1376 / 1200, tallY = -(896 * s - FRAME_H) / 2;
+  var PLATES = [                    // keyframe time in the loop, image, placement in the frame
+    { t: 0,  src: "/prayer/fajr-sky.jpg",    x: 0, y: 0,           w: 1376, h: 768 },
+    { t: .2, src: "/prayer/dhuhr-sky.jpg",   x: 0, y: tallY,       w: 1376, h: 896 * s },
+    { t: .4, src: "/prayer/asr-sky.jpg",     x: 0, y: tallY + 39,  w: 1376, h: 896 * s },
+    { t: .6, src: "/prayer/maghrib-sky.jpg", x: 0, y: tallY,       w: 1376, h: 896 * s },
+    { t: .8, src: "/prayer/isha-sky.jpg",    x: 0, y: 0,           w: 1376, h: 768 }
+  ];
+  var LIGHT_SKIES = [false, true, true, false, false];   // dark nav text over Dhuhr and Asr
+
+  // Sky regions (everything above the dune ridge), traced from the paintings. The sun and moon are
+  // clipped to these so they rise and set behind the dunes. Sunrise and moonrise use the far ridge
+  // seen at Fajr; sunset uses the lower gap the Maghrib sun sits in.
+  var RISE_RIDGE = [[1376,459],[740,459],[700,457],[660,452],[630,446],[595,446],[570,447],[525,446],
+                    [485,444],[435,437],[390,430],[360,427],[0,427]];
+  var SET_RIDGE  = [[1376,470],[900,470],[774,475],[740,479],[700,488],[654,490],[616,483],[539,456],
+                    [482,438],[0,420]];
+
+  // Sun path. u runs 0 (Fajr, the painted dawn sun) to 1 (Maghrib, the painted setting sun).
+  // The arc bulges to the left so the afternoon sun never passes behind the figure's head.
+  var SUN_R = 43;
+  function sunArc(u) {
+    var arc = Math.sin(Math.PI * u);
+    return { x: 559 + 103 * u - 260 * arc, y: 436 + 74 * u - 400 * arc };
+  }
+  // Time to arc position: Fajr 0 → Dhuhr .5 (overhead) → Asr .85 (low in the west) → Maghrib 1.
+  var SUN_KEYS = [[0, 0], [.2, .5], [.4, .85], [.6, 1]];
+
+  var canvas = document.getElementById("sky"), ctx = canvas.getContext("2d");
+  var sprite = document.createElement("canvas"), sctx = sprite.getContext("2d");
+  var grain = makeGrain(160);
+  var imgs = PLATES.map(function (p) { var i = new Image(); i.src = p.src; return i; });
+  var frozen = new URLSearchParams(location.search).get("t");   // ?t=0.35 holds one moment, for review
+  var view = { k: 1, ox: 0, oy: 0 }, last = 0;
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function smooth(v) { v = clamp(v, 0, 1); return v * v * (3 - 2 * v); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function mix(c1, c2, t) { return c1.map(function (v, i) { return Math.round(lerp(v, c2[i], t)); }); }
+  function rgba(c, a) { return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
+
+  function makeGrain(size) {
+    // Speckle mask that knocks tiny holes in the sun and moon, like the stipple in the paintings.
+    var c = document.createElement("canvas"); c.width = c.height = size;
+    var g = c.getContext("2d"), d = g.createImageData(size, size);
+    for (var i = 0; i < d.data.length; i += 4) { d.data[i + 3] = Math.random() < .35 ? 40 + Math.random() * 90 : 0; }
+    g.putImageData(d, 0, 0);
+    return c;
+  }
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    var k = Math.max(w / FRAME_W, h / FRAME_H);     // cover
+    view.k = k * dpr;
+    view.ox = (w - FRAME_W * k) * CROP_X * dpr;
+    view.oy = (h - FRAME_H * k) / 2 * dpr;
+    last = 0;
+  }
+
+  function sunAt(t) {
+    // Rising from behind the ridge just before Fajr (t .94 → 1), the day arc, then sinking out of sight.
+    if (t >= .94) {
+      var a = smooth((t - .94) / .06), end = sunArc(0);
+      return { x: lerp(545, end.x, a), y: lerp(530, end.y, a), rising: true };
+    }
+    if (t <= .6) {
+      for (var i = 1; i < SUN_KEYS.length && t > SUN_KEYS[i][0]; i++) {}
+      var k0 = SUN_KEYS[i - 1], k1 = SUN_KEYS[i];
+      var u = lerp(k0[1], k1[1], (t - k0[0]) / (k1[0] - k0[0]));
+      var p = sunArc(u); p.rising = t < .3; return p;
+    }
+    if (t <= .66) {
+      var b = (t - .6) / .06, start = sunArc(1);
+      return { x: lerp(start.x, 668, b), y: lerp(start.y, 580, b), rising: false };
+    }
+    return null;
+  }
+
+  function moonAt(t) {
+    // Rises from behind the left dune after sunset, passes the painted Isha moon at t .8, fades by .93.
+    if (t < .63 || t > .93) return null;
+    var p;
+    if (t <= .8) { var a = smooth((t - .63) / .17); p = { x: lerp(230, 332, a), y: lerp(530, 115, a) }; }
+    else { var b = (t - .8) / .13; p = { x: lerp(332, 420, b), y: lerp(115, 40, b) }; }
+    p.alpha = smooth((t - .64) / .04) * (1 - smooth((t - .84) / .09));
+    return p;
+  }
+
+  function clipTo(ridge) {
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(FRAME_W, 0);
+    ridge.forEach(function (pt) { ctx.lineTo(pt[0], pt[1]); });
+    ctx.closePath(); ctx.clip();
+  }
+
+  function disc(r, inner, outer, alpha) {
+    // A grainy disc rendered off-screen, then placed with drawImage.
+    var size = Math.ceil(r * 2 + 4);
+    if (sprite.width !== size) { sprite.width = sprite.height = size; }
+    sctx.globalCompositeOperation = "source-over";
+    sctx.clearRect(0, 0, size, size);
+    var g = sctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, r);
+    g.addColorStop(0, rgba(inner, alpha)); g.addColorStop(.75, rgba(mix(inner, outer, .6), alpha));
+    g.addColorStop(.97, rgba(outer, alpha)); g.addColorStop(1, rgba(outer, 0));
+    sctx.fillStyle = g; sctx.beginPath(); sctx.arc(size / 2, size / 2, r, 0, Math.PI * 2); sctx.fill();
+    sctx.globalCompositeOperation = "destination-out";
+    sctx.drawImage(grain, 0, 0, size, size);
+    return sprite;
+  }
+
+  function glow(x, y, r, color, alpha) {
+    var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, rgba(color, alpha)); g.addColorStop(.2, rgba(color, alpha * .6));
+    g.addColorStop(.55, rgba(color, alpha * .18)); g.addColorStop(1, rgba(color, 0));
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  function draw(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#0f1420"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(view.k, 0, 0, view.k, view.ox, view.oy);
+
+    // 1. Paintings: the current one, with the next dissolving over it (a short hold at each prayer).
+    var n = PLATES.length, seg = t * n, i = Math.floor(seg) % n, j = (i + 1) % n;
+    var mixAmt = smooth((seg - Math.floor(seg) - .15) / .7);
+    [[i, 1], [j, mixAmt]].forEach(function (pair) {
+      var p = PLATES[pair[0]], img = imgs[pair[0]];
+      if (!img.complete || !img.naturalWidth || pair[1] <= 0) return;
+      ctx.globalAlpha = pair[1]; ctx.drawImage(img, p.x, p.y, p.w, p.h);
+    });
+    ctx.globalAlpha = 1;
+    document.body.className = (mixAmt < .5 ? LIGHT_SKIES[i] : LIGHT_SKIES[j]) ? "light" : "dark";
+
+    // 2. Sun. Warm and large-glowed near the horizon, near-white overhead, deep orange at sunset.
+    var sun = sunAt(t);
+    if (sun) {
+      var ridgeY = sun.rising ? 446 : 489;
+      var high = smooth((ridgeY - sun.y) / 380);                  // 0 at the horizon, 1 overhead
+      var evening = smooth((t - .42) / .2) * (t < .9 ? 1 : 0);
+      var inner = mix(mix([255, 244, 205], [255, 254, 246], high), [255, 222, 170], evening);
+      var outer = mix(mix([255, 214, 128], [255, 243, 200], high), [255, 160, 90], evening);
+      var haloColor = mix(mix([255, 200, 120], [255, 246, 215], high), [255, 130, 70], evening);
+      glow(sun.x, Math.min(sun.y, ridgeY + 6), lerp(330, 210, high), haloColor, lerp(.75, .5, high));
+      ctx.save(); clipTo(sun.rising ? RISE_RIDGE : SET_RIDGE);
+      ctx.drawImage(disc(SUN_R, inner, outer, 1), sun.x - sprite.width / 2, sun.y - sprite.height / 2);
+      ctx.restore();
+    }
+
+    // 3. Moon.
+    var moon = moonAt(t);
+    if (moon && moon.alpha > 0) {
+      glow(moon.x, moon.y, 170, [214, 226, 255], .38 * moon.alpha);
+      ctx.save(); clipTo(RISE_RIDGE); ctx.globalAlpha = moon.alpha;
+      ctx.drawImage(disc(46, [252, 250, 240], [226, 224, 214], 1), moon.x - sprite.width / 2, moon.y - sprite.height / 2);
+      ctx.restore(); ctx.globalAlpha = 1;
+    }
+  }
+
+  function tick(now) {
+    if (now - last >= 1000 / FPS || frozen !== null) {
+      last = now;
+      draw(frozen !== null ? +frozen % 1 : (now % LOOP) / LOOP);
+    }
+    if (frozen === null) requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+  var ready = 0;
+  imgs.forEach(function (img) {
+    img.onload = function () { if (++ready === 1 || frozen !== null) requestAnimationFrame(tick); else last = 0; };
+  });
+})();
 </script>
 </body>
 </html>
