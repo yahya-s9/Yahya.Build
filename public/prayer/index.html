@@ -61,9 +61,8 @@
  * One continuous day over the desert, drawn on a canvas.
  *
  * The five paintings (Fajr, Dhuhr, Asr, Maghrib, Isha) come from the Stitch project with their sun or
- * moon removed, and dissolve slowly into one another. The sun and moon are drawn on top so they can
- * move: the sun rises from behind the far dune at Fajr, arcs over noon, drops through Asr and sets into
- * the dune gap at Maghrib; the moon fades in where Isha painted it after sunset and fades out before dawn.
+ * moon removed, and dissolve slowly into one another, so the sky's light changes through the day.
+ * The moon is drawn on top: it fades in where Isha painted it after sunset and fades out before dawn.
  *
  * Everything is placed in one frame, 1376 x 768 (the Fajr/Isha painting size). The 1200 x 896 paintings
  * are the same composition scaled by 1376/1200 and centred; Asr sits 39px lower to line its figure up.
@@ -84,24 +83,6 @@
   ];
   var LIGHT_SKIES = [false, true, true, false, false];   // dark nav text over Dhuhr and Asr
 
-  // Sky regions (everything above the dune ridge), traced from the paintings. The sun and moon are
-  // clipped to these so they rise and set behind the dunes. Sunrise and moonrise use the far ridge
-  // seen at Fajr; sunset uses the lower gap the Maghrib sun sits in.
-  var RISE_RIDGE = [[1376,459],[740,459],[700,457],[660,452],[630,446],[595,446],[570,447],[525,446],
-                    [485,444],[435,437],[390,430],[360,427],[0,427]];
-  var SET_RIDGE  = [[1376,470],[900,470],[774,475],[740,479],[700,488],[654,490],[616,483],[539,456],
-                    [482,438],[0,420]];
-
-  // Sun path. u runs 0 (Fajr, the painted dawn sun) to 1 (Maghrib, the painted setting sun).
-  // The arc bulges to the left so the afternoon sun never passes behind the figure's head.
-  var SUN_R = 43;
-  function sunArc(u) {
-    var arc = Math.sin(Math.PI * u);
-    return { x: 559 + 103 * u - 260 * arc, y: 436 + 74 * u - 400 * arc };
-  }
-  // Time to arc position: Fajr 0 → Dhuhr .5 (overhead) → Asr .85 (low in the west) → Maghrib 1.
-  var SUN_KEYS = [[0, 0], [.2, .5], [.4, .85], [.6, 1]];
-
   var canvas = document.getElementById("sky"), ctx = canvas.getContext("2d");
   var sprite = document.createElement("canvas"), sctx = sprite.getContext("2d");
   var grain = makeGrain(160);
@@ -116,7 +97,7 @@
   function rgba(c, a) { return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
 
   function makeGrain(size) {
-    // Speckle mask that knocks tiny holes in the sun and moon, like the stipple in the paintings.
+    // Speckle mask that knocks tiny holes in the moon, like the stipple in the paintings.
     var c = document.createElement("canvas"); c.width = c.height = size;
     var g = c.getContext("2d"), d = g.createImageData(size, size);
     for (var i = 0; i < d.data.length; i += 4) { d.data[i + 3] = Math.random() < .35 ? 40 + Math.random() * 90 : 0; }
@@ -135,35 +116,10 @@
     last = 0;
   }
 
-  function sunAt(t) {
-    // Rising from behind the ridge just before Fajr (t .94 → 1), the day arc, then sinking out of sight.
-    if (t >= .94) {
-      var a = smooth((t - .94) / .06), end = sunArc(0);
-      return { x: lerp(545, end.x, a), y: lerp(530, end.y, a), rising: true };
-    }
-    if (t <= .6) {
-      for (var i = 1; i < SUN_KEYS.length && t > SUN_KEYS[i][0]; i++) {}
-      var k0 = SUN_KEYS[i - 1], k1 = SUN_KEYS[i];
-      var u = lerp(k0[1], k1[1], (t - k0[0]) / (k1[0] - k0[0]));
-      var p = sunArc(u); p.rising = t < .3; return p;
-    }
-    if (t <= .66) {
-      var b = (t - .6) / .06, start = sunArc(1);
-      return { x: lerp(start.x, 668, b), y: lerp(start.y, 580, b), rising: false };
-    }
-    return null;
-  }
-
   function moonAt(t) {
     // Stays where Isha painted it: fades in as the sky darkens after sunset, fades out before dawn.
     if (t < .64 || t > .93) return null;
     return { x: 332, y: 115, alpha: smooth((t - .64) / .1) * (1 - smooth((t - .85) / .08)) };
-  }
-
-  function clipTo(ridge) {
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(FRAME_W, 0);
-    ridge.forEach(function (pt) { ctx.lineTo(pt[0], pt[1]); });
-    ctx.closePath(); ctx.clip();
   }
 
   function disc(r, inner, outer, alpha) {
@@ -206,28 +162,13 @@
     ctx.globalAlpha = 1;
     document.body.className = (mixAmt < .5 ? LIGHT_SKIES[i] : LIGHT_SKIES[j]) ? "light" : "dark";
 
-    // 2. Sun. Warm and large-glowed near the horizon, near-white overhead, deep orange at sunset.
-    var sun = sunAt(t);
-    if (sun) {
-      var ridgeY = sun.rising ? 446 : 489;
-      var high = smooth((ridgeY - sun.y) / 380);                  // 0 at the horizon, 1 overhead
-      var evening = smooth((t - .42) / .2) * (t < .9 ? 1 : 0);
-      var inner = mix(mix([255, 244, 205], [255, 254, 246], high), [255, 222, 170], evening);
-      var outer = mix(mix([255, 214, 128], [255, 243, 200], high), [255, 160, 90], evening);
-      var haloColor = mix(mix([255, 200, 120], [255, 246, 215], high), [255, 130, 70], evening);
-      glow(sun.x, Math.min(sun.y, ridgeY + 6), lerp(330, 210, high), haloColor, lerp(.75, .5, high));
-      ctx.save(); clipTo(sun.rising ? RISE_RIDGE : SET_RIDGE);
-      ctx.drawImage(disc(SUN_R, inner, outer, 1), sun.x - sprite.width / 2, sun.y - sprite.height / 2);
-      ctx.restore();
-    }
-
-    // 3. Moon.
+    // 2. Moon.
     var moon = moonAt(t);
     if (moon && moon.alpha > 0) {
       glow(moon.x, moon.y, 170, [214, 226, 255], .38 * moon.alpha);
-      ctx.save(); clipTo(RISE_RIDGE); ctx.globalAlpha = moon.alpha;
+      ctx.globalAlpha = moon.alpha;
       ctx.drawImage(disc(46, [252, 250, 240], [226, 224, 214], 1), moon.x - sprite.width / 2, moon.y - sprite.height / 2);
-      ctx.restore(); ctx.globalAlpha = 1;
+      ctx.globalAlpha = 1;
     }
   }
 
