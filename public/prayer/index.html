@@ -23,10 +23,12 @@
   h1 {
     position: fixed; left: 0; right: 0; top: 88px; margin: 0; padding: 0 16px;
     text-align: center; pointer-events: none; user-select: none; -webkit-user-select: none;
-    font: 700 min(24px, 5.6vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
+    /* 6.3vw keeps "YAHYA QTEISHAT" on one line inside a 16px gutter on small phones; the 44px cap keeps
+       it clear of the Isha moon on common laptop screens (tightest: 1366 x 768). */
+    font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
     color: var(--name, rgba(245, 222, 185, .92));
   }
-  @media (min-width: 768px) { h1 { top: 104px; font-size: 36px; } }
+  @media (min-width: 768px) { h1 { top: 104px; } }
 </style>
 </head>
 <body>
