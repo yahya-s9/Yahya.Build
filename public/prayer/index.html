@@ -48,7 +48,7 @@
     font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
   }
   .buttons { display: flex; gap: 12px; }
-  .buttons > * {   /* links (pages that exist) and buttons (not linked yet) look identical */
+  .buttons > * {
     /* Same face, weight and spacing as the name. Silkscreen is a pixel font drawn on an 8px grid, so
        sizes on that grid (12, 16) keep its blocky shapes crisp instead of blurring thin. */
     font: 700 12px/1 "Silkscreen", monospace; letter-spacing: .2em; text-transform: uppercase;
@@ -70,10 +70,9 @@
 <canvas id="sky" aria-hidden="true"></canvas>
 <header class="intro">
   <h1>Yahya Builds</h1>
-  <!-- Learning isn't linked yet: turn it into <a href="..."> once its page exists. -->
   <nav class="buttons" aria-label="Site">
     <a href="/projects">Projects</a>
-    <button type="button">Learning</button>
+    <a href="/bookshelf">Learning</a>
   </nav>
 </header>
 
