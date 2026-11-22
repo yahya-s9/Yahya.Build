@@ -2,7 +2,7 @@ import type { ScrollItem } from "@/data/bookcase";
 import Tooltip, { placeTip } from "./Tooltip";
 
 // The scroll box: a wooden case of 2 x 2 square cubbies, with rolled scrolls slid in and seen end-on
-// (a ring of rolled paper around a dark hollow, with a twine tie), like a pigeonhole rack of scrolls.
+// (a ring of rolled paper around a dark hollow), like a pigeonhole rack of scrolls.
 
 export const CELL = 80;  // inside of one cubby, px
 const WALL = 7;          // wood between and around the cubbies
@@ -38,11 +38,6 @@ function ScrollEnd({ s, x, y, onOpen }: { s: ScrollItem; x: number; y: number; o
       className="scroll-end group absolute"
       style={{ left: x - d / 2, top: y - d / 2, width: d, height: d, background: PAPER }}
     >
-      {/* twine, tied round the roll and hanging off its edge */}
-      <span aria-hidden className="absolute pointer-events-none" style={{
-        right: -5, bottom: -7, width: 12, height: 14, borderRadius: "50%",
-        border: `1.5px solid ${s.edge}`, borderTopColor: "transparent", borderLeftColor: "transparent", opacity: 0.85,
-      }} />
       <Tooltip tip={s.tip} />
     </button>
   );
