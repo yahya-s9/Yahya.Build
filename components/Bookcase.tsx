@@ -6,6 +6,7 @@ import { lookOf } from "@/lib/look";
 import { FlatBookView, SpineBookView, coverBase } from "./Books";
 import BookOpen, { type OpenBook } from "./BookOpen";
 import ScrollBoxes, { BOX_W, PER_BOX } from "./Scrolls";
+import ScrollOpen from "./ScrollOpen";
 
 const GAP = 2; // px between books
 const PAD = 56; // horizontal padding inside a shelf row
@@ -36,6 +37,7 @@ function pack(books: SpineBook[], avail: number, end: number): SpineBook[][] {
 
 export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }) {
   const [open, setOpen] = useState<{ open: OpenBook; origin: HTMLElement } | null>(null);
+  const [openScroll, setOpenScroll] = useState<{ scroll: ScrollItem; origin: HTMLElement } | null>(null);
   const [avail, setAvail] = useState(1000);
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -72,7 +74,7 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
           <section key={i} className={i === rows.length - 1 ? "" : "mb-2"}>
             <div className="sh-row">
               {row.map((b) => <SpineBookView key={b.tip[0]} book={b} onOpen={(el) => show(b, el)} />)}
-              {boxes > 0 && i === rows.length - 1 && <ScrollBoxes scrolls={scrolls} onOpen={(s, el) => show(s, el)} />}
+              {boxes > 0 && i === rows.length - 1 && <ScrollBoxes scrolls={scrolls} onOpen={(s, el) => setOpenScroll({ scroll: s, origin: el })} />}
               {pile && i === rows.length - 1 && (
                 <div className="ml-auto flex flex-col justify-end items-center flex-shrink-0">
                   {flats.map((b) => <FlatBookView key={b.tip[0]} book={b} onOpen={(el) => show(b, el)} />)}
@@ -84,6 +86,8 @@ export default function Bookcase({ shelves }: { shelves: Record<string, Shelf> }
         ))}
       </div>
       {open && <BookOpen open={open.open} origin={open.origin} onClose={() => setOpen(null)} />}
+      {/* scrolls unroll instead of opening like a book */}
+      {openScroll && <ScrollOpen scroll={openScroll.scroll} origin={openScroll.origin} onClose={() => setOpenScroll(null)} />}
     </>
   );
 }

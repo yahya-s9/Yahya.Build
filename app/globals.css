@@ -152,6 +152,71 @@
 }
 .scroll-end:hover, .scroll-end:focus-visible { transform: scale(1.08) translateY(-1px); z-index: 2; outline: none; }
 
+/* An open scroll (components/ScrollOpen.tsx): two wooden rollers, the parchment between them unrolling
+   downwards, and the notes scrolling inside it. */
+.sc-overlay {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 10, 5, .72); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  animation: sc-fade .35s ease both;
+}
+.sc-overlay[data-phase="return"] { animation: sc-fade-out .45s ease both; }
+@keyframes sc-fade { from { opacity: 0; } }
+@keyframes sc-fade-out { to { opacity: 0; } }
+.sc-close {
+  position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; z-index: 2;
+  display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer;
+  color: #f6efe2; background: rgba(0, 0, 0, .35); border: 1px solid rgba(246, 239, 226, .35);
+}
+.sc-close:hover, .sc-close:focus-visible { background: rgba(0, 0, 0, .55); outline: none; }
+.sc-stage { display: flex; flex-direction: column; align-items: center; transform-origin: 50% 50%; will-change: transform; }
+.sc-roller {
+  position: relative; width: 100%; height: 22px; border-radius: 11px; z-index: 1;
+  background: linear-gradient(180deg, #4a2c14, #a87a4a 35%, #c79a63 50%, #7a4f2a 75%, #3e240f);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.sc-roller::before, .sc-roller::after {
+  content: ""; position: absolute; top: -5px; width: 18px; height: 32px; border-radius: 6px;
+  background: linear-gradient(180deg, #2e1a0a, #6b4423 45%, #2e1a0a);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+.sc-roller::before { left: -4px; }
+.sc-roller::after { right: -4px; }
+.sc-paper {
+  position: relative; overflow: hidden; margin: -3px 0;
+  background:
+    linear-gradient(90deg, rgba(120, 84, 40, .28), transparent 6%, transparent 94%, rgba(120, 84, 40, .28)),
+    linear-gradient(180deg, rgba(90, 60, 25, .25), transparent 4%, transparent 96%, rgba(90, 60, 25, .25)),
+    radial-gradient(120% 80% at 50% 40%, #f6ecd4, #ead9b3);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .5);
+}
+.sc-text {
+  height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 34px clamp(20px, 6vw, 52px) 48px;
+  color: #2b2116; font-family: "EB Garamond", serif; font-size: 17px; line-height: 1.6;
+  opacity: 0; transition: opacity .35s ease; scrollbar-width: thin; scrollbar-color: rgba(90, 60, 25, .45) transparent;
+}
+.sc-text[data-show] { opacity: 1; }
+.sc-overlay[data-phase="rollup"] .sc-text { opacity: 0; transition-duration: .15s; }
+.sc-head { text-align: center; padding-bottom: 18px; margin-bottom: 22px; border-bottom: 1px solid rgba(90, 60, 25, .3); }
+.sc-head h2 { margin: 0 0 6px; font-size: 26px; line-height: 1.25; font-weight: 600; color: #3b1210; }
+.sc-head p { margin: 0 0 8px; font-style: italic; color: #5c4a35; }
+.sc-head a { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #7e5617; text-decoration: none; }
+.sc-head a:hover { text-decoration: underline; }
+.sc-status { text-align: center; font-style: italic; color: #5c4a35; }
+.sc-status a { color: #7e5617; }
+.sc-notes h1, .sc-notes h2, .sc-notes h3, .sc-notes h4 { color: #3b1210; line-height: 1.3; margin: 1.4em 0 .5em; font-weight: 600; }
+.sc-notes h1 { font-size: 1.5em; } .sc-notes h2 { font-size: 1.3em; } .sc-notes h3 { font-size: 1.15em; } .sc-notes h4 { font-size: 1.05em; }
+.sc-notes p { margin: .6em 0; }
+.sc-notes ul, .sc-notes ol { margin: .4em 0; padding-left: 1.4em; }
+.sc-notes ul { list-style: disc; } .sc-notes ol { list-style: decimal; }
+.sc-notes ul ul { list-style: circle; } .sc-notes li { margin: .2em 0; }
+.sc-notes hr { border: 0; border-top: 1px solid rgba(90, 60, 25, .3); margin: 1.6em 0; }
+.sc-notes strong { color: #3b1210; }
+.sc-notes a { color: #7e5617; }
+.sc-notes code { font-size: .9em; background: rgba(90, 60, 25, .1); padding: .05em .3em; border-radius: 3px; }
+.sc-notes pre { overflow-x: auto; background: rgba(90, 60, 25, .1); padding: 12px; border-radius: 4px; }
+.sc-notes blockquote { margin: .8em 0; padding-left: 1em; border-left: 3px solid rgba(90, 60, 25, .35); color: #5c4a35; }
+.sc-notes table { border-collapse: collapse; } .sc-notes th, .sc-notes td { border: 1px solid rgba(90, 60, 25, .3); padding: 4px 8px; }
+
 /* ---- dark mode: calm the hero's blend overlays ---- */
 [data-theme="dark"] .mix-blend-multiply, [data-theme="dark"] .mix-blend-color-burn { display: none; }
 
