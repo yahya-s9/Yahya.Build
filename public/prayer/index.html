@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yahya Qteishat</title>
+<title>Yahya Builds</title>
 <meta name="description" content="A solitary figure in prayer, through the five prayers of the day.">
 <!-- Tab icon and link preview. The files live in app/ (Next's icon conventions) and are served from the site root. -->
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/apple-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://yahya.build/">
-<meta property="og:title" content="Yahya Qteishat">
+<meta property="og:title" content="Yahya Builds">
 <meta property="og:description" content="A solitary figure in prayer, through the five prayers of the day.">
 <meta property="og:image" content="https://yahya.build/opengraph-image.jpg">
 <meta property="og:image:width" content="1376">
@@ -33,21 +33,46 @@
   }
   canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
-  /* The name, in the design's pixel font. Its colour follows the sky (set from the script below). */
+  /* The name and buttons, in the design's pixel font. Their colour follows the sky (set from the script). */
+  .intro {
+    position: fixed; left: 0; right: 0; top: 88px; padding: 0 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    font-family: "Silkscreen", monospace; color: var(--name, rgba(245, 222, 185, .92));
+    user-select: none; -webkit-user-select: none;
+  }
+  @media (min-width: 768px) { .intro { top: 104px; gap: 22px; } }
   h1 {
-    position: fixed; left: 0; right: 0; top: 88px; margin: 0; padding: 0 16px;
-    text-align: center; pointer-events: none; user-select: none; -webkit-user-select: none;
-    /* 6.3vw keeps "YAHYA QTEISHAT" on one line inside a 16px gutter on small phones; the 44px cap keeps
+    margin: 0; text-align: center;
+    /* 6.3vw keeps the name on one line inside a 16px gutter on small phones; the 41px cap keeps
        it clear of the Isha moon on common laptop screens (tightest: 1366 x 768). */
     font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
-    color: var(--name, rgba(245, 222, 185, .92));
   }
-  @media (min-width: 768px) { h1 { top: 104px; } }
+  .buttons { display: flex; gap: 12px; }
+  .buttons button {
+    font: 400 11px/1 "Silkscreen", monospace; letter-spacing: .18em; text-transform: uppercase;
+    color: inherit; padding: 9px 16px 8px; border-radius: 999px; cursor: pointer;
+    border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    transition: background .3s, border-color .3s, text-shadow .3s;
+  }
+  .buttons button:hover, .buttons button:focus-visible {
+    background: color-mix(in srgb, currentColor 16%, transparent);
+    border-color: color-mix(in srgb, currentColor 75%, transparent);
+    text-shadow: 0 0 10px color-mix(in srgb, currentColor 60%, transparent); outline: none;
+  }
+  @media (min-width: 768px) { .buttons { gap: 16px; } .buttons button { font-size: 13px; padding: 10px 20px 9px; } }
 </style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
-<h1>Yahya Qteishat</h1>
+<header class="intro">
+  <h1>Yahya Builds</h1>
+  <!-- Not linked yet: give each button an href (turn it into <a>) once the page exists. -->
+  <nav class="buttons" aria-label="Site">
+    <button type="button">Projects</button>
+    <button type="button">Learning</button>
+  </nav>
+</header>
 
 <script>
 /*
@@ -77,7 +102,7 @@
   // Name colour over each painting, from the Stitch design's themes: light over dawn, dusk and night,
   // dark over the bright Dhuhr and Asr skies.
   var NAME_COLORS = [[245, 222, 185, .92], [35, 45, 60, .95], [60, 42, 28, .95], [255, 220, 200, .92], [240, 244, 248, .88]];
-  var nameEl = document.querySelector("h1");
+  var nameEl = document.querySelector(".intro");   // name + buttons share the colour
 
   var canvas = document.getElementById("sky"), ctx = canvas.getContext("2d");
   var sprite = document.createElement("canvas"), sctx = sprite.getContext("2d");
