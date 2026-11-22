@@ -18,12 +18,6 @@
  */
 window.PROJECTS = [
   {
-    name: "System Design: Data Ingestion & Processing Pipeline",
-    description: "My design for a data ingestion pipeline for Zoox's 100k vehicles.",
-    link: "https://devpost.com/software/system-design-data-ingestion-processing-pipeline",
-    thumbnail: "/projects/images/system-design.jpg"
-  },
-  {
     name: "SnapLens",
     description: "Frictionless AI-powered translation for social good.",
     link: "https://devpost.com/software/smartglasses",
