@@ -3,6 +3,8 @@ import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
+  // Makes the link-preview image (app/opengraph-image.jpg) an absolute yahya.build URL.
+  metadataBase: new URL("https://yahya.build"),
   title: "Yahya's Bookshelf",
   description: "An illuminated manuscript archive.",
 };
