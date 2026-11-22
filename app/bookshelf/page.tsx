@@ -7,6 +7,14 @@ export default async function Home() {
   const shelves = await getBookcase();
   return (
     <main className="w-full flex flex-col bg-background">
+{/* Back to the homepage. Mirrors the theme toggle (top right). A plain <a>: "/" is a static page, not a Next route. */}
+<a
+  href="/"
+  className="fixed top-4 left-4 z-[90] h-10 pl-3 pr-4 rounded-full flex items-center gap-1.5 border border-secondary/40 bg-surface/80 text-secondary backdrop-blur hover:bg-secondary/10 transition-colors text-[11px] font-label-sm uppercase tracking-[0.2em]"
+>
+  <span className="material-symbols-outlined text-base" aria-hidden>arrow_back</span>
+  <span>Yahya Builds</span>
+</a>
 {/* SECTION 1: Folio Hero (Kept exact with scroll hint) */}
 <div className="flex flex-col w-full h-[100dvh] max-h-[100dvh] overflow-hidden select-none relative justify-center items-center bg-background border-b border-outline-variant/30">
 <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply bg-[radial-gradient(ellipse_at_center,_transparent_40%,_#e2d9ca_100%)]"></div>
