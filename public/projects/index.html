@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects · Yahya Builds</title>
+<meta name="description" content="Things Yahya has built.">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yahya.build/projects">
+<meta property="og:title" content="Projects · Yahya Builds">
+<meta property="og:image" content="https://yahya.build/opengraph-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500&display=swap">
+<style>
+  /* Same pixel type as the homepage: Silkscreen for titles, Pixelify Sans for sentences. */
+  :root {
+    --text: #F0F4F8; --muted: rgba(240, 244, 248, .62);
+    --card: rgba(13, 17, 30, .58); --card-hover: rgba(20, 26, 44, .72);
+    --line: rgba(240, 244, 248, .14); --line-hover: rgba(240, 244, 248, .4);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    color: var(--text); font-family: "Pixelify Sans", monospace; -webkit-font-smoothing: antialiased;
+    /* The night painting, darkened so the tiles read clearly. */
+    background:
+      linear-gradient(rgba(11, 13, 24, .55), rgba(11, 13, 24, .82)),
+      #0f1420 url(/prayer/isha-sky.jpg) 54% center / cover no-repeat fixed;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 40px 16px 64px; }
+  @media (min-width: 768px) { main { padding: 64px 32px 96px; } }
+
+  .home {
+    display: inline-block; font: 700 12px/1 "Silkscreen", monospace; letter-spacing: .2em;
+    color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color .3s;
+  }
+  .home:hover, .home:focus-visible { color: var(--text); outline: none; }
+  h1 {
+    margin: 28px 0 32px; text-align: center;
+    font: 700 min(41px, 8vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em;
+  }
+  @media (min-width: 768px) { h1 { margin: 36px 0 48px; } }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; }
+  .tile {
+    display: flex; flex-direction: column; overflow: hidden; border-radius: 14px;
+    color: inherit; text-decoration: none; background: var(--card); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    transition: transform .3s ease, background .3s, border-color .3s;
+  }
+  .tile:hover, .tile:focus-visible { transform: translateY(-3px); background: var(--card-hover); border-color: var(--line-hover); outline: none; }
+  .thumb { aspect-ratio: 16 / 9; width: 100%; display: block; object-fit: cover; background: rgba(255, 255, 255, .04); }
+  .thumb.blank {
+    display: flex; align-items: center; justify-content: center;
+    font: 700 28px/1 "Silkscreen", monospace; color: rgba(240, 244, 248, .3);
+    background: linear-gradient(135deg, rgba(77, 97, 142, .35), rgba(194, 166, 118, .2));
+  }
+  .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .name { margin: 0; font: 700 15px/1.3 "Silkscreen", monospace; letter-spacing: .08em; }
+  .desc { margin: 0; font-size: 15px; line-height: 1.45; color: var(--muted); }
+  .host { margin-top: auto; padding-top: 6px; font-size: 13px; color: var(--muted); opacity: .8; }
+
+  .empty { text-align: center; font-size: 17px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="home" href="/">← Yahya Builds</a>
+  <h1>Projects</h1>
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden>Projects coming soon.</p>
+</main>
+
+<script src="/projects/projects.js"></script>
+<script>
+  // Builds one tile per entry in projects.js. Text is inserted as text, never as HTML.
+  (function () {
+    var list = (window.PROJECTS || []).filter(function (p) { return p && p.name && p.link; });
+    var grid = document.getElementById("grid");
+    if (!list.length) { document.getElementById("empty").hidden = false; return; }
+
+    list.forEach(function (p) {
+      var tile = document.createElement("a");
+      tile.className = "tile"; tile.href = p.link; tile.target = "_blank"; tile.rel = "noopener";
+
+      var thumb;
+      if (p.thumbnail) {
+        thumb = document.createElement("img");
+        thumb.src = p.thumbnail; thumb.alt = ""; thumb.loading = "lazy";
+      } else {
+        thumb = document.createElement("div");
+        thumb.classList.add("blank");
+        thumb.textContent = p.name.trim().charAt(0).toUpperCase();
+      }
+      thumb.classList.add("thumb");
+
+      var body = document.createElement("div"); body.className = "body";
+      var name = document.createElement("h2"); name.className = "name"; name.textContent = p.name;
+      body.appendChild(name);
+      if (p.description) {
+        var desc = document.createElement("p"); desc.className = "desc"; desc.textContent = p.description;
+        body.appendChild(desc);
+      }
+      var host = document.createElement("span"); host.className = "host";
+      try { host.textContent = new URL(p.link).hostname.replace(/^www\./, "") + " ↗"; } catch (e) { host.textContent = "↗"; }
+      body.appendChild(host);
+
+      tile.appendChild(thumb); tile.appendChild(body);
+      grid.appendChild(tile);
+    });
+  })();
+</script>
+</body>
+</html>
