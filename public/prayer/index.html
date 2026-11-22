@@ -3,11 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yahya</title>
+<title>Yahya Qteishat</title>
 <meta name="description" content="A solitary figure in prayer, through the five prayers of the day.">
 <link rel="preload" as="image" href="/prayer/fajr-sky.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
 <style>
-  /* Designed in Stitch: "Minimal Desert Sanctuary - Celestial Prayer Cycle" */
+  /* Designed in Stitch: "Minimal Desert Sanctuary - 5-Prayer Celestial Cycle" */
   html, body { margin: 0; height: 100%; }
   body {
     /* Shown until the canvas paints, and if scripts are off. */
@@ -15,10 +18,20 @@
     overflow: hidden;
   }
   canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* The name, in the design's pixel font. Its colour follows the sky (set from the script below). */
+  h1 {
+    position: fixed; left: 0; right: 0; top: 88px; margin: 0; padding: 0 16px;
+    text-align: center; pointer-events: none; user-select: none; -webkit-user-select: none;
+    font: 700 min(24px, 5.6vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
+    color: var(--name, rgba(245, 222, 185, .92));
+  }
+  @media (min-width: 768px) { h1 { top: 104px; font-size: 36px; } }
 </style>
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
+<h1>Yahya Qteishat</h1>
 
 <script>
 /*
@@ -45,6 +58,10 @@
     { t: .6, src: "/prayer/maghrib-sky.jpg", x: 0, y: tallY,       w: 1376, h: 896 * s },
     { t: .8, src: "/prayer/isha-sky.jpg",    x: 0, y: 0,           w: 1376, h: 768 }
   ];
+  // Name colour over each painting, from the Stitch design's themes: light over dawn, dusk and night,
+  // dark over the bright Dhuhr and Asr skies.
+  var NAME_COLORS = [[245, 222, 185, .92], [35, 45, 60, .95], [60, 42, 28, .95], [255, 220, 200, .92], [240, 244, 248, .88]];
+  var nameEl = document.querySelector("h1");
 
   var canvas = document.getElementById("sky"), ctx = canvas.getContext("2d");
   var sprite = document.createElement("canvas"), sctx = sprite.getContext("2d");
@@ -123,6 +140,8 @@
       ctx.globalAlpha = pair[1]; ctx.drawImage(img, p.x, p.y, p.w, p.h);
     });
     ctx.globalAlpha = 1;
+    var c = NAME_COLORS[i].map(function (v, n) { return lerp(v, NAME_COLORS[j][n], mixAmt); });
+    nameEl.style.setProperty("--name", "rgba(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + "," + c[3].toFixed(2) + ")");
 
     // 2. Moon.
     var moon = moonAt(t);
