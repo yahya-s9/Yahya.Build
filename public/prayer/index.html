@@ -48,24 +48,48 @@
     font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
   }
   /* Projects and Learning side by side; Enter My Library centred on its own row beneath them. */
-  .buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  .buttons .row { display: flex; justify-content: center; gap: 12px; }
+  .buttons { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .buttons .row { display: flex; justify-content: center; gap: 20px; }
+
+  /* Arcade keys: a solid block in the name's colour with "ink" text (dark over light skies' light
+     text, light over dark), a 3px pixel outline with notched corners, a top highlight and bottom
+     bevel, and a hard drop shadow. No blur and no rounding anywhere, to match the pixel font. */
   .buttons a {
     /* Same face, weight and spacing as the name. Silkscreen is a pixel font drawn on an 8px grid, so
        sizes on that grid (12, 16) keep its blocky shapes crisp instead of blurring thin. */
     font: 700 12px/1 "Silkscreen", monospace; letter-spacing: .2em; text-transform: uppercase;
-    color: inherit; text-decoration: none; display: inline-block;
-    padding: 10px 16px 9px; border-radius: 999px; cursor: pointer;
-    border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
-    background: color-mix(in srgb, currentColor 8%, transparent);
-    transition: background .3s, border-color .3s, text-shadow .3s;
+    position: relative; display: inline-block; text-decoration: none; cursor: pointer;
+    padding: 11px 16px 12px; border-radius: 0;
+    color: var(--ink, #141a29); background: var(--key, rgb(245, 222, 185));
+    box-shadow:
+      inset 0 3px 0 0 rgba(255, 255, 255, .35),          /* top highlight */
+      inset 0 -4px 0 0 rgba(0, 0, 0, .22),               /* bottom bevel */
+      0 -3px 0 0 var(--ink, #141a29), 0 3px 0 0 var(--ink, #141a29),
+      -3px 0 0 0 var(--ink, #141a29), 3px 0 0 0 var(--ink, #141a29),   /* pixel outline, notched corners */
+      0 9px 0 0 rgba(0, 0, 0, .3);                        /* hard drop shadow */
+    transition: transform 80ms steps(2);
   }
-  .buttons a:hover, .buttons a:focus-visible {
-    background: color-mix(in srgb, currentColor 16%, transparent);
-    border-color: color-mix(in srgb, currentColor 75%, transparent);
-    text-shadow: 0 0 10px color-mix(in srgb, currentColor 60%, transparent); outline: none;
+  /* Arcade-menu cursor: a blinking ▶ beside the key you're on. */
+  .buttons a::before {
+    content: "▶"; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+    font-size: .9em; color: var(--name, rgba(245, 222, 185, .92)); visibility: hidden;
   }
-  @media (min-width: 768px) { .buttons, .buttons .row { gap: 16px; } .buttons a { font-size: 16px; padding: 12px 22px 11px; } }
+  .buttons a:hover, .buttons a:focus-visible { transform: translateY(-2px); outline: none; }
+  .buttons a:hover::before, .buttons a:focus-visible::before { visibility: visible; animation: blink 1s steps(1) infinite; }
+  .buttons a:active {
+    transform: translateY(5px);
+    box-shadow:
+      inset 0 3px 0 0 rgba(0, 0, 0, .18),
+      0 -3px 0 0 var(--ink, #141a29), 0 3px 0 0 var(--ink, #141a29),
+      -3px 0 0 0 var(--ink, #141a29), 3px 0 0 0 var(--ink, #141a29),
+      0 4px 0 0 rgba(0, 0, 0, .3);
+  }
+  @keyframes blink { 50% { visibility: hidden; } }
+  @media (prefers-reduced-motion: reduce) { .buttons a:hover::before, .buttons a:focus-visible::before { animation: none; } }
+  @media (min-width: 768px) {
+    .buttons { gap: 26px; } .buttons .row { gap: 24px; }
+    .buttons a { font-size: 16px; padding: 13px 22px 15px; }
+  }
 </style>
 </head>
 <body>
@@ -189,7 +213,12 @@
     });
     ctx.globalAlpha = 1;
     var c = NAME_COLORS[i].map(function (v, n) { return lerp(v, NAME_COLORS[j][n], mixAmt); });
-    nameEl.style.setProperty("--name", "rgba(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + "," + c[3].toFixed(2) + ")");
+    var rgb = Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]);
+    nameEl.style.setProperty("--name", "rgba(" + rgb + "," + c[3].toFixed(2) + ")");
+    // Arcade keys: a solid fill in the same colour, and text/outline "ink" that contrasts with it.
+    nameEl.style.setProperty("--key", "rgb(" + rgb + ")");
+    var light = (.299 * c[0] + .587 * c[1] + .114 * c[2]) / 255 > .5;
+    nameEl.style.setProperty("--ink", light ? "#141a29" : "#f5efe4");
 
     // 2. Moon.
     var moon = moonAt(t);
