@@ -115,7 +115,8 @@
 .sp-tw { position: relative; display: flex; flex: 1; min-height: 0; width: 100%; align-items: flex-start; justify-content: center; overflow: hidden; padding: 24px 2px 4px; }
 .sp-title { writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'Noto Nastaliq Urdu', serif; line-height: 1.75; white-space: nowrap; max-height: 100%;
   font-weight: 600; opacity: .94; text-shadow: 0 1px 0 rgba(0,0,0,.55), 0 -.5px 0 rgba(255,255,255,.12), 0 0 1.5px rgba(0,0,0,.35); }
-.sp-title.latin { font-family: 'EB Garamond', serif; letter-spacing: .12em; text-transform: uppercase; line-height: 1.2; }
+.sp-title.latin { font-family: 'EB Garamond', serif; letter-spacing: .12em; text-transform: uppercase; line-height: 1.2;
+  white-space: normal; text-wrap: balance; text-align: center; } /* long English titles take two balanced lines */
 .sp-author { position: relative; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 9px; letter-spacing: .06em; text-transform: uppercase; opacity: .85;
   writing-mode: vertical-rl; transform: rotate(180deg); padding: 0 0 4px; margin-bottom: 10px; white-space: nowrap; text-shadow: 0 1px 0 rgba(0,0,0,.4); }
 .sp[data-light] .sp-title { text-shadow: 0 1px 0 rgba(255,255,255,.28), 0 0 1px rgba(0,0,0,.25); }

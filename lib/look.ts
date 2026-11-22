@@ -56,9 +56,13 @@ export function lookOf(key: string, big = false, override?: string, styleOverrid
 export function titleSize(text: string, w: number, h: number, style: SpineStyle, arabic = true, authorLen = 0) {
   const room = h - (style === "label" ? 60 : 50) - (authorLen ? authorLen * 7 + 14 : 0);
   const n = Math.max(text.length, 1);
-  return arabic
-    ? Math.max(9, Math.min(18, w * 0.3, room / (n * 0.58)))
-    : Math.max(9, Math.min(14, w * 0.26, room / (n * 0.8)));
+  if (arabic) return Math.max(9, Math.min(18, w * 0.3, room / (n * 0.58)));
+  const one = Math.min(14, w * 0.26, room / (n * 0.8));
+  if (one >= 11) return one;
+  // too long for one line at a readable size: set it on two balanced lines (the CSS lets Latin titles wrap)
+  const across = w - (style === "label" ? 16 : 6);         // room for two lines side by side
+  const two = Math.min(13, across / 2.6, room / (Math.ceil(n * 0.55) * 0.8));
+  return Math.max(9, one, two);
 }
 
 // ---- the cover is derived from the spine's cloth, so the book is the same book on the shelf and in your hands ----
