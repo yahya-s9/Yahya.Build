@@ -40,29 +40,11 @@ export default async function Home() {
 <div className="relative w-full p-2 md:p-3 bg-surface-container-low shadow-[0_12px_45px_-10px_rgba(31,27,18,0.08)]">
 <div className="relative w-full p-2 md:p-2 bg-surface-container-high/60">
 <div className="relative w-full px-3 py-10 md:px-10 md:py-10 bg-surface flex flex-col items-center justify-center text-center">
-<div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 bg-surface text-secondary flex items-center gap-2">
-<span className="w-2 h-2 rotate-45 bg-secondary-fixed-dim inline-block"></span>
-<span className="text-label-sm font-label-sm uppercase tracking-[0.35em] text-secondary"><br /></span>
-<span className="w-2 h-2 rotate-45 bg-secondary-fixed-dim inline-block"></span>
-</div>
-<h1 className="text-primary font-headline-xl text-headline-xl-mobile md:text-headline-xl text-balance mb-4">Yahya&apos;s Bookshelf</h1>
-<div className="flex items-center justify-center gap-4 mb-8 opacity-75">
-<div className="w-12 h-px bg-secondary-fixed-dim"></div>
-<div className="w-2 h-2 rotate-45 bg-secondary"></div>
-<div className="w-12 h-px bg-secondary-fixed-dim"></div>
-</div>
+<h1 className="text-primary font-headline-xl text-headline-xl-mobile md:text-headline-xl text-balance mb-8 md:mb-10">Yahya&apos;s Bookshelf</h1>
 {/* The bookcase, where اقرأ! used to sit. select-text: the section above turns text selection off. */}
 <div className="w-full relative text-left select-text">
 <Bookcase shelves={shelves} />
 </div>
-<div className="flex items-center justify-center gap-4 mt-6 opacity-75">
-<div className="w-12 h-px bg-secondary-fixed-dim"></div>
-<div className="w-2 h-2 rotate-45 bg-secondary"></div>
-<div className="w-12 h-px bg-secondary-fixed-dim"></div>
-</div>
-<div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 bg-surface text-on-surface-variant font-label-sm text-label-sm tracking-[0.25em] opacity-60">
-            ❖
-          </div>
 </div>
 </div>
 </div>
