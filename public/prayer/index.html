@@ -47,9 +47,10 @@
        it clear of the Isha moon on common laptop screens (tightest: 1366 x 768). */
     font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
   }
-  /* Wraps on phones: three buttons don't fit one row there, so the last drops to a centred second row. */
-  .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 100%; }
-  .buttons > * {
+  /* Projects and Learning side by side; Enter My Library centred on its own row beneath them. */
+  .buttons { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .buttons .row { display: flex; justify-content: center; gap: 12px; }
+  .buttons a {
     /* Same face, weight and spacing as the name. Silkscreen is a pixel font drawn on an 8px grid, so
        sizes on that grid (12, 16) keep its blocky shapes crisp instead of blurring thin. */
     font: 700 12px/1 "Silkscreen", monospace; letter-spacing: .2em; text-transform: uppercase;
@@ -59,12 +60,12 @@
     background: color-mix(in srgb, currentColor 8%, transparent);
     transition: background .3s, border-color .3s, text-shadow .3s;
   }
-  .buttons > :hover, .buttons > :focus-visible {
+  .buttons a:hover, .buttons a:focus-visible {
     background: color-mix(in srgb, currentColor 16%, transparent);
     border-color: color-mix(in srgb, currentColor 75%, transparent);
     text-shadow: 0 0 10px color-mix(in srgb, currentColor 60%, transparent); outline: none;
   }
-  @media (min-width: 768px) { .buttons { gap: 16px; } .buttons > * { font-size: 16px; padding: 12px 22px 11px; } }
+  @media (min-width: 768px) { .buttons, .buttons .row { gap: 16px; } .buttons a { font-size: 16px; padding: 12px 22px 11px; } }
 </style>
 </head>
 <body>
@@ -72,8 +73,10 @@
 <header class="intro">
   <h1>Yahya Builds</h1>
   <nav class="buttons" aria-label="Site">
-    <a href="/projects">Projects</a>
-    <a href="/bookshelf">Learning</a>
+    <div class="row">
+      <a href="/projects">Projects</a>
+      <a href="/bookshelf">Learning</a>
+    </div>
     <a href="/library">Enter My Library</a>
   </nav>
 </header>
