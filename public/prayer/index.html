@@ -40,14 +40,15 @@
     font-family: "Silkscreen", monospace; color: var(--name, rgba(245, 222, 185, .92));
     user-select: none; -webkit-user-select: none;
   }
-  @media (min-width: 768px) { .intro { top: 104px; gap: 22px; } }
+  @media (min-width: 768px) { .intro { top: 104px; gap: 30px; } }   /* keeps the buttons below the Isha moon */
   h1 {
     margin: 0; text-align: center;
     /* 6.3vw keeps the name on one line inside a 16px gutter on small phones; the 41px cap keeps
        it clear of the Isha moon on common laptop screens (tightest: 1366 x 768). */
     font: 700 min(41px, 6.3vw)/1.2 "Silkscreen", monospace; letter-spacing: .2em; white-space: nowrap;
   }
-  .buttons { display: flex; gap: 12px; }
+  /* Wraps on phones: three buttons don't fit one row there, so the last drops to a centred second row. */
+  .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 100%; }
   .buttons > * {
     /* Same face, weight and spacing as the name. Silkscreen is a pixel font drawn on an 8px grid, so
        sizes on that grid (12, 16) keep its blocky shapes crisp instead of blurring thin. */
@@ -73,6 +74,7 @@
   <nav class="buttons" aria-label="Site">
     <a href="/projects">Projects</a>
     <a href="/bookshelf">Learning</a>
+    <a href="/library">Enter My Library</a>
   </nav>
 </header>
 
