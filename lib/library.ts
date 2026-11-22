@@ -21,7 +21,9 @@ const PAPERS_DIR = "ML Paper Reading + Reflections/presented_papers";
 const PAPERS_REVALIDATE = 600; // the GitHub API allows 60 calls an hour without a token: list every 10 minutes
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-const enc = (p: string) => p.split("/").map(encodeURIComponent).join("/");
+// encodeURIComponent leaves ' ( ) * ! alone, and github.com errors on a raw apostrophe in a path
+const encPart = (s: string) => encodeURIComponent(s).replace(/['()*!]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
+const enc = (p: string) => p.split("/").map(encPart).join("/");
 const sameTitle = (t: string) => t.toLowerCase().replace(/&amp;/g, "&").replace(/[^a-z0-9]+/g, "");
 
 /** "01-29-2026; ReSim, Reliable Simulation for Autonomous Vehicles.md" -> title, "January 2026". */
