@@ -27,9 +27,15 @@ export type FlatBook = Common & {
   glyph: string; glyphColor: string; overlap?: boolean;
 };
 
+/** A rolled scroll, seen end-on in the scroll box (`format: scroll`). grad/edge/labelColor tint its tie,
+ *  and let the 3D library treat it like any other book. */
+export type ScrollItem = Common & {
+  grad: [string, string, string]; edge: string; labelColor: string; d: number; // d: diameter, px
+};
+
 export type Shelf = {
   arabic?: string; sec?: string; plinth?: string; bookend?: "brass" | "wood";
-  books: SpineBook[]; stack?: FlatBook[];
+  books: SpineBook[]; stack?: FlatBook[]; scrolls?: ScrollItem[];
 };
 
 export type CoverTheme = { base: string; deep: string; spine: [string, string, string]; gold: string; hi: string; shape: "arch" | "stepped" | "oval" };

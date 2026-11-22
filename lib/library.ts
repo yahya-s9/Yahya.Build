@@ -47,7 +47,7 @@ async function fetchFromGitHub(): Promise<Record<string, Shelf>> {
 
 /** For books whose `link` is a GitHub folder, read that folder's README table as a table of contents. */
 async function addContents(shelves: Record<string, Shelf>) {
-  const books = Object.values(shelves).flatMap((s) => [...s.books, ...(s.stack ?? [])]);
+  const books = Object.values(shelves).flatMap((s) => [...s.books, ...(s.stack ?? []), ...(s.scrolls ?? [])]);
   await Promise.all(
     books.map(async (b) => {
       const t = b.info?.link ? parseTreeUrl(b.info.link) : null;
@@ -70,7 +70,7 @@ async function addContents(shelves: Record<string, Shelf>) {
 export async function getBookcase(): Promise<Record<string, Shelf>> {
   try {
     const shelves = await fetchFromGitHub();
-    if (Object.values(shelves).some((s) => s.books.length || s.stack?.length)) return shelves;
+    if (Object.values(shelves).some((s) => s.books.length || s.stack?.length || s.scrolls?.length)) return shelves;
   } catch (e) {
     console.error("Bookshelf repo fetch failed, using bundled data:", e);
   }

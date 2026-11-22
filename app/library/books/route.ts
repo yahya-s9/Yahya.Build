@@ -9,7 +9,7 @@ const unescape = (s = "") => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").repla
 export async function GET() {
   const shelves = await getBookcase();
   const books = Object.entries(shelves).flatMap(([shelf, s]) =>
-    [...s.books, ...(s.stack ?? [])].map((b) => ({
+    [...s.books, ...(s.stack ?? []), ...(s.scrolls ?? [])].map((b) => ({
       shelf,
       title: unescape(b.info?.title ?? b.tip[0]),
       ar: b.info?.ar,

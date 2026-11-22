@@ -1,4 +1,4 @@
-import { COVERS, type BookInfo, type CoverKey, type FlatBook, type Shelf, type SpineBook } from "@/data/bookcase";
+import { COVERS, type BookInfo, type CoverKey, type FlatBook, type ScrollItem, type Shelf, type SpineBook } from "@/data/bookcase";
 
 // ---------- helpers ----------
 const COVER_KEYS = Object.keys(COVERS) as CoverKey[];
@@ -100,6 +100,19 @@ function flatBook(title: string, f: Fields, text: string, i: number): FlatBook {
   };
 }
 
+const SCROLL_DIAMETERS = [35, 38, 41, 44];
+
+function scroll(title: string, f: Fields, text: string): ScrollItem {
+  const cover = COVER_KEYS.includes(f.cover as CoverKey) ? (f.cover as CoverKey) : undefined;
+  const t = COVERS[cover ?? pick(COVER_KEYS, title)];
+  return {
+    d: pick(SCROLL_DIAMETERS, title, 2),
+    grad: [t.spine[1], t.base, t.spine[2]], edge: t.gold, labelColor: t.hi,
+    tip: [escapeHtml(title), escapeHtml(f.subtitle ?? f.author ?? "")],
+    ...(cover && { cover }), info: infoFor(title, f, text),
+  };
+}
+
 /** Folder name -> display title: "02-Machine-Learning" => "Machine Learning". */
 export const folderTitle = (folder: string) =>
   folder.replace(/^\d+[-_.\s]+/, "").replace(/[-_]+/g, " ").trim();
@@ -109,8 +122,11 @@ export function parseShelf(folder: string, md: string): [string, Shelf] {
   const items = sections(body);
   const spines: SpineBook[] = [];
   const flats: FlatBook[] = [];
+  const scrolls: ScrollItem[] = [];
   for (const it of items) {
-    if (it.fields.format?.toLowerCase() === "flat") flats.push(flatBook(it.title, it.fields, it.text, flats.length));
+    const format = it.fields.format?.toLowerCase();
+    if (format === "flat") flats.push(flatBook(it.title, it.fields, it.text, flats.length));
+    else if (format === "scroll") scrolls.push(scroll(it.title, it.fields, it.text));
     else spines.push(spineBook(it.title, it.fields, it.text));
   }
   return [
@@ -118,7 +134,7 @@ export function parseShelf(folder: string, md: string): [string, Shelf] {
     {
       arabic: meta.ar, plinth: meta.plinth, sec: meta.sec,
       bookend: meta.bookend === "brass" ? "brass" : "wood",
-      books: spines, ...(flats.length && { stack: flats }),
+      books: spines, ...(flats.length && { stack: flats }), ...(scrolls.length && { scrolls }),
     },
   ];
 }

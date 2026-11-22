@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { FlatBook, SpineBook, TocEntry } from "@/data/bookcase";
+import type { FlatBook, ScrollItem, SpineBook, TocEntry } from "@/data/bookcase";
 import { openNotes, type NotesDoc } from "@/lib/pdf-notes";
 import { lookOf } from "@/lib/look";
 import { tween, type Bezier, type Frame } from "@/lib/tween";
@@ -10,7 +10,7 @@ import MobileReader from "./MobileReader";
 import { Spine, coverBase } from "./Books";
 import CoverArt from "./CoverArt";
 
-export type OpenBook = { book: SpineBook | FlatBook; index: number };
+export type OpenBook = { book: SpineBook | FlatBook | ScrollItem; index: number };
 
 const ASPECT = 4 / 3; // height / width of the cover
 const EASE: Bezier = [0.22, 1, 0.36, 1];

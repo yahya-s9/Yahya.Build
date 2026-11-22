@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { FlatBook, SpineBook } from "@/data/bookcase";
+import type { FlatBook, ScrollItem, SpineBook } from "@/data/bookcase";
 import { coverTheme, type Look } from "@/lib/look";
 const NASTALIQ = { fontFamily: "'Noto Nastaliq Urdu', serif" };
 const SHAPES: Record<string, CSSProperties> = {
@@ -21,7 +21,7 @@ const Bar = () => <div className="w-0.5 h-28" style={{ background: "linear-gradi
 
 
 /** The book's front cover, filling its container (the parent sets the size). */
-export default function CoverArt({ book: b, look }: { book: SpineBook | FlatBook; look: Look }) {
+export default function CoverArt({ book: b, look }: { book: SpineBook | FlatBook | ScrollItem; look: Look }) {
   const t = coverTheme(look);
   const i = b.info ?? {};
   const title = i.title ?? b.tip[0];
