@@ -107,7 +107,11 @@ function flatBook(title: string, f: Fields, text: string, i: number): FlatBook {
 
 const SCROLL_DIAMETERS = [35, 38, 41, 44];
 
-function scroll(title: string, f: Fields, text: string): ScrollItem {
+/** A scroll from a notes file name (see lib/library.ts): `date` and `link` become its details. */
+export const scrollFromNote = (title: string, date: string | undefined, link: string) =>
+  scroll(title, { ...(date && { date }), link }, "");
+
+export function scroll(title: string, f: Fields, text: string): ScrollItem {
   const cover = COVER_KEYS.includes(f.cover as CoverKey) ? (f.cover as CoverKey) : undefined;
   const t = COVERS[cover ?? pick(COVER_KEYS, title)];
   return {
