@@ -17,5 +17,34 @@
  *   },
  */
 window.PROJECTS = [
-
+  {
+    name: "System Design: Data Ingestion & Processing Pipeline",
+    description: "My design for a data ingestion pipeline for Zoox's 100k vehicles.",
+    link: "https://devpost.com/software/system-design-data-ingestion-processing-pipeline",
+    thumbnail: "/projects/images/system-design.jpg"
+  },
+  {
+    name: "SnapLens",
+    description: "Frictionless AI-powered translation for social good.",
+    link: "https://devpost.com/software/smartglasses",
+    thumbnail: "/projects/images/snaplens.jpg"
+  },
+  {
+    name: "Financial Document Analyzer",
+    description: "Multi-document OCR pipeline for retrieval-augmented generation with an LLM.",
+    link: "https://devpost.com/software/financial-document-rag-system",
+    thumbnail: "/projects/images/financial-document-analyzer.jpg"
+  },
+  {
+    name: "nodeClip",
+    description: "n8n automated AI video editor.",
+    link: "https://devpost.com/software/nodeclip",
+    thumbnail: "/projects/images/nodeclip.jpg"
+  },
+  {
+    name: "dotPrompt: Prompt engineering for everyone.",
+    description: "dotPrompt allows anyone to make dynamic, reusable, and shareable prompts.",
+    link: "https://devpost.com/software/dotprompt-supercharge-your-gpt-workflows",
+    thumbnail: "/projects/images/dotprompt.jpg"
+  }
 ];

@@ -54,7 +54,8 @@
     transition: transform .3s ease, background .3s, border-color .3s;
   }
   .tile:hover, .tile:focus-visible { transform: translateY(-3px); background: var(--card-hover); border-color: var(--line-hover); outline: none; }
-  .thumb { aspect-ratio: 16 / 9; width: 100%; display: block; object-fit: cover; background: rgba(255, 255, 255, .04); }
+  /* Crop a little above centre: thumbnails often carry their title near the top (Devpost's are 3:2). */
+  .thumb { aspect-ratio: 16 / 9; width: 100%; display: block; object-fit: cover; object-position: center 30%; background: rgba(255, 255, 255, .04); }
   .thumb.blank {
     display: flex; align-items: center; justify-content: center;
     font: 700 28px/1 "Silkscreen", monospace; color: rgba(240, 244, 248, .3);
