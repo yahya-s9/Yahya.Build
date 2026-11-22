@@ -11,7 +11,7 @@ const GAP = 2; // px between books
 const PAD = 56; // horizontal padding inside a shelf row
 const PILE_W = 180; // the horizontal books lie in a pile this wide, at the end of the last shelf
 
-const widthOf = (b: SpineBook) => lookOf(b.tip[0], !!b.big, coverBase(b.cover)).w;
+const widthOf = (b: SpineBook) => lookOf(b.tip[0], !!b.big, coverBase(b.cover), b.style).w;
 
 /** Fills each shelf before starting the next. `end` is the room the last shelf needs after its books
  *  (the scroll boxes and the pile of horizontal books). */

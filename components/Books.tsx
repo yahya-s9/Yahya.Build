@@ -33,7 +33,7 @@ export function Spine({ book: b, look }: { book: SpineBook; look: Look }) {
 }
 
 export function SpineBookView({ book: b, onOpen }: Props<SpineBook>) {
-  const look = lookOf(b.tip[0], !!b.big, coverBase(b.cover));
+  const look = lookOf(b.tip[0], !!b.big, coverBase(b.cover), b.style);
   return (
     <button type="button" onMouseEnter={placeTip} onFocus={placeTip} onClick={(e) => onOpen(e.currentTarget.querySelector<HTMLElement>(".sp") ?? e.currentTarget)} aria-label={`Open ${b.tip[0]}`} className="sp-bk group">
       <Spine book={b} look={look} />

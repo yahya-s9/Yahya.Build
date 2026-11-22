@@ -37,13 +37,16 @@ const luminance = (hex: string) => {
 
 export type Look = { color: string; fg: string; light: boolean; style: SpineStyle; w: number; h: number };
 
-export function lookOf(key: string, big = false, override?: string): Look {
+/** `styleOverride` comes from a book's `style:` field; without it the title picks one. The random draw
+ *  still happens either way, so width and height stay the same whatever the style. */
+export function lookOf(key: string, big = false, override?: string, styleOverride?: SpineStyle): Look {
   const r = rng(hash(key));
   const fam = FAMILIES[Math.floor(r() * FAMILIES.length)];
   const p = r();
   const color = override ?? fam[p < 0.38 ? 0 : p < 0.7 ? 2 : p < 0.88 ? 1 : 3];
   const light = luminance(color) > 0.3;
-  const style = STYLES[Math.floor(r() * STYLES.length)];
+  const style = styleOverride ?? STYLES[Math.floor(r() * STYLES.length)];
+  if (styleOverride) r(); // keep the draws that follow (width, height) unchanged
   const w = big ? 72 : Math.round(38 + r() * 28);
   const h = Math.round(214 + r() * 58);
   return { color, fg: light ? "#2a2520" : "#f6efe2", light, style, w, h };

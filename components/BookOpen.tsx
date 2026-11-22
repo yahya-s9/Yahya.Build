@@ -75,7 +75,7 @@ function animateTransform(
 
 export default function BookOpen({ open, origin, onClose }: { open: OpenBook; origin: HTMLElement; onClose: () => void }) {
   const { book: b, index } = open;
-  const look = lookOf(b.tip[0], "big" in b ? !!b.big : false, coverBase(b.cover));
+  const look = lookOf(b.tip[0], "big" in b ? !!b.big : false, coverBase(b.cover), "style" in b ? b.style : undefined);
   const [g] = useState(() => measure(look.w, look.h));
   // where the book starts, fixed once: the animator owns the transform after that
   const [startTransform] = useState(() => T(flight(measure(look.w, look.h), origin)[0].v));

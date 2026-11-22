@@ -20,6 +20,7 @@ type Common = { tip: [string, string]; cover?: CoverKey; info?: BookInfo };
 export type SpineBook = Common & {
   size: string; grad: [string, string, string]; edge: string; band: string; bandH: string;
   title: string; titleColor: string; author?: string; authorColor?: string; ribbon?: string; big?: boolean;
+  style?: "plain" | "label" | "foil"; // the spine's look: a paper label, gold foil, or plain cloth (default: from the title)
 };
 
 export type FlatBook = Common & {

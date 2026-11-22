@@ -73,6 +73,8 @@ function spineBook(title: string, f: Fields, text: string): SpineBook {
   const cover = COVER_KEYS.includes(f.cover as CoverKey) ? (f.cover as CoverKey) : undefined;
   const t = COVERS[cover ?? pick(COVER_KEYS, title)];
   const big = f.size?.toLowerCase() === "big";
+  const s = f.style?.toLowerCase();
+  const style = s === "paper" ? "label" : s === "label" || s === "foil" || s === "plain" ? s : undefined;
   const spineText = f.spine ?? f.ar ?? (title.length > 16 ? title.split(/\s+/).filter((w) => !/^(of|the|and|a|an|to|al-)$/i.test(w)).slice(0, 2).join(" ") : title);
   const author = (f.author?.match(/\(([^)]+)\)/)?.[1] ?? f.author?.replace(/\s*\(.*\)/, "").split(/\s+/).slice(-1)[0])?.toUpperCase();
   return {
@@ -82,6 +84,7 @@ function spineBook(title: string, f: Fields, text: string): SpineBook {
     title: spineText, titleColor: t.hi,
     ...(author && { author, authorColor: t.gold }),
     ...(big && { big: true }),
+    ...(style && { style }),
     tip: [escapeHtml(title), escapeHtml(f.subtitle ?? f.author ?? "")],
     ...(cover && { cover }), info: infoFor(title, f, text),
   };
