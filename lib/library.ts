@@ -17,7 +17,7 @@ const PREFERRED = /^(index|readme|books|shelf)\.md$/i;
 // adding its notes there. A `format: scroll` entry in the Bookshelf repo whose `link` points at a note
 // overrides it (title, author, ...). Notes with the same title count once (e.g. two notes on one paper).
 const PAPERS_REPO = "yahya-s9/Yahyas-Machine-Learning-Notes";
-const PAPERS_DIR = "ML Paper Reading + Reflections/presented_papers";
+const PAPERS_DIR = "ml_research_papers/presented_papers";
 const PAPERS_REVALIDATE = 600; // the GitHub API allows 60 calls an hour without a token: list every 10 minutes
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
